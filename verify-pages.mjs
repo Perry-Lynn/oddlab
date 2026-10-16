@@ -24,14 +24,14 @@ for(const lang of ['en','zh','ja','es']){
   titles.add(html.match(/<title>(.*?)<\/title>/)[1]);
   descriptions.add(html.match(/name="description" content="([^"]+)"/)[1]);
   if(['en','es'].includes(lang)){const visible=html.replace(/<option[\s\S]*?<\/option>/g,'').replace(/<[^>]*>/g,'');assert.ok(!/[\u4e00-\u9fff]/.test(visible),'no untranslated Chinese: '+path+' '+lang);}
-  if(['/', '/persona','/life','/choice','/task'].includes(path)){assert.equal((html.match(/<details>/g)||[]).length,3);assert.equal((html.match(/<li>/g)||[]).length,3);for(const game of ['/persona','/life','/choice','/task'].filter(p=>p!==path))assert.ok(html.includes(`href="${canonicalURL(game,lang)}"`));}
+  if(['/', '/dispatch','/persona','/life','/choice','/task'].includes(path)){assert.equal((html.match(/<details>/g)||[]).length,3);assert.equal((html.match(/<li>/g)||[]).length,3);for(const game of ['/dispatch','/persona','/life','/choice','/task'].filter(p=>p!==path))assert.ok(html.includes(`href="${canonicalURL(game,lang)}"`));}
  }
- assert.equal(titles.size,9);assert.equal(descriptions.size,9);
+ assert.equal(titles.size,10);assert.equal(descriptions.size,10);
  // A page delivered in any locale must still be able to switch its persistent shell.
  for(const source of ['关于研究所','关于 / 反馈','隐私说明','使用说明','联系与反馈'])for(const next of ['en','zh','ja','es'])assert.equal(translateText(translateText(source,lang),next),translateText(source,next));
 }
 const sitemap=await (await fetchPath('/sitemap.xml')).text();
-assert.equal((sitemap.match(/<loc>/g)||[]).length,36);
+assert.equal((sitemap.match(/<loc>/g)||[]).length,40);
 for(const [,loc] of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)){const u=new URL(decode(loc));assert.ok(publicRoutes.includes(u.pathname));assert.ok(!u.searchParams.has('r'));}
 for(const path of publicRoutes)for(const lang of ['en','zh','ja','es'])assert.ok(sitemap.includes(canonicalURL(path,lang)));
 assert.ok((await (await fetchPath('/robots.txt')).text()).includes('/sitemap.xml'));
@@ -42,4 +42,4 @@ for(const path of ['/persona?r='+Object.values(pack.persona.results)[0].id,'/lif
 let touched=false;const guardedEnv={ADMIN_EMAIL:'owner@example.test',get DB(){touched=true;throw Error('unauthorized database read');}};
 for(const path of ['/admin','/stats.html','/api/stats'])assert.equal((await fetchPath(path,guardedEnv)).status,401);
 assert.equal(touched,false);
-console.log('PASS: 36 raw HTML pages, four-way shell translation, canonical/hreflang, sitemap, alias redirects, result indexing, genuine 404 and authorization before DB.');
+console.log('PASS: 40 raw HTML pages, four-way shell translation, canonical/hreflang, sitemap, alias redirects, result indexing, genuine 404 and authorization before DB.');

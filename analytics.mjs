@@ -1,5 +1,5 @@
-const routes=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
-const actions=new Set(['answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload']);
+const routes=new Set(['/','/dispatch','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
+const actions=new Set(['answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action']);
 export function startAnalytics(getLanguage){
  const source=location.pathname.replace(/\/$/,'')||'/';if(!routes.has(source))return;
  function send(kind,target,action,locale=getLanguage()){
@@ -9,7 +9,7 @@ export function startAnalytics(getLanguage){
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{});
  }
  send('page_view',location.href,'view');
- document.addEventListener('click',e=>{if(!e.isTrusted)return;const el=e.target.closest('a[href],button');if(!el||el.disabled||el.closest('#copy-dialog'))return;
+ document.addEventListener('click',e=>{if(!e.isTrusted)return;const el=e.target.closest('a[href],button,[data-action]');if(!el||el.disabled||el.closest('#copy-dialog'))return;
   if(el.matches('a')){const url=new URL(el.href);if(url.origin===location.origin&&!routes.has(url.pathname.replace(/\/$/,'')||'/'))return;if(url.origin!==location.origin&&url.href!=='https://openai.com/policies/privacy-policy/')return;send('click',url.href,'navigate');}
   else if(actions.has(el.dataset.action))send('click',location.href,el.dataset.action);
  },true);

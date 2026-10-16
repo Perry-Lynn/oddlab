@@ -1,6 +1,6 @@
-const paths=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact','/stats']);
+const paths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact','/stats']);
 const languages=new Set(['en','zh','ja','es']);
-const actions=new Set(['view','navigate','language','answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload']);
+const actions=new Set(['view','navigate','language','answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action']);
 const resultIds=new Set(PUBLIC_RESULT_IDS);
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-robots-tag':'noindex'}});
 const dayAt=ms=>new Date(ms+8*3600000).toISOString().slice(0,10);
@@ -58,7 +58,7 @@ export default {async fetch(request,env={}){
  if(url.pathname==='/api/stats'){const permission=adminIdentity(request,env);if(permission!==200)return json({error:permission===401?'authentication_required':'forbidden'},permission);return request.method==='GET'?await stats(request,env):json({error:'method'},405);}
  if(!['GET','HEAD'].includes(request.method))return json({error:'method'},405);
  const path=url.pathname.replace(/\/$/,'')||'/';const adminPath=path.replace(/\.html$/,'');if(adminPath==='/stats'||adminPath==='/admin'){const permission=adminIdentity(request,env);if(permission!==200)return adminDenied(request,permission);const adminLang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'en';const asset=ASSETS['/stats?lang='+adminLang];return new Response(request.method==='HEAD'?null:asset.body,{headers:{'content-type':asset.type,'cache-control':'private, no-store','x-robots-tag':'noindex, nofollow','vary':'Cookie'}});}
- const lang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'en';const publicPaths=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
+ const lang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'en';const publicPaths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
  const alias=path==='/index.html'?'/':path.replace(/\.html$/,'');if(publicPaths.has(alias)&&path!==alias||publicPaths.has(path)&&url.pathname!==path){const target=new URL(request.url);target.pathname=publicPaths.has(alias)?alias:path;return new Response(null,{status:308,headers:{location:target.pathname+target.search}});}
  let asset=ASSETS[path+'?lang='+lang]||ASSETS[path];let status=200;
  const result=url.searchParams.get('r');const resultPage=['/persona','/life','/task'].includes(path)&&url.searchParams.has('r');
