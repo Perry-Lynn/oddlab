@@ -6,6 +6,11 @@ import {translateText} from './ui-catalog.mjs';
 const origin='https://oddlab.example';
 const fetchPath=(path,env)=>worker.fetch(new Request(origin+path),env);
 const decode=s=>s.replaceAll('&amp;','&');
+const returnDispatch=await fetchPath('/dispatch?level=return&lang=ja&route=PRIVATE');
+assert.equal(returnDispatch.status,200,'the Return Run shares the canonical Dispatch page route');
+const returnHtml=await returnDispatch.text();
+assert.equal(decode(returnHtml.match(/<link rel="canonical" href="([^"]+)"/)[1]),canonicalURL('/dispatch','ja'),'level query does not create an indexed page');
+assert.ok(!returnHtml.includes('PRIVATE'),'route parameters are not reflected in page output');
 for(const lang of ['en','zh','ja','es']){
  const titles=new Set(),descriptions=new Set();
  for(const path of publicRoutes){

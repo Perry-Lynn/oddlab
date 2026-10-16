@@ -344,4 +344,33 @@
 }
 #dispatch-result-title{scroll-margin-top:20px}
 @media(max-width:640px){.dispatch-edge-note{font-size:34px}}
+.dispatch-node-hit-target{fill:transparent;pointer-events:all}
+.dispatch-levels{display:flex;gap:8px;flex-wrap:wrap;margin:0 auto 14px;max-width:1100px}
+.dispatch-level-choice{display:inline-flex;align-items:center;min-height:44px;padding:8px 13px;border:1px solid #cdd5c8;border-radius:999px;background:#fffdf7;color:#355548;font-size:13px;font-weight:700;text-decoration:none}
+.dispatch-level-choice.selected{background:#294b40;border-color:#294b40;color:#fffdf7}
+.dispatch-assignment-prompt{display:block;margin-top:4px;color:#8c6b32;font-size:11px;line-height:1.4}
+.dispatch-map-turn-legend{margin:5px 6px 8px;color:#596458;font-size:12px;line-height:1.45}
+.dispatch-return-rules{margin:8px 6px;padding:8px 10px 8px 28px;border-radius:5px;background:#f1f2e9;color:#596458;font-size:11px;line-height:1.45}
+.dispatch-return-rules li+li{margin-top:4px}
+.dispatch-node-waiting rect{fill:#fff2cf;stroke:#a18038;stroke-width:1.5}
+.dispatch-node-waiting text{fill:#59491e;font:700 18px Arial,sans-serif}
+.dispatch-result-goals{display:grid;gap:5px;margin:10px 0;padding:0;list-style:none;color:#6c6e61;font-size:12px}
+.dispatch-result-goals li{padding:6px 8px;border:1px solid #e0dfd3;border-radius:5px;background:#fffdf7}
+.dispatch-result-goals li.passed{border-color:#ccd9c6;background:#f5f8f1;color:#355548}
+@media(max-width:640px){
+ .dispatch-levels{gap:6px;margin-bottom:10px}
+ .dispatch-level-choice{min-height:44px;padding:8px 10px;font-size:12px}
+ .dispatch-edge:not(.has-badge) .dispatch-edge-label-bg,.dispatch-edge-cost.is-default-cost,.dispatch-edge-note.is-open{display:none}
+ .dispatch-edge-note.is-special{font-size:24px}
+ .dispatch-edge-cost.is-variable-cost{font-size:25px}
+ .dispatch-map-turn-legend{font-size:11px}
+ .dispatch-node-waiting text{font-size:18px}
+}
 @media(max-width:640px){.dispatch-action-bar.is-terminal .dispatch-action-buttons{grid-template-columns:1fr 1.35fr}}
+@media(max-width:640px){
+ .dispatch-node-name{font-size:48px}
+ .dispatch-node-name-C{transform:translateY(18px)}
+ .dispatch-edge-cost{display:none}
+ .dispatch-edge-note.is-special{font-size:36px;transform:translateY(-2px)}
+ .dispatch-node-waiting text{font-size:40px}
+}
