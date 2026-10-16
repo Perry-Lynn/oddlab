@@ -1,0 +1,847 @@
+{
+  "persona": {
+    "game": "persona",
+    "version": 1,
+    "updated": "2026-10-16",
+    "tiebreakOrder": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+    ],
+    "dimensions": {
+      "D1": "Oráculo de las hojas de cálculo",
+      "D2": "Estratega del mínimo esfuerzo",
+      "D3": "Animador sin contrato",
+      "D4": "Profesional de los planes",
+      "D5": "Filósofo de la tienda de la esquina",
+      "D6": "Inventor indomable",
+      "D7": "Director de espectadores",
+      "D8": "Gestor de batería social"
+    },
+    "questions": [
+      {
+        "id": "Q1",
+        "text": "Antes de hacer algo desconocido, ¿qué haces primero?",
+        "options": [
+          {
+            "text": "Consultar reseñas, guías y datos",
+            "main": "D1",
+            "sub": "D4"
+          },
+          {
+            "text": "Buscar la forma más fácil",
+            "main": "D2",
+            "sub": "D8"
+          },
+          {
+            "text": "Pedir apoyo moral a un amigo",
+            "main": "D3",
+            "sub": "D7"
+          },
+          {
+            "text": "Preparar un plan detallado",
+            "main": "D4",
+            "sub": "D6"
+          }
+        ]
+      },
+      {
+        "id": "Q2",
+        "text": "Son las once de la noche. ¿Qué estarás haciendo?",
+        "options": [
+          {
+            "text": "Pasear sin rumbo por una tienda",
+            "main": "D5",
+            "sub": "D3"
+          },
+          {
+            "text": "Crear algo inútil pero irresistible",
+            "main": "D6",
+            "sub": "D4"
+          },
+          {
+            "text": "Patrullar comentarios de temas virales",
+            "main": "D7",
+            "sub": "D2"
+          },
+          {
+            "text": "Ignorar todos los mensajes",
+            "main": "D8",
+            "sub": "D1"
+          }
+        ]
+      },
+      {
+        "id": "Q3",
+        "text": "El chat del grupo se queda en silencio. Tú…",
+        "options": [
+          {
+            "text": "Mandas un meme para salvar el ambiente",
+            "main": "D3",
+            "sub": "D6"
+          },
+          {
+            "text": "Revisas el historial para entender por qué",
+            "main": "D1",
+            "sub": "D2"
+          },
+          {
+            "text": "Sales discretamente a comprar agua",
+            "main": "D5",
+            "sub": "D8"
+          },
+          {
+            "text": "Capturas este momento histórico",
+            "main": "D7",
+            "sub": "D5"
+          }
+        ]
+      },
+      {
+        "id": "Q4",
+        "text": "Te encargan algo para dentro de una semana. Tú…",
+        "options": [
+          {
+            "text": "Organizas hoy cada etapa",
+            "main": "D4",
+            "sub": "D2"
+          },
+          {
+            "text": "Reservas tu energía para los dos últimos días",
+            "main": "D2",
+            "sub": "D1"
+          },
+          {
+            "text": "Creas una herramienta que lo automatice",
+            "main": "D6",
+            "sub": "D5"
+          },
+          {
+            "text": "Lo terminas y desconectas toda la noche",
+            "main": "D8",
+            "sub": "D3"
+          }
+        ]
+      },
+      {
+        "id": "Q5",
+        "text": "¿Con qué frase te identificas?",
+        "options": [
+          {
+            "text": "Hasta la suerte se puede medir",
+            "main": "D1",
+            "sub": "D4"
+          },
+          {
+            "text": "Un buen plan es medio trabajo",
+            "main": "D4",
+            "sub": "D1"
+          },
+          {
+            "text": "Si se puede automatizar, se automatiza",
+            "main": "D6",
+            "sub": "D7"
+          },
+          {
+            "text": "Con buen ambiente, todo se arregla",
+            "main": "D3",
+            "sub": "D6"
+          }
+        ]
+      },
+      {
+        "id": "Q6",
+        "text": "¿Tu tarde de sábado ideal?",
+        "options": [
+          {
+            "text": "Tumbarme y no conseguir nada",
+            "main": "D2",
+            "sub": "D5"
+          },
+          {
+            "text": "Buscar un rincón tranquilo para pensar",
+            "main": "D5",
+            "sub": "D3"
+          },
+          {
+            "text": "Ponerme al día con todos los chismes",
+            "main": "D7",
+            "sub": "D8"
+          },
+          {
+            "text": "Estar a solas. Completamente a solas.",
+            "main": "D8",
+            "sub": "D7"
+          }
+        ]
+      }
+    ],
+    "results": {
+      "D1": {
+        "id": "persona-01",
+        "name": "Oráculo de las hojas de cálculo",
+        "tagline": "Tu buena suerte tiene una hoja de cálculo.",
+        "desc": "Cruzas reseñas, horóscopos y datos de sueño antes de decidir. Tu buen humor se debe a dormir exactamente siete horas y cuarenta y dos minutos. No eres supersticioso: simplemente faltan estadísticas sobre la suerte.",
+        "pro": "Decides rápido. La hoja ya ha votado.",
+        "habit": "Anotar hasta qué detergente te mejora el ánimo.",
+        "share": "Me salió Oráculo de las hojas de cálculo. Mi suerte ya está registrada."
+      },
+      "D2": {
+        "id": "persona-02",
+        "name": "Estratega del mínimo esfuerzo",
+        "tagline": "Ahorrar esfuerzo requiere mucho esfuerzo.",
+        "desc": "Tus notas de reunión esconden la lista de la compra. Tu mejor trabajo aparece la víspera de la entrega. Si una tarea puede esperar hasta mañana, quizá para entonces haya desaparecido.",
+        "pro": "Una eficiencia aterradora cuando de verdad hace falta.",
+        "habit": "Ordenar pendientes por días restantes hasta el incendio.",
+        "share": "Me salió Estratega del mínimo esfuerzo. Es investigación laboral."
+      },
+      "D3": {
+        "id": "persona-03",
+        "name": "Animador sin contrato",
+        "tagline": "Donde hay un silencio incómodo, apareces tú.",
+        "desc": "Tres minutos de silencio en el grupo son una emergencia. Envías un meme, un chiste malo y otro meme. No es que seas muy extrovertido: te niegas a que gane el silencio.",
+        "pro": "Hacer que los demás se sientan a gusto.",
+        "habit": "Clasificar cientos de memes por su poder de romper el hielo.",
+        "share": "Me salió Animador sin contrato. Yo me encargo de los silencios."
+      },
+      "D4": {
+        "id": "persona-04",
+        "name": "Profesional de los planes",
+        "tagline": "El viaje es el mes que viene. La ruta tiene 47 páginas.",
+        "desc": "Objetivos anuales, diagramas del fin de semana y una ducha optimizada: todo merece un plan. Ejecutarlo es otro pasatiempo. Tu porcentaje de tareas terminadas será dudoso, pero tus listas merecen un museo.",
+        "pro": "Siempre tienes preparados los planes B y C.",
+        "habit": "Reservar tiempo para dejar de hacer planes.",
+        "share": "Me salió Profesional de los planes. Ejecutar puede esperar."
+      },
+      "D5": {
+        "id": "persona-05",
+        "name": "Filósofo de la tienda de la esquina",
+        "tagline": "Grandes ideas entre estantes de aperitivos.",
+        "desc": "Entras por agua y sales con una teoría sobre la soledad. Las ofertas de dos por uno plantean dudas existenciales. Una sopa se vuelve metáfora de la vida. No lo apuntas, pero suena publicable.",
+        "pro": "Convertir lo cotidiano en una metáfora sorprendentemente buena.",
+        "habit": "Poner a tus estados de ánimo nombres de productos. Hoy: café frío en lata.",
+        "share": "Me salió Filósofo de la tienda de la esquina. Ideas profundas en el pasillo tres."
+      },
+      "D6": {
+        "id": "persona-06",
+        "name": "Inventor indomable",
+        "tagline": "Ocho horas programando para ahorrar cinco minutos.",
+        "desc": "¿Ordenar una tabla a mano? Inaceptable. ¿Elegir comida? Necesita una ruleta propia. La solución cuesta más que el problema, pero tu yo del futuro te lo agradecerá. Si vuelve a usarla, claro.",
+        "pro": "Aprender rápido y construir cosas de verdad.",
+        "habit": "Rediseñar las luces y cortinas de casa al menos tres veces.",
+        "share": "Me salió Inventor indomable. Cinco horas para ahorrar cinco minutos. Compensa."
+      },
+      "D7": {
+        "id": "persona-07",
+        "name": "Director de espectadores",
+        "tagline": "Primero en llegar. Nunca protagonista.",
+        "desc": "Cuando una noticia se hace viral, tú ya tienes la cronología. Tus amigos te piden arbitrar porque recuerdas su discusión de hace tres años. No creas las noticias. Solo conservas las pruebas.",
+        "pro": "Estar al día y tener siempre tema de conversación.",
+        "habit": "Archivar capturas con fecha, título y categorías muy útiles.",
+        "share": "Me salió Director de espectadores. Lo sé todo y tengo capturas."
+      },
+      "D8": {
+        "id": "persona-08",
+        "name": "Gestor de batería social",
+        "tagline": "Carga de fábrica: 5 %. Aún la estás racionando.",
+        "desc": "Tardar dos horas en contestar no es personal: te falta batería. A mitad de una fiesta, tu espíritu ya ha fichado la salida. Tu lujo favorito del fin de semana es que todos te dejen en paz.",
+        "pro": "Concentración y creatividad excelentes cuando tienes tranquilidad.",
+        "habit": "Revisar la agenda social antes de recordar un compromiso urgente.",
+        "share": "Me salió Gestor de batería social. Esta respuesta gastó el 80 % de mi carga diaria."
+      }
+    }
+  },
+  "life": {
+    "game": "life",
+    "version": 1,
+    "updated": "2026-10-16",
+    "themes": {
+      "modern": "Vida moderna",
+      "fantasy": "Fantasía",
+      "future": "El futuro",
+      "jianghu": "Mundo de artes marciales"
+    },
+    "templates": [
+      {
+        "id": "life-01",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "modern",
+        "fields": {
+          "title": "Comprador de moda para mascotas",
+          "career": "Comprador de moda para mascotas",
+          "skill": "Saber en tres segundos si un gato tolerará un conjunto",
+          "twist": "El impermeable que eliges para el gato del jefe se hace viral",
+          "ending": "Te conviertes en juez místico de moda animal. El gato sigue siendo más famoso",
+          "comment": "Tu carrera es una venta en directo y el producto es el destino",
+          "share": "Mi vida paralela: Comprador de moda para mascotas. Te conviertes en juez místico de moda animal. El gato sigue siendo más famoso. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-02",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "modern",
+        "fields": {
+          "title": "Especialista en ambiente de reuniones",
+          "career": "Redactor de actas y especialista en ambiente de reuniones",
+          "skill": "Predecir cuánto queda de reunión con un solo suspiro",
+          "twist": "El director convierte tu guía para sobrevivir reuniones en lectura obligatoria",
+          "ending": "Diriges el nuevo Departamento de Eficiencia. Ahora tienes más reuniones",
+          "comment": "No escapaste de las reuniones. Las convertiste en tu obra",
+          "share": "Mi vida paralela: Especialista en ambiente de reuniones. Diriges el nuevo Departamento de Eficiencia. Ahora tienes más reuniones. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-03",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "modern",
+        "fields": {
+          "title": "Artista de notas de pedidos",
+          "career": "Artista de notas de comida a domicilio",
+          "skill": "Escribir “poco picante” con tanta belleza que el cocinero se emociona",
+          "twist": "Un restaurante enmarca tu nota y se vuelve una atracción",
+          "ending": "Abres un estudio de notas. El servicio de lujo es una propuesta de matrimonio",
+          "comment": "Otros piden comida para comer. Tú, para dejar un legado",
+          "share": "Mi vida paralela: Artista de notas de pedidos. Abres un estudio de notas. El servicio de lujo es una propuesta de matrimonio. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-04",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "fantasy",
+        "fields": {
+          "title": "Terapeuta de slimes",
+          "career": "Terapeuta de slimes",
+          "skill": "Comprender las necesidades emocionales de una criatura gelatinosa",
+          "twist": "Ayudas al slime del Rey Demonio y él insiste en hacerte de la familia",
+          "ending": "Abres una consulta para slimes en el castillo. La tarifa es un caramelo",
+          "comment": "Demuestras que la ternura también puede ser una profesión sólida",
+          "share": "Mi vida paralela: Terapeuta de slimes. Abres una consulta para slimes en el castillo. La tarifa es un caramelo. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-05",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "fantasy",
+        "fields": {
+          "title": "Inspector de equipo heroico",
+          "career": "Inspector de equipo heroico",
+          "skill": "Detectar espadas que brillan solo para impresionar",
+          "twist": "Confiscas una espada legendaria que únicamente emite lucecitas",
+          "ending": "Todos los héroes pasan inspección antes de salir. Te temen más que al dragón",
+          "comment": "Las leyendas son valientes hasta que llega el control de calidad",
+          "share": "Mi vida paralela: Inspector de equipo heroico. Todos los héroes pasan inspección antes de salir. Te temen más que al dragón. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-06",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "fantasy",
+        "fields": {
+          "title": "Coordinador de reparto con dragones",
+          "career": "Coordinador de reparto con dragones",
+          "skill": "Planear las rutas de aliento de fuego más eficientes",
+          "twist": "Un dragón te regala un huevo por un turno de cinco estrellas",
+          "ending": "Tu mensajería conquista el continente. Las reseñas elogian la sopa caliente",
+          "comment": "Otros montan dragones por prestigio. Los tuyos son compañeros de trabajo",
+          "share": "Mi vida paralela: Coordinador de reparto con dragones. Tu mensajería conquista el continente. Las reseñas elogian la sopa caliente. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-07",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "future",
+        "fields": {
+          "title": "Inspector de sueños de IA",
+          "career": "Inspector de sueños de IA",
+          "skill": "Oír un poco de tristeza en un error 404",
+          "twist": "Todas las IA sueñan con la misma tienda de té de burbujas",
+          "ending": "Eres la única persona que cobra por leer cuentos a las máquinas",
+          "comment": "No han aprendido a amar. Han aprendido a esperar tu turno",
+          "share": "Mi vida paralela: Inspector de sueños de IA. Eres la única persona que cobra por leer cuentos a las máquinas. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-08",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "future",
+        "fields": {
+          "title": "Observador de mascotas holográficas",
+          "career": "Observador del comportamiento de mascotas holográficas",
+          "skill": "Distinguir un ronroneo feliz de un aviso de batería baja",
+          "twist": "Los perros electrónicos van a la huelga. Exigen caricias de verdad",
+          "ending": "Lanzas una campaña de adopción real y la empresa te declara su gran rival",
+          "comment": "Estudiabas mascotas artificiales y encontraste sentimientos reales",
+          "share": "Mi vida paralela: Observador de mascotas holográficas. Lanzas una campaña de adopción real y la empresa te declara su gran rival. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-09",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "future",
+        "fields": {
+          "title": "Organizador de recuerdos",
+          "career": "Organizador de recuerdos",
+          "skill": "Doblar doscientas tardes corrientes en un fin de semana cálido",
+          "twist": "Un cliente descubre un recuerdo feliz que añadiste a su infancia",
+          "ending": "Abres un estudio para guardar recuerdos sin perderlos",
+          "comment": "El tiempo avanza. Tú construyes cajones para lo que permanece",
+          "share": "Mi vida paralela: Organizador de recuerdos. Abres un estudio para guardar recuerdos sin perderlos. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-10",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "jianghu",
+        "fields": {
+          "title": "Maestro del menú de posada",
+          "career": "Maestro del menú de posada",
+          "skill": "Saber qué quiere cada mesa antes de que pidan",
+          "twist": "Tu pedido sin cebolleta se confunde con una contraseña secreta",
+          "ending": "Todos los clanes te invitan a cenar: creen que dominas una técnica ancestral",
+          "comment": "Donde hay gente, hay rivalidades. Donde estás tú, hay menú",
+          "share": "Mi vida paralela: Maestro del menú de posada. Todos los clanes te invitan a cenar: creen que dominas una técnica ancestral. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-11",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "jianghu",
+        "fields": {
+          "title": "Fundador de mensajería por tejados",
+          "career": "Fundador de mensajería por tejados",
+          "skill": "Llevar cartas por los tejados sin derramar una gota de vino",
+          "twist": "Una carta familiar hace llorar a un temido líder y tomarse tres días libres",
+          "ending": "Tu red cubre el reino: primero firma, después llora",
+          "comment": "Lo más rápido del reino no es una espada. Es tu carta",
+          "share": "Mi vida paralela: Fundador de mensajería por tejados. Tu red cubre el reino: primero firma, después llora. ¿Y la tuya?"
+        }
+      },
+      {
+        "id": "life-12",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "jianghu",
+        "fields": {
+          "title": "Verificador de cuentos exagerados",
+          "career": "Verificador de cuentos exagerados",
+          "skill": "Oír exactamente cuándo el narrador empieza a inventar",
+          "twist": "Revelas un truco escénico y el narrador te convierte en villano",
+          "ending": "Todos los narradores te pagan por revisar su historia antes del estreno",
+          "comment": "Las historias son inventadas. Tu empeño es real",
+          "share": "Mi vida paralela: Verificador de cuentos exagerados. Todos los narradores te pagan por revisar su historia antes del estreno. ¿Y la tuya?"
+        }
+      }
+    ]
+  },
+  "task": {
+    "game": "task",
+    "version": 1,
+    "updated": "2026-10-16",
+    "tasks": [
+      {
+        "id": "task-01",
+        "status": "published",
+        "text": "Pon un título de película muy solemne a la foto más reciente de tu galería.",
+        "solo": true
+      },
+      {
+        "id": "task-02",
+        "status": "published",
+        "text": "Lee tu último mensaje con tu mejor voz de presentador de noticias.",
+        "solo": true
+      },
+      {
+        "id": "task-03",
+        "status": "published",
+        "text": "Sírvete agua, brinda por haber superado el día y bébetela.",
+        "solo": true
+      },
+      {
+        "id": "task-04",
+        "status": "published",
+        "text": "Cuenta los objetos redondos que ves y escribe el número en el dorso de la mano.",
+        "solo": true
+      },
+      {
+        "id": "task-05",
+        "status": "published",
+        "text": "Abre una aplicación de comida, mira un restaurante sin pedir nada y puntúa su nombre.",
+        "solo": true
+      },
+      {
+        "id": "task-06",
+        "status": "published",
+        "text": "Piensa en alguien con quien hace tiempo que no hablas. Escribe una frase, léela y bórrala.",
+        "solo": true
+      },
+      {
+        "id": "task-07",
+        "status": "published",
+        "text": "Levanta el objeto más cercano tres segundos y nómbralo Objeto del Día.",
+        "solo": true
+      },
+      {
+        "id": "task-08",
+        "status": "published",
+        "text": "Di “he terminado por hoy” tres veces, cada una más teatral que la anterior.",
+        "solo": true
+      },
+      {
+        "id": "task-09",
+        "status": "published",
+        "text": "Convierte tu disgusto de hoy en un titular. Los expertos confirman: el lunes sigue sorprendiendo.",
+        "solo": true
+      },
+      {
+        "id": "task-10",
+        "status": "published",
+        "text": "Respira despacio tres veces. La primera palabra que aparezca será tu palabra del día.",
+        "solo": true
+      },
+      {
+        "id": "task-11",
+        "status": "published",
+        "text": "Mira la hora y dale a este momento un nombre oficial propio.",
+        "solo": true
+      },
+      {
+        "id": "task-12",
+        "status": "published",
+        "text": "Abre un libro o la página de información de una app. Lee el primer párrafo como discurso de agradecimiento.",
+        "solo": true
+      },
+      {
+        "id": "task-13",
+        "status": "published",
+        "text": "Elige tres cosas inútiles de tu entorno y despídete de cada una con una frase.",
+        "solo": true
+      },
+      {
+        "id": "task-14",
+        "status": "published",
+        "text": "Bebe un sorbo de agua, saboréalo tres segundos y ponle nota.",
+        "solo": true
+      },
+      {
+        "id": "task-15",
+        "status": "published",
+        "text": "Imagina que lo que comiste hoy son departamentos de una empresa. Crea el organigrama.",
+        "solo": true
+      },
+      {
+        "id": "task-16",
+        "status": "published",
+        "text": "Mírate al espejo y dedícate tres elogios sinceros. “No está mal” no cuenta.",
+        "solo": true
+      },
+      {
+        "id": "task-17",
+        "status": "published",
+        "text": "Describe tu escritorio como si presentaras un producto revolucionario.",
+        "solo": true
+      },
+      {
+        "id": "task-18",
+        "status": "published",
+        "text": "Recuerda algo que te hizo reír esta semana. Repítelo, esta vez a cámara lenta.",
+        "solo": true
+      },
+      {
+        "id": "task-19",
+        "status": "published",
+        "text": "Pon a tu habitación nombre de hotel de cinco estrellas. Luego revela su categoría real y el motivo.",
+        "solo": true
+      },
+      {
+        "id": "task-20",
+        "status": "published",
+        "text": "Busca una canción que te encantaba hace diez años. Escucha la introducción y comprueba si el cuerpo la recuerda.",
+        "solo": true
+      },
+      {
+        "id": "task-21",
+        "status": "published",
+        "text": "Encuentra este día de la próxima semana en el calendario. Escribe una frase para tu yo futuro.",
+        "solo": true
+      },
+      {
+        "id": "task-22",
+        "status": "published",
+        "text": "En una nota privada, describe el tiempo y tu ánimo con una palabra cada uno.",
+        "solo": true
+      },
+      {
+        "id": "task-23",
+        "status": "published",
+        "text": "Elige un objeto, imagina que es una antigüedad y escribe su cartel de museo.",
+        "solo": true
+      },
+      {
+        "id": "task-24",
+        "status": "published",
+        "text": "Cierra los ojos un minuto. Identifica los sonidos y ordénalos por volumen.",
+        "solo": true
+      },
+      {
+        "id": "task-25",
+        "status": "published",
+        "text": "Firma con tu mano no dominante y puntúa la caligrafía.",
+        "solo": true
+      },
+      {
+        "id": "task-26",
+        "status": "published",
+        "text": "Abre la aplicación que más tiempo llevas sin usar. Dale las gracias y ciérrala.",
+        "solo": true
+      },
+      {
+        "id": "task-27",
+        "status": "published",
+        "text": "Entrega un premio a tu yo de las tres de la tarde. Inventa la categoría.",
+        "solo": true
+      },
+      {
+        "id": "task-28",
+        "status": "published",
+        "text": "Nombra tres pequeñas cosas que hoy no salieron mal. Que funcione el ascensor cuenta.",
+        "solo": true
+      },
+      {
+        "id": "task-29",
+        "status": "published",
+        "text": "Recita el día al revés, desde acostarte hasta el desayuno. Cada vez más rápido.",
+        "solo": true
+      },
+      {
+        "id": "task-30",
+        "status": "published",
+        "text": "Empieza con “última hora” y cuenta tu día en quince segundos.",
+        "solo": true
+      }
+    ],
+    "rotation": {
+      "version": "v1",
+      "effectiveFrom": "2026-10-16",
+      "baselineDate": "2026-01-01",
+      "order": [
+        "task-01",
+        "task-02",
+        "task-03",
+        "task-04",
+        "task-05",
+        "task-06",
+        "task-07",
+        "task-08",
+        "task-09",
+        "task-10",
+        "task-11",
+        "task-12",
+        "task-13",
+        "task-14",
+        "task-15",
+        "task-16",
+        "task-17",
+        "task-18",
+        "task-19",
+        "task-20",
+        "task-21",
+        "task-22",
+        "task-23",
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27",
+        "task-28",
+        "task-29",
+        "task-30"
+      ]
+    }
+  },
+  "choice": {
+    "game": "choice",
+    "version": 1,
+    "updated": "2026-10-16",
+    "scenes": [
+      {
+        "id": "eat",
+        "title": "¿Qué como hoy?",
+        "options": [
+          {
+            "text": "Sopa de fideos picante",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Cerdo guisado con arroz",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Los fideos de la esquina",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Ensalada (una actuación convincente)",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Pollo con arroz",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Sushi",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Un bol de fideos con mucho carácter",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Arroz frito con huevo",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Barbacoa (técnicamente, proteína)",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Una bola de arroz de la tienda",
+            "mood": "Una pequeña decisión, resuelta."
+          }
+        ]
+      },
+      {
+        "id": "weekend",
+        "title": "¿Planes para el finde?",
+        "options": [
+          {
+            "text": "Dormir hasta despertarme",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Explorar un barrio desconocido",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Limpiar mi cuarto de verdad",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Terminar una serie entera",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Sentarme en un parque",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Aprender una receta",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Absolutamente nada",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Compartir una buena comida",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Silenciar el móvil todo el día",
+            "mood": "Una pequeña decisión, resuelta."
+          }
+        ]
+      },
+      {
+        "id": "watch",
+        "title": "¿Qué veo hoy?",
+        "options": [
+          {
+            "text": "Cine de Hong Kong de los noventa",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Un gran documental",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Un drama exageradamente satisfactorio",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Terror (con precaución)",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Un viejo favorito",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Una película de un país desconocido",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Un corto de quince minutos",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Un especial de comedia",
+            "mood": "Una pequeña decisión, resuelta."
+          }
+        ]
+      },
+      {
+        "id": "out",
+        "title": "¿Salgo ahora?",
+        "options": [
+          {
+            "text": "Pasear diez minutos y volver",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Hoy no. Mañana, quizá",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Solo sentarme abajo",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Una escapada a la tienda",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Salir para un único recado",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Buscar un asiento un poco más lejos",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Ponerme los zapatos y ya veremos",
+            "mood": "Una pequeña decisión, resuelta."
+          },
+          {
+            "text": "Mirar el supermercado sin comprar",
+            "mood": "Una pequeña decisión, resuelta."
+          }
+        ]
+      }
+    ]
+  }
+}

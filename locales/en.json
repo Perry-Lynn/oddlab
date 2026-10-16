@@ -1,0 +1,847 @@
+{
+  "persona": {
+    "game": "persona",
+    "version": 1,
+    "updated": "2026-10-16",
+    "tiebreakOrder": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+    ],
+    "dimensions": {
+      "D1": "Spreadsheet Oracle",
+      "D2": "Strategic Slacker",
+      "D3": "Unofficial Hype Crew",
+      "D4": "Professional Plan Maker",
+      "D5": "Convenience Store Philosopher",
+      "D6": "Untamed Inventor",
+      "D7": "Chief Bystander",
+      "D8": "Social Battery Manager"
+    },
+    "questions": [
+      {
+        "id": "Q1",
+        "text": "Before doing something unfamiliar, what do you do first?",
+        "options": [
+          {
+            "text": "Check ratings, guides and data",
+            "main": "D1",
+            "sub": "D4"
+          },
+          {
+            "text": "Find the least effort route",
+            "main": "D2",
+            "sub": "D8"
+          },
+          {
+            "text": "Recruit a friend for moral support",
+            "main": "D3",
+            "sub": "D7"
+          },
+          {
+            "text": "Make a detailed plan",
+            "main": "D4",
+            "sub": "D6"
+          }
+        ]
+      },
+      {
+        "id": "Q2",
+        "text": "It is 11 p.m. What are you most likely doing?",
+        "options": [
+          {
+            "text": "Wandering around a convenience store",
+            "main": "D5",
+            "sub": "D3"
+          },
+          {
+            "text": "Building something pointless but irresistible",
+            "main": "D6",
+            "sub": "D4"
+          },
+          {
+            "text": "Patrolling the comments on trending posts",
+            "main": "D7",
+            "sub": "D2"
+          },
+          {
+            "text": "Ignoring every message",
+            "main": "D8",
+            "sub": "D1"
+          }
+        ]
+      },
+      {
+        "id": "Q3",
+        "text": "The group chat goes quiet. You…",
+        "options": [
+          {
+            "text": "Send a meme to rescue the mood",
+            "main": "D3",
+            "sub": "D6"
+          },
+          {
+            "text": "Review the chat to work out why",
+            "main": "D1",
+            "sub": "D2"
+          },
+          {
+            "text": "Quietly go buy a bottle of water",
+            "main": "D5",
+            "sub": "D8"
+          },
+          {
+            "text": "Screenshot this historic moment",
+            "main": "D7",
+            "sub": "D5"
+          }
+        ]
+      },
+      {
+        "id": "Q4",
+        "text": "You get a task due in a week. You…",
+        "options": [
+          {
+            "text": "Schedule every milestone today",
+            "main": "D4",
+            "sub": "D2"
+          },
+          {
+            "text": "Save your energy for the last two days",
+            "main": "D2",
+            "sub": "D1"
+          },
+          {
+            "text": "Build a tool to automate it next time",
+            "main": "D6",
+            "sub": "D5"
+          },
+          {
+            "text": "Finish it, then go offline all evening",
+            "main": "D8",
+            "sub": "D3"
+          }
+        ]
+      },
+      {
+        "id": "Q5",
+        "text": "Which line sounds most like you?",
+        "options": [
+          {
+            "text": "Even luck can be measured",
+            "main": "D1",
+            "sub": "D4"
+          },
+          {
+            "text": "A good plan is half the job",
+            "main": "D4",
+            "sub": "D1"
+          },
+          {
+            "text": "If it can be automated, automate it",
+            "main": "D6",
+            "sub": "D7"
+          },
+          {
+            "text": "Get the mood right and the rest follows",
+            "main": "D3",
+            "sub": "D6"
+          }
+        ]
+      },
+      {
+        "id": "Q6",
+        "text": "Your perfect Saturday afternoon?",
+        "options": [
+          {
+            "text": "Lie down and achieve nothing",
+            "main": "D2",
+            "sub": "D5"
+          },
+          {
+            "text": "Find a quiet spot and let your mind wander",
+            "main": "D5",
+            "sub": "D3"
+          },
+          {
+            "text": "Catch up on every bit of gossip",
+            "main": "D7",
+            "sub": "D8"
+          },
+          {
+            "text": "Be alone. Absolutely alone.",
+            "main": "D8",
+            "sub": "D7"
+          }
+        ]
+      }
+    ],
+    "results": {
+      "D1": {
+        "id": "persona-01",
+        "name": "Spreadsheet Oracle",
+        "tagline": "Your good fortune has a spreadsheet.",
+        "desc": "You check ratings, horoscopes and sleep stats before making a decision. A good mood is clearly the result of exactly 7 hours and 42 minutes of sleep. You are not superstitious. You just think nobody has gathered enough data on luck.",
+        "pro": "Fast decisions. The spreadsheet already voted.",
+        "habit": "Keeping a sheet for everything, including which detergent improves your mood.",
+        "share": "I got Spreadsheet Oracle. My luck has been entered into a spreadsheet."
+      },
+      "D2": {
+        "id": "persona-02",
+        "name": "Strategic Slacker",
+        "tagline": "Making less effort takes serious effort.",
+        "desc": "Your meeting notes are secretly a shopping list. Your finest work happens the day before a deadline. You firmly believe that if a task can wait until tomorrow, there is a chance it will disappear by then.",
+        "pro": "Terrifying efficiency when it finally matters.",
+        "habit": "Ranking overdue tasks by how long until something catches fire.",
+        "share": "I got Strategic Slacker. This is paid research into human behavior."
+      },
+      "D3": {
+        "id": "persona-03",
+        "name": "Unofficial Hype Crew",
+        "tagline": "Where there is awkward silence, there is you.",
+        "desc": "Three quiet minutes in a group chat feel like an emergency. You deploy a meme, then a terrible joke, then another meme. You are not necessarily outgoing. You just refuse to let silence win.",
+        "pro": "Making other people feel comfortable.",
+        "habit": "Sorting hundreds of memes by icebreaker strength.",
+        "share": "I got Unofficial Hype Crew. Awkward silence is my workplace injury."
+      },
+      "D4": {
+        "id": "persona-04",
+        "name": "Professional Plan Maker",
+        "tagline": "The trip is next month. The itinerary is 47 pages.",
+        "desc": "Annual goals, weekend flowcharts, a better shower routine: everything deserves a plan. Execution is a separate hobby. Your completion rate is questionable, but your to-do lists belong in a design museum.",
+        "pro": "Always prepared with Plans B and C.",
+        "habit": "Scheduling time to stop making plans.",
+        "share": "I got Professional Plan Maker. Execution can wait; the plan must be perfect."
+      },
+      "D5": {
+        "id": "persona-05",
+        "name": "Convenience Store Philosopher",
+        "tagline": "Big thoughts between the snack aisles.",
+        "desc": "You enter for water and leave with a theory about loneliness. Two-for-one deals raise existential questions. A steaming bowl of noodles becomes a metaphor for life. You never write it down, but it feels publishable.",
+        "pro": "Turning an ordinary moment into a surprisingly good metaphor.",
+        "habit": "Naming moods after products: today is iced canned coffee.",
+        "share": "I got Convenience Store Philosopher. Deep thoughts, aisle three."
+      },
+      "D6": {
+        "id": "persona-06",
+        "name": "Untamed Inventor",
+        "tagline": "Eight hours of coding to save five minutes.",
+        "desc": "Manually sorting a table? Unacceptable. Choosing lunch? Obviously it needs a custom roulette app. The solution costs more effort than the problem, but future you will thank you. Probably. If you ever use it again.",
+        "pro": "Learning fast and actually building things.",
+        "habit": "Reengineering the lights and curtains at least three times.",
+        "share": "I got Untamed Inventor. Five hours to save five minutes. Worth it."
+      },
+      "D7": {
+        "id": "persona-07",
+        "name": "Chief Bystander",
+        "tagline": "First on the scene. Never in the story.",
+        "desc": "When a story starts trending, you already have the timeline. Friends ask you to settle disputes because you remember their argument from three years ago. You do not create the news. You just have the receipts.",
+        "pro": "Always informed, always ready with a conversation starter.",
+        "habit": "Filing screenshots with dates, titles and suspiciously useful categories.",
+        "share": "I got Chief Bystander. I know everything. The screenshots are organized."
+      },
+      "D8": {
+        "id": "persona-08",
+        "name": "Social Battery Manager",
+        "tagline": "Factory charge: 5%. Still rationing it.",
+        "desc": "A two-hour reply gap is not personal. Your battery is low. Halfway through a party, your spirit quietly clocks out. Your highest form of weekend luxury is everyone agreeing to leave you alone.",
+        "pro": "Excellent focus and creativity when left in peace.",
+        "habit": "Checking the social calendar before deciding you have a sudden prior commitment.",
+        "share": "I got Social Battery Manager. This reply used 80% of my daily charge."
+      }
+    }
+  },
+  "life": {
+    "game": "life",
+    "version": 1,
+    "updated": "2026-10-16",
+    "themes": {
+      "modern": "Modern life",
+      "fantasy": "Fantasy realm",
+      "future": "The future",
+      "jianghu": "Martial arts world"
+    },
+    "templates": [
+      {
+        "id": "life-01",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "modern",
+        "fields": {
+          "title": "Pet Fashion Buyer",
+          "career": "Pet fashion buyer",
+          "skill": "Knowing in three seconds whether a cat will tolerate an outfit",
+          "twist": "A raincoat you chose for the boss’s cat becomes a viral sensation",
+          "ending": "You become the mystical judge of pet fashion. The cat is still more famous",
+          "comment": "Your career is one long livestream, and destiny is the product",
+          "share": "My parallel life: Pet Fashion Buyer. You become the mystical judge of pet fashion. The cat is still more famous. What about yours?"
+        }
+      },
+      {
+        "id": "life-02",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "modern",
+        "fields": {
+          "title": "Meeting Mood Specialist",
+          "career": "Meeting minutes clerk, with a side job in atmosphere management",
+          "skill": "Predicting a meeting’s remaining length from a single sigh",
+          "twist": "The CEO discovers your Meeting Survival Guide and makes it required reading",
+          "ending": "You lead the new Meeting Efficiency Department. Somehow there are more meetings",
+          "comment": "You did not escape meetings. You turned them into your life’s work",
+          "share": "My parallel life: Meeting Mood Specialist. You lead the new Meeting Efficiency Department. Somehow there are more meetings. What about yours?"
+        }
+      },
+      {
+        "id": "life-03",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "modern",
+        "fields": {
+          "title": "Takeout Note Artist",
+          "career": "Takeout note artist",
+          "skill": "Writing “less spice” so beautifully that the chef gets emotional",
+          "twist": "A restaurant frames your order note and becomes a local attraction",
+          "ending": "You open a note-writing studio. The premium service is a proposal hidden in an order",
+          "comment": "Other people order food to eat. You order food to leave a legacy",
+          "share": "My parallel life: Takeout Note Artist. You open a note-writing studio. The premium service is a proposal hidden in an order. What about yours?"
+        }
+      },
+      {
+        "id": "life-04",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "fantasy",
+        "fields": {
+          "title": "Slime Therapist",
+          "career": "Slime therapist",
+          "skill": "Understanding the emotional needs of a jelly-like creature",
+          "twist": "You help the Demon King’s slime, and he insists on calling you family",
+          "ending": "You open a slime-only practice in the castle. The fee is one sweet",
+          "comment": "You prove that being soft can be a solid career",
+          "share": "My parallel life: Slime Therapist. You open a slime-only practice in the castle. The fee is one sweet. What about yours?"
+        }
+      },
+      {
+        "id": "life-05",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "fantasy",
+        "fields": {
+          "title": "Hero Gear Inspector",
+          "career": "Hero gear inspector",
+          "skill": "Spotting swords that only glow to look impressive",
+          "twist": "You confiscate a legendary sword that does nothing but sparkle",
+          "ending": "Every hero visits you before a quest. You scare them more than the dragon",
+          "comment": "Legends are brave until quality control arrives",
+          "share": "My parallel life: Hero Gear Inspector. Every hero visits you before a quest. You scare them more than the dragon. What about yours?"
+        }
+      },
+      {
+        "id": "life-06",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "fantasy",
+        "fields": {
+          "title": "Dragon Delivery Dispatcher",
+          "career": "Dragon delivery dispatcher",
+          "skill": "Planning the most fuel-efficient fire-breathing routes",
+          "twist": "A dragon gives you an egg as a thank-you for a five-star shift",
+          "ending": "Your courier service conquers the continent. Reviews praise the perfectly warm soup",
+          "comment": "Other people ride dragons for status. Yours are coworkers",
+          "share": "My parallel life: Dragon Delivery Dispatcher. Your courier service conquers the continent. Reviews praise the perfectly warm soup. What about yours?"
+        }
+      },
+      {
+        "id": "life-07",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "future",
+        "fields": {
+          "title": "AI Dream Inspector",
+          "career": "AI dream inspector",
+          "skill": "Hearing a little sadness in a 404 error",
+          "twist": "Every AI in the city starts dreaming about the same bubble tea shop",
+          "ending": "You become the only human paid to read bedtime stories to machines",
+          "comment": "The machines have not learned love. They have learned to wait for your shift",
+          "share": "My parallel life: AI Dream Inspector. You become the only human paid to read bedtime stories to machines. What about yours?"
+        }
+      },
+      {
+        "id": "life-08",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "future",
+        "fields": {
+          "title": "Holographic Pet Observer",
+          "career": "Holographic pet behavior observer",
+          "skill": "Telling a happy digital purr from a low-battery warning",
+          "twist": "The electronic dogs go on strike. Their demand: actual belly rubs",
+          "ending": "You start a real-pet adoption movement. The hologram company names you its top rival",
+          "comment": "You studied artificial pets and found something real",
+          "share": "My parallel life: Holographic Pet Observer. You start a real-pet adoption movement. The hologram company names you its top rival. What about yours?"
+        }
+      },
+      {
+        "id": "life-09",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "future",
+        "fields": {
+          "title": "Memory Organizer",
+          "career": "Memory organizer",
+          "skill": "Folding two hundred ordinary afternoons into one warm weekend",
+          "twist": "A client finds an extra happy memory you quietly tucked into their childhood",
+          "ending": "You open a memory studio, helping people put things away without losing them",
+          "comment": "Time moves on. You make drawers for what stays",
+          "share": "My parallel life: Memory Organizer. You open a memory studio, helping people put things away without losing them. What about yours?"
+        }
+      },
+      {
+        "id": "life-10",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "jianghu",
+        "fields": {
+          "title": "Inn Menu Master",
+          "career": "Inn menu master",
+          "skill": "Knowing what a table wants before anyone orders",
+          "twist": "Your “no scallions” order is mistaken for a secret martial arts password",
+          "ending": "Every clan invites you to dinner, convinced you hold an ancient menu technique",
+          "comment": "Where there are people, there are rivalries. Where you are, there is a menu",
+          "share": "My parallel life: Inn Menu Master. Every clan invites you to dinner, convinced you hold an ancient menu technique. What about yours?"
+        }
+      },
+      {
+        "id": "life-11",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "jianghu",
+        "fields": {
+          "title": "Rooftop Courier Founder",
+          "career": "Rooftop courier founder",
+          "skill": "Delivering letters across rooftops without spilling a drop of wine",
+          "twist": "A family letter you deliver makes a feared sect leader cry and take three days off",
+          "ending": "Your courier network spans the realm: sign first, weep later",
+          "comment": "The fastest thing in this realm is not a sword. It is your letter",
+          "share": "My parallel life: Rooftop Courier Founder. Your courier network spans the realm: sign first, weep later. What about yours?"
+        }
+      },
+      {
+        "id": "life-12",
+        "entryVersion": 1,
+        "status": "published",
+        "theme": "jianghu",
+        "fields": {
+          "title": "Tall Tale Fact Checker",
+          "career": "Tall tale fact checker",
+          "skill": "Hearing exactly where a storyteller starts making things up",
+          "twist": "You expose a mountain-splitting punch as stagecraft. The storyteller makes you the villain",
+          "ending": "Every storyteller pays you for a fact-check before opening night",
+          "comment": "The stories are made up. Your determination is real",
+          "share": "My parallel life: Tall Tale Fact Checker. Every storyteller pays you for a fact-check before opening night. What about yours?"
+        }
+      }
+    ]
+  },
+  "task": {
+    "game": "task",
+    "version": 1,
+    "updated": "2026-10-16",
+    "tasks": [
+      {
+        "id": "task-01",
+        "status": "published",
+        "text": "Give the newest photo in your gallery a very serious movie title.",
+        "solo": true
+      },
+      {
+        "id": "task-02",
+        "status": "published",
+        "text": "Read your last message out loud in your best newsreader voice.",
+        "solo": true
+      },
+      {
+        "id": "task-03",
+        "status": "published",
+        "text": "Pour a glass of water, toast yourself for getting through today, then drink it.",
+        "solo": true
+      },
+      {
+        "id": "task-04",
+        "status": "published",
+        "text": "Count the round things you can see. Write the number on the back of your hand.",
+        "solo": true
+      },
+      {
+        "id": "task-05",
+        "status": "published",
+        "text": "Open a food app, browse a restaurant without ordering, and rate its name.",
+        "solo": true
+      },
+      {
+        "id": "task-06",
+        "status": "published",
+        "text": "Think of someone you have not spoken to in a while. Type one thing you would say, read it, then delete it.",
+        "solo": true
+      },
+      {
+        "id": "task-07",
+        "status": "published",
+        "text": "Hold up the nearest object for three seconds and award it Object of the Day.",
+        "solo": true
+      },
+      {
+        "id": "task-08",
+        "status": "published",
+        "text": "Say “I am done for the day” three times. Make each one more dramatic.",
+        "solo": true
+      },
+      {
+        "id": "task-09",
+        "status": "published",
+        "text": "Turn today’s annoyance into a news headline. Experts confirm: Monday remains shocking.",
+        "solo": true
+      },
+      {
+        "id": "task-10",
+        "status": "published",
+        "text": "Take three slow breaths. The first word that comes to mind is your word of the day.",
+        "solo": true
+      },
+      {
+        "id": "task-11",
+        "status": "published",
+        "text": "Look at the time and give this particular hour its own official name.",
+        "solo": true
+      },
+      {
+        "id": "task-12",
+        "status": "published",
+        "text": "Open a book or an app’s About page. Read the first paragraph as your award acceptance speech.",
+        "solo": true
+      },
+      {
+        "id": "task-13",
+        "status": "published",
+        "text": "Pick three useless things near you and give each a one-sentence farewell.",
+        "solo": true
+      },
+      {
+        "id": "task-14",
+        "status": "published",
+        "text": "Take a sip of water, savor it for three seconds, and give it a rating.",
+        "solo": true
+      },
+      {
+        "id": "task-15",
+        "status": "published",
+        "text": "Imagine everything you ate today as departments in a company. Draw up the organization chart.",
+        "solo": true
+      },
+      {
+        "id": "task-16",
+        "status": "published",
+        "text": "Look in a mirror and give yourself three sincere compliments. “Not bad” does not count.",
+        "solo": true
+      },
+      {
+        "id": "task-17",
+        "status": "published",
+        "text": "Describe your desk in one sentence as if you were unveiling a revolutionary new product.",
+        "solo": true
+      },
+      {
+        "id": "task-18",
+        "status": "published",
+        "text": "Remember something that made you laugh this week. Replay it, this time in slow motion.",
+        "solo": true
+      },
+      {
+        "id": "task-19",
+        "status": "published",
+        "text": "Give your room the name of a five-star hotel. Then reveal its actual star rating and why.",
+        "solo": true
+      },
+      {
+        "id": "task-20",
+        "status": "published",
+        "text": "Find a song you loved ten years ago. Play just the intro and see if your body remembers.",
+        "solo": true
+      },
+      {
+        "id": "task-21",
+        "status": "published",
+        "text": "Find this day next week on your calendar. Write one sentence to your future self.",
+        "solo": true
+      },
+      {
+        "id": "task-22",
+        "status": "published",
+        "text": "In a private note, describe today’s weather and your current mood using one word each.",
+        "solo": true
+      },
+      {
+        "id": "task-23",
+        "status": "published",
+        "text": "Pick an object around you, pretend it is an ancient artifact, and give it a museum caption.",
+        "solo": true
+      },
+      {
+        "id": "task-24",
+        "status": "published",
+        "text": "Close your eyes for a minute. Identify the sounds around you and rank them by volume.",
+        "solo": true
+      },
+      {
+        "id": "task-25",
+        "status": "published",
+        "text": "Sign your name with your non-dominant hand. Give the calligraphy a score.",
+        "solo": true
+      },
+      {
+        "id": "task-26",
+        "status": "published",
+        "text": "Open the app you have neglected the longest. Thank it, then close it.",
+        "solo": true
+      },
+      {
+        "id": "task-27",
+        "status": "published",
+        "text": "Give your 3 p.m. self an award. You get to invent the category.",
+        "solo": true
+      },
+      {
+        "id": "task-28",
+        "status": "published",
+        "text": "Name three little things that did not go wrong today. A working elevator counts.",
+        "solo": true
+      },
+      {
+        "id": "task-29",
+        "status": "published",
+        "text": "Recite today’s schedule backward, from bedtime to breakfast. Pick up the pace.",
+        "solo": true
+      },
+      {
+        "id": "task-30",
+        "status": "published",
+        "text": "Start with “Breaking news” and report your day in fifteen seconds.",
+        "solo": true
+      }
+    ],
+    "rotation": {
+      "version": "v1",
+      "effectiveFrom": "2026-10-16",
+      "baselineDate": "2026-01-01",
+      "order": [
+        "task-01",
+        "task-02",
+        "task-03",
+        "task-04",
+        "task-05",
+        "task-06",
+        "task-07",
+        "task-08",
+        "task-09",
+        "task-10",
+        "task-11",
+        "task-12",
+        "task-13",
+        "task-14",
+        "task-15",
+        "task-16",
+        "task-17",
+        "task-18",
+        "task-19",
+        "task-20",
+        "task-21",
+        "task-22",
+        "task-23",
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27",
+        "task-28",
+        "task-29",
+        "task-30"
+      ]
+    }
+  },
+  "choice": {
+    "game": "choice",
+    "version": 1,
+    "updated": "2026-10-16",
+    "scenes": [
+      {
+        "id": "eat",
+        "title": "What should I eat?",
+        "options": [
+          {
+            "text": "Spicy noodle soup",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Slow-cooked pork and rice",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "The noodle place downstairs",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Salad (a convincing performance)",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Chicken rice bowl",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Sushi",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A boldly fragrant noodle bowl",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Egg fried rice",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Barbecue (protein, technically)",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A convenience store rice ball",
+            "mood": "A small decision, made."
+          }
+        ]
+      },
+      {
+        "id": "weekend",
+        "title": "Weekend plans?",
+        "options": [
+          {
+            "text": "Sleep until I wake up",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Explore an unfamiliar neighborhood",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Actually clean my room",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Finish a whole series",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Sit in a park",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Learn one new recipe",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Absolutely nothing",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Share a good meal with someone",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Keep my phone on silent all day",
+            "mood": "A small decision, made."
+          }
+        ]
+      },
+      {
+        "id": "watch",
+        "title": "What should I watch?",
+        "options": [
+          {
+            "text": "A 90s Hong Kong film",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A great documentary",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Ridiculously satisfying drama",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A horror film (proceed carefully)",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "An old favorite",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A film from somewhere unfamiliar",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A fifteen-minute short",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A comedy special",
+            "mood": "A small decision, made."
+          }
+        ]
+      },
+      {
+        "id": "out",
+        "title": "Should I go out?",
+        "options": [
+          {
+            "text": "A ten-minute walk, then home",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Not today. Tomorrow, perhaps",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Just sit downstairs",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "A quick convenience store trip",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Go out for exactly one errand",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Find a seat somewhere farther away",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Put shoes on and see what happens",
+            "mood": "A small decision, made."
+          },
+          {
+            "text": "Browse the supermarket without buying",
+            "mood": "A small decision, made."
+          }
+        ]
+      }
+    ]
+  }
+}

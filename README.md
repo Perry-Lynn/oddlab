@@ -1,25 +1,27 @@
-# 脑洞研究所 OddLab · 可玩首版
+# OddLab · Four little experiments
 
-正式首页与四个玩法均使用本地静态内容。沿用原测试站的 Sites project_id 与公开地址，测试页保留在 /capability 和 /tool-test，不出现在正式导航。
+English by default, with Simplified Chinese, Japanese, and Spanish. Reuses the existing Sites project and public URL. Four games still run locally; a small Worker/D1 service persists aggregate activity.
 
-## 文件与数据
+## Source and build
 
-- `app.js`：四玩法交互、结果链接、剪贴板与分享降级。
-- `logic.mjs`：人格计分、北京时间任务、人生抽取、选项规范化。
-- `style.css`：暖米白与四色玩法，手机优先响应式布局。
-- `prepare.mjs`：从上级 `内容包/` 同步四份 JSON 到 `data/`，构建七个静态页面到 `dist/`。独立拉取仓库时可直接使用已提交的 `data/`。
-- `verify.mjs`：计分全路径与业务边界检查。
+- `app.js`, `logic.mjs`: four games, result restoration, UTC+8 missions, clipboard/share fallbacks.
+- `i18n.mjs`: UI catalog and language preference/query handling. `locales/{en,zh,ja,es}.json`: complete localized content packs. All IDs, scoring, versions, and task rotation remain consistent. Edit the committed locale packs together when changing content; the build does not silently overwrite them from the parent folder.
+- `analytics.mjs`: page views and real UI clicks; never reads answer choices, form contents, or browser identifiers.
+- `worker/runtime.mjs`: public assets and `/api/track`, `/api/stats`. `prepare.mjs` generates `worker/index.js` with embedded assets.
+- `db/schema.ts`, `drizzle/`: D1 schema and versioned migrations. The request handler never creates tables. Sites provisions binding `DB` and applies packaged migrations.
 
-构建：`node prepare.mjs`；规则验证：`node verify.mjs`。本地预览服务器需要将 `/persona` 等无后缀路径映射到对应 HTML 文件；也可直接访问 `/persona.html` 等路径。
+With Node 24+: `node prepare.mjs && bash scripts/build.sh && node scripts/validate-artifact.mjs`. Tests: `node verify.mjs && node verify-server.mjs`. The second test uses actual in-memory SQLite through a D1-compatible adapter. `node scripts/preview.mjs` serves port 8765 with a separate SQLite file in `/private/tmp`; local data is never deployed. Dev-only drizzle tooling is locked in `pnpm-lock.yaml`; runtime has no package dependencies.
 
-## 用户体验
+The Worker ESM build emits `dist/server/index.js` and `dist/.openai/hosting.json`. The Sites packaging helper copies root `drizzle/` to `dist/.openai/drizzle/`. Keep deployed migration files immutable; generate a new migration for future schema changes.
 
-首页 → 人格六题 / 平行人生主题 / 自定义随机选择 / 每日任务 → 结果 → 复制或系统分享。人格、人生和任务的分享链接还原公开内容；选择器只分享入口，自定义内容不进入分享链接。
+## Language and data behavior
 
-任务在北京时间跨日重置换题次数，保留已完成任务。任务进度只保存在当前浏览器；浏览器禁用存储时提供页面内存降级。复制失败提供选中的手动文本框。原生分享需要在真实手机及分发环境继续验收。
+`?lang=en|zh|ja|es` overrides the saved language preference. Links carry language even when localStorage is denied. Changing language preserves the current quiz answers, public result ID, life theme, daily progress, and custom decision list; untouched preset lists translate. Shared results display in the link’s language. Custom lists stay in the page and never enter share URLs or analytics.
 
-关于页提供试用反馈模板；尚未配置独立公开联系邮箱，反馈交给分享本站的联系人。首版没有账号、支付、广告、外部 AI API 或自建后端。
+Activity is publicly viewable at `/stats`, over the last 7/30/90 UTC+8 dates. Page views and clicks are separate events. Counters group by date, event kind, source page, sanitized destination URL, action category, and language. Only known page paths and public result IDs/version are retained in URLs; arbitrary query strings, fragments, IPs, identities, and input text are not stored by the application. The hosting platform may separately keep access logs. Aggregate rows currently have no automatic retention expiry. No unique visitor or fraud-proof claim: repeated clicks count; blocking/network errors can drop events. The stats page does not generate usage events about itself. Totals include all rows in the selected period; detail display is limited to 200 rows. Verification clicks after release are real counted events.
 
-## 部署
+Daily missions still reset at UTC+8 midnight in every language. Progress and language preference are browser-local; no account or cross-device sync. Clipboard fallback selects the current text. Native mobile sharing remains dependent on the device and browser.
 
-复用 `.openai/hosting.json` 的现有项目。构建、验证后通过 Sites 源码工作流同步与打包，保存与提交匹配的版本，再部署该版本。不要重新创建站点。平台部署结果与本地模拟结果分开记录。
+## Publish
+
+Use the existing `.openai/hosting.json` project. Open source through Sites workflow, build/test, push exact source, package, save the matching version, deploy with the existing public audience. Never create a replacement site. Keep local checks and actual production/D1 verification separate. Legacy `/capability.html` and `/tool-test.html` remain available but are outside the product navigation.
