@@ -1,8 +1,8 @@
-const paths=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/stats']);
+const paths=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact','/stats']);
 const languages=new Set(['en','zh','ja','es']);
 const actions=new Set(['view','navigate','language','answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload']);
 const resultIds=new Set(PUBLIC_RESULT_IDS);
-const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});
+const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-robots-tag':'noindex'}});
 const dayAt=ms=>new Date(ms+8*3600000).toISOString().slice(0,10);
 function targetURL(value,origin){
  if(typeof value!=='string'||value.length>2048)return null;
@@ -10,7 +10,7 @@ function targetURL(value,origin){
  if(input.origin!==origin)return input.href==='https://openai.com/policies/privacy-policy/'?input.href:null;
  const path=input.pathname.replace(/\/$/,'')||'/';if(!paths.has(path)||input.username||input.password)return null;
  const safe=new URL(path,origin);const lang=input.searchParams.get('lang');if(languages.has(lang))safe.searchParams.set('lang',lang);
- const id=input.searchParams.get('r');if(resultIds.has(path+':'+id)){safe.searchParams.set('r',id);const v=input.searchParams.get('v');if(path==='/life'&&v==='1')safe.searchParams.set('v',v);}
+ const id=input.searchParams.get('r');if(resultIds.has(path+':'+id)){safe.searchParams.set('r',id);const v=input.searchParams.get('v');if(path==='/life'&&LIFE_VERSIONS[id]?.includes(v))safe.searchParams.set('v',v);}
  return safe.href;
 }
 async function track(request,env){
@@ -57,8 +57,16 @@ export default {async fetch(request,env={}){
  if(url.pathname==='/api/track')return request.method==='POST'?await track(request,env):json({error:'method'},405);
  if(url.pathname==='/api/stats'){const permission=adminIdentity(request,env);if(permission!==200)return json({error:permission===401?'authentication_required':'forbidden'},permission);return request.method==='GET'?await stats(request,env):json({error:'method'},405);}
  if(!['GET','HEAD'].includes(request.method))return json({error:'method'},405);
- const path=url.pathname.replace(/\/$/,'')||'/';const adminPath=path.replace(/\.html$/,'');if(adminPath==='/stats'||adminPath==='/admin'){const permission=adminIdentity(request,env);if(permission!==200)return adminDenied(request,permission);const asset=ASSETS['/stats'];return new Response(request.method==='HEAD'?null:asset.body,{headers:{'content-type':asset.type,'cache-control':'private, no-store','x-robots-tag':'noindex, nofollow','vary':'Cookie'}});}
- const asset=ASSETS[path]||ASSETS[path.replace(/\.html$/,'')];if(!asset)return new Response('Not found',{status:404});
- return new Response(request.method==='HEAD'?null:asset.body,{headers:{'content-type':asset.type,'cache-control':'no-cache','x-content-type-options':'nosniff','referrer-policy':'strict-origin-when-cross-origin'}});
+ const path=url.pathname.replace(/\/$/,'')||'/';const adminPath=path.replace(/\.html$/,'');if(adminPath==='/stats'||adminPath==='/admin'){const permission=adminIdentity(request,env);if(permission!==200)return adminDenied(request,permission);const adminLang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'en';const asset=ASSETS['/stats?lang='+adminLang];return new Response(request.method==='HEAD'?null:asset.body,{headers:{'content-type':asset.type,'cache-control':'private, no-store','x-robots-tag':'noindex, nofollow','vary':'Cookie'}});}
+ const lang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'en';const publicPaths=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
+ const alias=path==='/index.html'?'/':path.replace(/\.html$/,'');if(publicPaths.has(alias)&&path!==alias||publicPaths.has(path)&&url.pathname!==path){const target=new URL(request.url);target.pathname=publicPaths.has(alias)?alias:path;return new Response(null,{status:308,headers:{location:target.pathname+target.search}});}
+ let asset=ASSETS[path+'?lang='+lang]||ASSETS[path];let status=200;
+ const result=url.searchParams.get('r');const resultPage=['/persona','/life','/task'].includes(path)&&url.searchParams.has('r');
+ const badResult=resultPage&&(!resultIds.has(path+':'+result)||(path==='/life'&&url.searchParams.has('v')&&!LIFE_VERSIONS[result]?.includes(url.searchParams.get('v'))));
+ if(!asset||badResult){status=404;const text=({en:['This idea wandered off','Back to the lab'],zh:['这份脑洞走丢了','回研究所'],ja:['脳洞が迷子になりました','研究所へ戻る'],es:['Esta idea se ha perdido','Volver al laboratorio']})[lang];const href='/'+(lang==='en'?'':'?lang='+lang);asset={type:'text/html; charset=utf-8',body:`<!doctype html><html lang="${lang==='zh'?'zh-CN':lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><title>404 · OddLab</title><link rel="stylesheet" href="/style.css"></head><body><main class="tool-wrap"><section class="workbench empty"><span class="squiggle">✳</span><h1>${text[0]}</h1><div class="actions"><a class="button dark" href="${href}">${text[1]} ↗</a></div><nav class="crosslinks">${['/persona','/life','/choice','/task'].map(p=>`<a href="${p}?lang=${lang}">${p.slice(1)} ↗</a>`).join('')}</nav></section></main></body></html>`};}
+ const noindex=status===404||url.searchParams.has('r')||['/capability','/tool-test','/capability.html','/tool-test.html'].includes(path)||path.startsWith('/api/');
+ let body=asset.body;if(noindex&&asset.type.startsWith('text/html'))body=body.replace('content="index,follow"','content="noindex,follow"');
+ return new Response(request.method==='HEAD'?null:body,{status,headers:{'content-type':asset.type,'cache-control':'no-cache','x-content-type-options':'nosniff','referrer-policy':'strict-origin-when-cross-origin',...(noindex?{'x-robots-tag':'noindex, follow'}:{})}});
+
  }catch{return json({error:'temporarily_unavailable'},503);}
 }};

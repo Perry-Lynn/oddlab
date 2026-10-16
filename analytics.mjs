@@ -1,4 +1,4 @@
-const routes=new Set(['/','/persona','/life','/choice','/task','/about','/privacy']);
+const routes=new Set(['/','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
 const actions=new Set(['answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload']);
 export function startAnalytics(getLanguage){
  const source=location.pathname.replace(/\/$/,'')||'/';if(!routes.has(source))return;

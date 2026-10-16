@@ -1,3 +1,4 @@
+import {pageData,renderGuide,renderDocument,canonicalURL} from './page-content.mjs';
 import { languages, language, setLanguage, localize, t, words } from './i18n.mjs';
 import { startAnalytics } from './analytics.mjs';
 import { calculatePersona, beijingDate, dailyTask, taskState, randomOne, pickLife, normalizeChoices, resolveLife } from './logic.mjs';
@@ -23,8 +24,8 @@ function crosslinks(kind){return `<div class="crosslinks"><span>玩腻了试试<
 function footerMark(){return '<div class="result-bottom"><span>✳ 脑洞研究所 / OddLab</span><span>认真生活，偶尔离谱。</span></div>';}
 function currentLink(kind,id,version){const u=new URL('/'+kind,location.origin);u.searchParams.set('lang',language);if(id)u.searchParams.set('r',id);if(version)u.searchParams.set('v',String(version));return u.href;}
 function resultActions(kind){return `<div class="actions"><button class="button dark" data-action="copy">复制结果</button><button class="button light" data-action="share">${navigator.share?'分享 ↗':'复制分享链接'}</button><button class="button push" data-action="restart">${sharedView?'我也来玩':'再来一次'} ↻</button></div>`;}
-function setResultURL(id,version){const u=new URL(location.href);u.search='';u.searchParams.set('lang',language);u.searchParams.set('r',id);if(version)u.searchParams.set('v',version);history.replaceState(null,'',u.pathname+u.search);}
-function clearResultURL(){history.replaceState(null,'','/'+route+'?lang='+language);sharedView=false;}
+function setResultURL(id,version){const u=new URL(location.href);u.search='';u.searchParams.set('lang',language);u.searchParams.set('r',id);if(version)u.searchParams.set('v',version);history.replaceState(null,'',u.pathname+u.search);updateMetadata();}
+function clearResultURL(){history.replaceState(null,'','/'+route+'?lang='+language);sharedView=false;updateMetadata();}
 function sharedNotice(){return sharedView?'<div class="shared">↗ 这是一份分享给你的脑洞。看完了，你也来试试？</div>':'';}
 function home(){
  const task=dailyTask(packs.task); const date=beijingDate();
@@ -55,11 +56,7 @@ function tasks(){
  shell(titles.task,'花一分钟，做件没什么用但有点开心的小事。',`${sharedNotice()}<section class="workbench task"><div class="task-date"><span>${sharedView?'朋友的任务小纸条':beijingDate().replaceAll('-',' / ')+' · 今日挑战'}</span><span class="pill">约 1 分钟</span></div><div class="task-art">${flower}</div><div class="task-number">ODD LITTLE MISSION / ${esc(t.id.toUpperCase())}</div><h2 class="task-content">${esc(t.text)}</h2>${sharedView?'<a class="button dark" href="/task">领取我的今日任务 ↗</a>':`<div class="actions"><button class="button ${done?'':'dark'}" data-action="complete" ${done?'disabled':''}>${done?'✓ 已完成这项挑战':'我做到了 ✓'}</button><button class="button push" data-action="swap" ${state.swapsUsed>=2?'disabled':''}>${state.swapsUsed>=2?'明天再来换':'换一个 ↻'}</button></div>${done?'<p class="completed" role="status">收到。今天的日常，已经被你悄悄改写。</p>':''}<p class="note">今天还可换 ${2-state.swapsUsed} 次 · 北京时间每天更新</p>`}<div class="actions"><button class="button light" data-action="copy">复制任务</button><button class="button light" data-action="share">${navigator.share?'分享挑战 ↗':'复制挑战链接'}</button></div>${memoryOnly&&!sharedView?'<p class="memory-note">当前浏览器无法保存进度。本次打卡与换题只在页面打开期间有效。</p>':''}${footerMark()}</section><p class="note">任务可以独自完成。以舒服为准，不想做就换一个。</p>`);
 }
 function invalid(){shell(titles[route]||'这份脑洞走丢了','旧纸条可能已经收起来了，新脑洞还在。',`<section class="workbench ${esc(route)} empty"><span class="squiggle">✳</span><h2>这份结果暂时无法还原</h2><p>链接可能不完整，或原内容已下架。<br>没关系，再给好奇心一次机会。</p><a class="button dark" href="/${Object.hasOwn(titles,route)?route:''}" style="margin-top:25px">${route==='persona'?'我也测一下':'重新体验'} ↗</a></section>`);}
-function info(){
- const paragraphs=route==='about'?['四个随手能玩的小游戏：测一份离谱人格，抽一次平行人生，把小纠结交给随机，或领取一个今日任务。不用注册。','认真负责地不太正经','人格测试仅供娱乐，人生故事纯属虚构，随机选择只适合生活小事。任务可以独自完成，不需要提交照片、定位或个人信息。','有个建议想告诉我们？','请把反馈交给分享网站给你的人：你玩了什么，哪里开心，哪里卡住。']:['更新日期：2026 年 10 月 16 日','你输入的内容','答题、随机抽取和自定义清单在浏览器内处理，不上传到统计服务。自定义清单不写入分享链接，离开或刷新页面后清空。','保存在浏览器中的内容','浏览器保存语言偏好，以及今日任务的日期、任务编号、换题次数和完成编号。这些记录不会上传，其他设备不会同步。任务每天按 UTC+8 更新。','点击与访问统计','我们按 UTC+8 日期汇总页面访问和点击次数，记录来源页面、目标 URL、操作类别和语言。不记录 IP、浏览器标识、答题选项、自定义文本或单个访客轨迹。URL 只保留公开页面及语言、公开结果编号和内容版本参数。','汇总统计仅供站点管理员查看，仅代表事件次数，不是独立访客数。网络失败或拦截可能造成漏记，重复点击会重复计数。首版暂不自动删除汇总记录。','分享与托管','分享链接包含语言和公开结果编号，平行人生还包含条目版本。它们不含答题过程或自定义清单。系统分享将文案交给你选择的应用。','本站由 ChatGPT Sites 托管。托管平台可能另行处理访问日志、必要 Cookie 等，详情见平台隐私政策。'];
- const heads=new Set(['认真负责地不太正经','有个建议想告诉我们？','你输入的内容','保存在浏览器中的内容','点击与访问统计','分享与托管']);
- shell(route==='about'?'关于 OddLab':'隐私说明',route==='about'?'一个小小的脑洞研究所':'少留一点数据，多留一点快乐。',`<article class="legal">${paragraphs.map(x=>heads.has(x)?`<h2>${x}</h2>`:`<p>${x}</p>`).join('')}${route==='about'?'<div class="actions"><button class="button" data-action="feedback">复制反馈小纸条</button><a class="button dark" href="/">回去找点乐子 ↗</a></div>':'<div class="actions"><button class="button" data-action="clear-progress">清除本机任务进度</button></div><p class="note">清除后，打卡记录和当天换题次数也会重置。</p><p><a class="text-button" href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener">查看 OpenAI 隐私政策 ↗</a></p>'}</article>`,route);
-}
+function info(){app.innerHTML=renderDocument('/'+route,language);localize(app);}
 let statsDays=7,statsRequest=0;
 async function stats(){
  const request=++statsRequest;
@@ -69,7 +66,7 @@ async function stats(){
  shell('活动统计','按页面、链接和语言查看使用情况。',`<section class="workbench stats"><div class="actions stats-filters">${[7,30,90].map(days=>`<button class="chip ${statsDays===days?'active':''}" data-action="stats-days" data-value="${days}">过去 ${days} 天</button>`).join('')}<button class="text-button" data-action="stats-refresh">刷新统计</button></div><div class="stats-totals"><div><span>页面访问</span><strong>${data.totals.page_views.toLocaleString(language)}</strong></div><div><span>操作点击</span><strong>${data.totals.clicks.toLocaleString(language)}</strong></div></div><h2>按日汇总</h2>${data.daily.length?table(data.daily,[['day','日期'],['page_views','页面访问'],['clicks','操作点击']]):'<p class="note">暂无记录。开始使用网站后，这里会显示汇总数据。</p>'}<h2>查看明细</h2>${data.rows.length?table(data.rows,[['kind_label','操作'],['source_path','来源页面'],['target_url','目标地址'],['action','操作'],['locale','语言'],['count','次数']]):''}<p class="note">统计按 UTC+8 日期汇总，展示最多 200 行明细；合计包含整个所选时段。次数是事件数，包含复测点击，并非访客人数。</p></section>`,'stats');
  }catch{if(request===statsRequest)shell('活动统计','按页面、链接和语言查看使用情况。','<section class="empty"><p>统计暂时无法加载，请稍后重试。</p><button class="button" data-action="stats-refresh">刷新统计</button></section>','stats');}
 }
-function render(){if(route==='stats'||route==='admin')stats();else if(route==='index')home();else if(route==='persona')persona();else if(route==='life')life();else if(route==='choice')choices();else if(route==='task')tasks();else if(route==='about'||route==='privacy')info();else invalid();}
+function render(){if(route==='stats'||route==='admin')stats();else if(route==='index')home();else if(route==='persona')persona();else if(route==='life')life();else if(route==='choice')choices();else if(route==='task')tasks();else if(['about','privacy','terms','contact'].includes(route))info();else invalid();}
 function payload(share=false){
  if(route==='persona'&&personaResult){const r=personaResult;return `${share?r.share:[t(titles.persona)+': '+r.name,r.tagline,'',r.desc,'',t('你的隐藏优点')+': '+r.pro,t('一条奇怪的习惯')+': '+r.habit].join('\n')}\n${currentLink('persona',r.id)}`;}
  if(route==='life'&&lifeResult){const r=lifeResult,f=r.fields;return `${share?f.share:[t(titles.life)+': '+f.title,...[['人生职业',f.career],['你的特殊技能',f.skill],['命运拐了个弯',f.twist],['最后，你的结局',f.ending]].map(([k,v])=>t(k)+': '+v),'',f.comment].join('\n')}\n${currentLink('life',r.id,r.entryVersion)}`;}
@@ -128,7 +125,13 @@ async function boot(){
 }
 async function loadPacks(lang){const r=await fetch('/locales/'+lang+'.json');if(!r.ok)throw Error('locale');return r.json();}
 const languageControl=document.querySelector('#language');
-function applyLanguage(){setLanguage(language);languageControl.value=language;localize(document.body);document.title=(route==='index'?'OddLab · '+words('今天，来点不一样的。','A little odd. A little joy.','日常に小さな驚きを。','Un poco peculiar. Un poco de alegría.'):t(titles[route]||({about:'关于 OddLab',privacy:'隐私说明',stats:'活动统计',admin:'活动统计'})[route]||'OddLab')+' · OddLab');}
+function applyLanguage(){setLanguage(language);languageControl.value=language;localize(document.body);updateMetadata();const guide=$('#page-guide');if(guide)guide.innerHTML=renderGuide(route==='index'?'/':'/'+route,language);}
+function updateMetadata(){
+ const path=route==='index'?'/':'/'+route;if(route==='stats'||route==='admin'){document.title=t('活动统计')+' · OddLab';return;}
+ const d=pageData(path,language);document.title=path==='/'?'OddLab · '+words('今天，来点不一样的。','A little odd. A little joy.','日常に小さな驚きを。','Un poco peculiar. Un poco de alegría.'):d.title+' · OddLab';
+ const set=(selector,attribute,value)=>{const el=document.querySelector(selector);if(el)el.setAttribute(attribute,value);};
+ set('meta[name="description"]','content',d.description);set('meta[property="og:title"]','content',document.title);set('meta[property="og:description"]','content',d.description);set('meta[property="og:url"]','content',canonicalURL(path,language));set('link[rel="canonical"]','href',canonicalURL(path,language));set('meta[name="robots"]','content',new URLSearchParams(location.search).has('r')?'noindex,follow':'index,follow');
+}
 languageControl.addEventListener('change',async e=>{const next=e.target.value,previous=language;if(choiceBusy){e.target.value=previous;return;}languageControl.disabled=true;try{
  const translated=await loadPacks(next);const oldPreset=packs.choice?.scenes.find(x=>x.id===sceneId)?.options.map(x=>x.text).join('\n');const isPreset=choiceText===oldPreset;const resultIndex=packs.choice?.scenes.find(x=>x.id===sceneId)?.options.findIndex(x=>x.text===choiceResult);
  Object.assign(packs,translated);setLanguage(next);if(personaResult)personaResult=Object.values(packs.persona.results).find(x=>x.id===personaResult.id);if(lifeResult)lifeResult=resolveLife(packs.life,lifeResult.id,String(lifeResult.entryVersion));if(isPreset){const scene=packs.choice.scenes.find(x=>x.id===sceneId);choiceText=scene.options.map(x=>x.text).join('\n');if(choiceResult&&resultIndex>=0)choiceResult=scene.options[resultIndex].text;}
