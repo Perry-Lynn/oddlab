@@ -41,12 +41,24 @@ async function stats(request,env){
  const result=await env.DB.batch(statements.map(sql=>env.DB.prepare(sql).bind(since)));
  return json({timezone:'UTC+8',days:selected,since,totals:result[0].results[0],rows:result[1].results.map(row=>({...row,kind_label:row.kind==='click'?'操作点击':'页面访问'})),daily:result[2].results});
 }
+function adminIdentity(request,env){
+ const userId=request.headers.get('oai-authenticated-user-id');const email=request.headers.get('oai-authenticated-user-email');
+ if(!userId||!email)return 401;
+ if(!env.ADMIN_EMAIL||email.trim().toLowerCase()!==env.ADMIN_EMAIL.trim().toLowerCase())return 403;
+ return 200;
+}
+function adminDenied(request,status){
+ const lang=new URL(request.url).searchParams.get('lang')||'en';const copy=({en:['Administrator access','Sign in with the site owner’s ChatGPT account to view activity.','Sign in with ChatGPT','This account does not have administrator access.'],zh:['管理员后台','请使用站点所有者的 ChatGPT 账号登录后查看统计。','使用 ChatGPT 登录','当前账号没有管理员权限。'],ja:['管理者専用','サイト所有者のChatGPTアカウントでログインしてください。','ChatGPTでログイン','このアカウントには管理者権限がありません。'],es:['Solo administración','Inicia sesión con la cuenta de ChatGPT del propietario.','Entrar con ChatGPT','Esta cuenta no tiene permisos de administración.']})[lang]||['Administrator access','Sign in with the site owner’s ChatGPT account.','Sign in with ChatGPT','Access denied.'];
+ const returnTo='/admin?lang='+(['en','zh','ja','es'].includes(lang)?lang:'en');
+ return new Response(`<!doctype html><html lang="${['en','zh','ja','es'].includes(lang)?lang:'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${copy[0]} · OddLab</title><link rel="stylesheet" href="/style.css"></head><body><main class="tool-wrap"><section class="workbench"><div class="eyebrow">ODDLAB / ADMIN</div><h1>${copy[0]}</h1><p style="margin-top:20px">${status===401?copy[1]:copy[3]}</p><div class="actions"><a class="button dark" target="_top" href="/signin-with-chatgpt?return_to=${encodeURIComponent(returnTo)}">${copy[2]}</a><a class="button" href="/">OddLab ↗</a></div></section></main></body></html>`,{status,headers:{'content-type':'text/html; charset=utf-8','cache-control':'private, no-store','x-robots-tag':'noindex, nofollow','vary':'Cookie'}});
+}
 export default {async fetch(request,env={}){
  const url=new URL(request.url);try{
  if(url.pathname==='/api/track')return request.method==='POST'?await track(request,env):json({error:'method'},405);
- if(url.pathname==='/api/stats')return request.method==='GET'?await stats(request,env):json({error:'method'},405);
+ if(url.pathname==='/api/stats'){const permission=adminIdentity(request,env);if(permission!==200)return json({error:permission===401?'authentication_required':'forbidden'},permission);return request.method==='GET'?await stats(request,env):json({error:'method'},405);}
  if(!['GET','HEAD'].includes(request.method))return json({error:'method'},405);
- const path=url.pathname.replace(/\/$/,'')||'/';const asset=ASSETS[path]||ASSETS[path.replace(/\.html$/,'')];if(!asset)return new Response('Not found',{status:404});
+ const path=url.pathname.replace(/\/$/,'')||'/';const adminPath=path.replace(/\.html$/,'');if(adminPath==='/stats'||adminPath==='/admin'){const permission=adminIdentity(request,env);if(permission!==200)return adminDenied(request,permission);const asset=ASSETS['/stats'];return new Response(request.method==='HEAD'?null:asset.body,{headers:{'content-type':asset.type,'cache-control':'private, no-store','x-robots-tag':'noindex, nofollow','vary':'Cookie'}});}
+ const asset=ASSETS[path]||ASSETS[path.replace(/\.html$/,'')];if(!asset)return new Response('Not found',{status:404});
  return new Response(request.method==='HEAD'?null:asset.body,{headers:{'content-type':asset.type,'cache-control':'no-cache','x-content-type-options':'nosniff','referrer-policy':'strict-origin-when-cross-origin'}});
  }catch{return json({error:'temporarily_unavailable'},503);}
 }};
