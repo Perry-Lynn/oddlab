@@ -5,7 +5,7 @@ import {
   restoreDispatchTurn, DRAGONS, ORDERS, LEVELS, getDispatchLevel, currentLoad,
 } from './dispatch-logic.mjs';
 import { dispatchCopies, copyForDispatchLevel } from './dispatch-copy.mjs';
-import { formatDispatchIssue, formatDispatchEvent, formatPlannerStatus } from './dispatch-ui.mjs';
+import { formatDispatchIssue, formatDispatchEvent, formatPlannerStatus, formatPickupTiming, returnGoalOutcomes } from './dispatch-ui.mjs';
 
 const route = nodes => nodes.map(to => ({ type: 'move', to }));
 const assignment = (ember, gale, sealedIce = false) => ({ assignments: { Ember: ember, Gale: gale }, sealedIce });
@@ -156,9 +156,13 @@ for (const lang of ['en', 'zh', 'ja', 'es']) {
   assert.equal(copy.guideRules.length, dispatchCopies.en.guideRules.length);
   assert.ok(copy.resultTurn && !/completed|completado|完了/.test(copy.resultTurn), `${lang} terminal turn label is neutral`);
   assert.ok(copy.planner.finalDeliveries && copy.planner.tryOtherSplit && copy.planner.statusConflict);
-  for (const key of ['responsible', 'pickupTurn', 'deliveryTurn', 'notPickedUp', 'pickupWarnings']) {
+  for (const key of ['responsible', 'pickupTurn', 'loadedBeforeDeparture', 'deliveryTurn', 'notPickedUp', 'pickupWarnings', 'bonusGoalHint']) {
     assert.ok(returnCopy[key], `${lang} Return copy provides ${key}`);
   }
+  assert.equal(formatPickupTiming({ turn: 0 }, returnCopy), returnCopy.loadedBeforeDeparture, `${lang} hides the internal turn-zero pickup`);
+  assert.equal(formatPickupTiming({ turn: 4 }, returnCopy), returnCopy.pickupTurn.replace('{turn}', '4'));
+  assert.equal(formatPickupTiming(null, returnCopy), '');
+  assert.ok(!formatPickupTiming({ turn: 0 }, returnCopy).includes('0'));
   for (const id of Object.keys(LEVELS.return.orders)) {
     assert.ok(returnCopy.orders[id]?.name && returnCopy.orders[id]?.recipient && returnCopy.orders[id]?.detail, `${lang} Return order ${id} is fully localized`);
   }
@@ -260,6 +264,9 @@ for (const [name, state, plan, deliveries, pickups, expectedTurn, stamina, ratio
   assert.deepEqual(forecast.state.stamina, stamina);
   assert.equal(forecast.state.rationAvailable, ration);
   assert.equal(forecast.state.sealedIce && forecast.state.pickedUp.ice.dragon === 'Ember', sealUsed);
+  assert.deepEqual(returnGoalOutcomes(forecast.state, LEVELS.return.goals.eggsBy), name === 'return A'
+    ? { eggsByDeadline: true, rationUnused: false }
+    : { eggsByDeadline: false, rationUnused: true }, `${name} earns exactly one distinct bonus goal`);
   assert.equal(forecast.state.orderStatus.soup, 'delivered');
   assert.equal(forecast.state.orderStatus.ice, 'delivered');
   assert.equal(forecast.state.orderStatus.eggs, 'delivered');
@@ -330,6 +337,15 @@ assert.ok(trapRun.warnings.some(w => w.turn === 4 && w.dragon === 'Ember' && w.o
 assert.equal(trapRun.issues.length, 0, 'over-capacity pickup is a warning, not an illegal move');
 assert.equal(trapRun.state.status, 'lost');
 assert.deepEqual(trapRun.state.result, { code: 'order_late', order: 'ice', deadline: 6, turn: 6 });
+
+// Timely eggs and an unused ration do not earn bonus goals when the dragons fail to return.
+const lostAfterTimelyEggs = simulatePlan(createDispatchState(returnAssignment(['soup', 'eggs'], ['ice'])), {
+  Ember: route(['C', 'T', 'C', 'M', 'C', 'K']),
+  Gale: [{ type: 'wait' }, ...route(['C']), { type: 'ration' }, ...route(['A', 'C', 'M']), { type: 'wait' }, { type: 'wait' }],
+});
+assert.equal(lostAfterTimelyEggs.state.status, 'lost');
+assert.equal(lostAfterTimelyEggs.state.delivered.eggs.turn, 6);
+assert.deepEqual(returnGoalOutcomes(lostAfterTimelyEggs.state, LEVELS.return.goals.eggsBy), { eggsByDeadline: false, rationUnused: false });
 const missedReady = createDispatchState(returnAssignment(['ice', 'eggs'], ['soup'], true));
 const missedReadyRun = simulatePlan(missedReady, { Ember: route(['C', 'M', 'A', 'M', 'C', 'K']), Gale: returnPlanB.Gale });
 assert.equal(missedReadyRun.state.status, 'lost');

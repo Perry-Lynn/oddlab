@@ -16,6 +16,17 @@ const activeLevel = () => getDispatchLevel(ui.state.levelId);
 const activeCopy = () => copyForDispatchLevel(ui.lang, ui.state.levelId);
 function responsibilityWeight(dragon) { return ui.state.assignments[dragon].reduce((n, id) => n + (activeLevel().orders[id]?.weight || 0), 0); }
 function text(template, vars = {}) { return String(template || '').replace(/\{(\w+)\}/g, (_, key) => String(vars[key] ?? '')); }
+export function formatPickupTiming(pickup, c) {
+  if (!pickup) return '';
+  return pickup.turn === 0 ? c.loadedBeforeDeparture : text(c.pickupTurn, { turn: pickup.turn });
+}
+export function returnGoalOutcomes(state, eggsGoal) {
+  const won = state.status === 'won';
+  return {
+    eggsByDeadline: won && Number.isFinite(eggsGoal) && (state.delivered.eggs?.turn ?? Infinity) <= eggsGoal,
+    rationUnused: won && state.rationAvailable,
+  };
+}
 function names(c) { return { ...(c.locations || {}), ...(c.dragons || {}), ...Object.fromEntries(Object.entries(c.orders || {}).map(([id, order]) => [id, order.name])) }; }
 function detailError(issue, c = activeCopy()) {
   if (!issue) return '';
@@ -129,7 +140,7 @@ function cargoLine(dragon, id, c) {
   const delivered = ui.state.delivered[id];
   const pickup = ui.state.pickedUp[id];
   const status = delivered ? c.deliveredStatus : ui.state.orderStatus[id] === 'aboard' ? c.aboardStatus : c.waitingPickup;
-  const timing = [pickup ? text(c.pickupTurn, { turn: pickup.turn }) : '', delivered ? text(c.deliveryTurn, { turn: delivered.turn }) : ''].filter(Boolean).join(' · ');
+  const timing = [formatPickupTiming(pickup, c), delivered ? text(c.deliveryTurn, { turn: delivered.turn }) : ''].filter(Boolean).join(' · ');
   return '<span class="dispatch-cargo-line ' + (delivered ? 'delivered' : '') + '"><b>' + esc(order.name) + '</b> <small>' + esc(status) + ' · ' + esc(order.recipient) + '</small><small>' + esc(orderDetail(spec, c)) + '</small>' + (timing ? '<em>' + esc(timing) + '</em>' : '') + '</span>';
 }
 
@@ -173,7 +184,7 @@ function mapPanel(c, forecast, routes) {
     const independentPreviewAvailable = !forecast.issues.length || forecast.issues[0]?.code === 'unplanned_action';
     const delivery = ui.state.delivered[id] || forecast.state.delivered[id] || (independentPreviewAvailable ? routes[owner].state.delivered[id] : null);
     const pickup = ui.state.pickedUp[id] || forecast.state.pickedUp[id] || (independentPreviewAvailable ? routes[owner].state.pickedUp[id] : null);
-    const value = [pickup ? text(c.pickupTurn, { turn: pickup.turn }) : c.waitingPickup, delivery ? text(c.deliveryTurn, { turn: delivery.turn }) : ''].filter(Boolean).join(' → ');
+    const value = [formatPickupTiming(pickup, c) || c.waitingPickup, delivery ? text(c.deliveryTurn, { turn: delivery.turn }) : ''].filter(Boolean).join(' → ');
     return '<div class="dispatch-eta-row ' + (delivery ? 'delivered' : '') + '"><span>' + esc(c.orders[id].name) + '<small>' + esc(c.responsible) + ' · ' + esc(c.dragons[owner]) + ' · ' + esc(orderDetail(spec, c)) + '</small></span><strong>' + esc(value) + '</strong></div>';
   }).join('');
   const warningItems = DRAGONS.flatMap(d => routes[d].warnings.map(warning => ({ ...warning, dragon: d })));
@@ -224,7 +235,7 @@ function resultPanel(c) {
     const missed = !delivery && result.code === 'order_late' && result.order === id;
     const actual = delivery ? copy.actualDelivery + ' ' + delivery.turn + ' · ' + copy.onTime :
       missed ? text(copy.missedAt, { turn: result.turn || spec.deadline }) : copy.notDelivered;
-    const pickupText = pickup ? text(c.pickupTurn, { turn: pickup.turn }) : c.notPickedUp;
+    const pickupText = formatPickupTiming(pickup, c) || c.notPickedUp;
     return '<li class="dispatch-result-delivery ' + (delivery ? 'delivered' : missed ? 'missed' : '') + '"><div><strong>' + esc(c.orders[id].name) + '</strong><small>' + esc(c.locations[spec.source]) + ' → ' + esc(c.locations[spec.destination]) + ' · ' + esc(c.orders[id].recipient) + '</small></div><span><b>' + esc(copy.carrier) + ':</b> ' + esc(c.dragons[carrier]) + '</span><span><b>' + esc(copy.deadline) + ':</b> ' + spec.deadline + ' · ' + esc(pickupText) + ' · ' + esc(actual) + '</span></li>';
   }).join('');
   const dragonRows = DRAGONS.map(dragon => {
@@ -236,7 +247,8 @@ function resultPanel(c) {
   const supplies = '<p><strong>' + esc(ration) + '</strong></p><p><strong>' + esc(sealWasUsed ? copy.sealUsed : copy.sealKept) + '</strong></p>';
   const headline = won ? returnLevel ? c.returnTitle : (badge === 'ice' ? c.badgeIce : c.badgeChorus) : detailError(result, c) || c.planEnded;
   const eggsGoal = level.goals?.eggsBy;
-  const goals = returnLevel ? '<ul class="dispatch-result-goals">' + [[(ui.state.delivered.eggs?.turn || Infinity) <= eggsGoal, text(c.returnGoalEggs, { turn: eggsGoal })], [won && ui.state.rationAvailable, c.returnGoalRation]].map(([passed, label]) => '<li class="' + (passed ? 'passed' : '') + '"><strong>' + (passed ? '✓' : '○') + '</strong> ' + esc(label) + ' · ' + esc(passed ? c.goalAchieved : c.goalMissed) + '</li>').join('') + '</ul>' : '';
+  const goalOutcomes = returnGoalOutcomes(ui.state, eggsGoal);
+  const goals = returnLevel ? '<p class="dispatch-result-goal-hint">' + esc(c.bonusGoalHint) + '</p><ul class="dispatch-result-goals">' + [[goalOutcomes.eggsByDeadline, text(c.returnGoalEggs, { turn: eggsGoal })], [goalOutcomes.rationUnused, c.returnGoalRation]].map(([passed, label]) => '<li class="' + (passed ? 'passed' : '') + '"><strong>' + (passed ? '✓' : '○') + '</strong> ' + esc(label) + ' · ' + esc(passed ? c.goalAchieved : c.goalMissed) + '</li>').join('') + '</ul>' : '';
   const badgeCopy = won ? '<p class="dispatch-result-badge">' + esc(headline) + '</p>' + (returnLevel ? '<p>' + esc(c.returnComplete) + '</p>' : '<p>' + esc(badge === 'ice' ? c.badgeIceDesc : c.badgeChorusDesc) + '</p><p class="dispatch-result-invite">' + esc(copy.tryOtherSplit) + '</p>') + goals : '<p class="dispatch-result-cause">' + esc(headline) + '</p>' + goals;
   return '<section class="dispatch-result ' + (won ? 'won' : 'lost') + '" aria-labelledby="dispatch-result-title"><div class="dispatch-result-top"><span class="dispatch-result-art" aria-hidden="true">' + (won ? '✦' : '↺') + '</span><div><span class="dispatch-result-kicker">ODDLAB / DISPATCH ' + ui.state.turn + '</span><h2 id="dispatch-result-title" tabindex="-1" data-focus-key="result-title">' + esc(won ? c.winTitle : c.loseTitle) + '</h2>' + badgeCopy + '<small>' + esc(c.resultTurn) + ' ' + ui.state.turn + ' / ' + level.turnLimit + '.</small></div></div><div class="dispatch-result-grid"><section><h3>' + esc(copy.finalDeliveries) + '</h3><ol class="dispatch-result-deliveries">' + deliveryRows + '</ol></section><section><h3>' + esc(copy.finalDragons) + '</h3><ul class="dispatch-result-dragons">' + dragonRows + '</ul><div class="dispatch-result-supplies"><h3>' + esc(copy.finalSupplies) + '</h3>' + supplies + '</div></section></div></section>';
 }

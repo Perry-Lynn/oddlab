@@ -357,6 +357,7 @@
 .dispatch-result-goals{display:grid;gap:5px;margin:10px 0;padding:0;list-style:none;color:#6c6e61;font-size:12px}
 .dispatch-result-goals li{padding:6px 8px;border:1px solid #e0dfd3;border-radius:5px;background:#fffdf7}
 .dispatch-result-goals li.passed{border-color:#ccd9c6;background:#f5f8f1;color:#355548}
+.dispatch-result-goal-hint{margin:8px 0 2px;color:#70776b;font-size:11px;line-height:1.45}
 @media(max-width:640px){
  .dispatch-levels{gap:6px;margin-bottom:10px}
  .dispatch-level-choice{min-height:44px;padding:8px 10px;font-size:12px}
