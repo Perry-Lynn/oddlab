@@ -11,6 +11,10 @@ assert.equal(returnDispatch.status,200,'the Return Run shares the canonical Disp
 const returnHtml=await returnDispatch.text();
 assert.equal(decode(returnHtml.match(/<link rel="canonical" href="([^"]+)"/)[1]),canonicalURL('/dispatch','ja'),'level query does not create an indexed page');
 assert.ok(!returnHtml.includes('PRIVATE'),'route parameters are not reflected in page output');
+const marketHtml=await (await fetchPath('/dispatch?level=market&lang=es&route=PRIVATE')).text();
+assert.equal(decode(marketHtml.match(/<link rel="canonical" href="([^"]+)"/)[1]),canonicalURL('/dispatch','es'),'Market slug stays a game state, not an indexable page');
+assert.ok(marketHtml.includes('relevo del mercado') && marketHtml.includes('Ember sale del Pantano'),'the public guide explains the third puzzle in Spanish');
+assert.ok(!marketHtml.includes('PRIVATE'));
 for(const lang of ['en','zh','ja','es']){
  const titles=new Set(),descriptions=new Set();
  for(const path of publicRoutes){
@@ -29,7 +33,7 @@ for(const lang of ['en','zh','ja','es']){
   titles.add(html.match(/<title>(.*?)<\/title>/)[1]);
   descriptions.add(html.match(/name="description" content="([^"]+)"/)[1]);
   if(['en','es'].includes(lang)){const visible=html.replace(/<option[\s\S]*?<\/option>/g,'').replace(/<[^>]*>/g,'');assert.ok(!/[\u4e00-\u9fff]/.test(visible),'no untranslated Chinese: '+path+' '+lang);}
-  if(['/', '/dispatch','/persona','/life','/choice','/task'].includes(path)){assert.equal((html.match(/<details>/g)||[]).length,3);assert.equal((html.match(/<li>/g)||[]).length,3);for(const game of ['/dispatch','/persona','/life','/choice','/task'].filter(p=>p!==path))assert.ok(html.includes(`href="${canonicalURL(game,lang)}"`));}
+  if(['/', '/dispatch','/persona','/life','/choice','/task'].includes(path)){assert.equal((html.match(/<details>/g)||[]).length,path==='/dispatch'?4:3);assert.equal((html.match(/<li>/g)||[]).length,3);for(const game of ['/dispatch','/persona','/life','/choice','/task'].filter(p=>p!==path))assert.ok(html.includes(`href="${canonicalURL(game,lang)}"`));}
  }
  assert.equal(titles.size,10);assert.equal(descriptions.size,10);
  // A page delivered in any locale must still be able to switch its persistent shell.

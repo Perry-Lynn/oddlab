@@ -13,13 +13,14 @@ assert.equal((await worker.fetch(request({...event,target_url:'https://elsewhere
 assert.equal((await worker.fetch(request({...event,target_url:origin+'/choice?r=PRIVATE_INPUT'}),{DB})).status,204);
 const dispatchEvent={kind:'click',source_path:'/dispatch',target_url:origin+'/dispatch?lang=ja&level=return&route=PRIVATE',action:'dispatch-action',locale:'ja'};
 assert.equal((await worker.fetch(request(dispatchEvent),{DB})).status,204);
+assert.equal((await worker.fetch(request({...dispatchEvent,target_url:origin+'/dispatch?lang=en&level=market&route=PRIVATE',locale:'en'}),{DB})).status,204);
 assert.equal((await worker.fetch(request({...dispatchEvent,target_url:origin+'/dispatch?lang=es&level=constructor&route=PRIVATE',locale:'es'}),{DB})).status,204);
 assert.equal((await worker.fetch(request({...dispatchEvent,source_path:'/choice',target_url:origin+'/choice?lang=zh&level=return&route=PRIVATE',locale:'zh'}),{DB})).status,204);
 const cleaned=DB.sqlite.prepare('SELECT target_url FROM activity_daily WHERE action=? ORDER BY target_url').all('dispatch-action').map(row=>row.target_url);
-assert.deepEqual(cleaned,[origin+'/choice?lang=zh',origin+'/dispatch?lang=es',origin+'/dispatch?lang=ja&level=return']);
+assert.deepEqual(cleaned,[origin+'/choice?lang=zh',origin+'/dispatch?lang=en&level=market',origin+'/dispatch?lang=es',origin+'/dispatch?lang=ja&level=return']);
 assert.equal((await worker.fetch(request({...event,target_url:'x'.repeat(5000)}),{DB})).status,413);
 assert.equal((await worker.fetch(request(),{})).status,503);
-const stats=await (await worker.fetch(new Request(origin+'/api/stats?days=7',{headers:adminHeaders}),adminEnv)).json();assert.equal(stats.totals.clicks,6);assert.equal(stats.totals.page_views,0);assert.equal(stats.timezone,'UTC+8');assert.equal(stats.daily.length,1);
+const stats=await (await worker.fetch(new Request(origin+'/api/stats?days=7',{headers:adminHeaders}),adminEnv)).json();assert.equal(stats.totals.clicks,7);assert.equal(stats.totals.page_views,0);assert.equal(stats.timezone,'UTC+8');assert.equal(stats.daily.length,1);
 assert.equal((await worker.fetch(new Request(origin+'/api/stats?days=999',{headers:adminHeaders}),adminEnv)).status,400);
 assert.equal((await worker.fetch(new Request(origin+'/api/track'),{DB})).status,405);
 for(const path of ['/','/persona','/life','/task','/choice','/privacy','/locales/es.json','/i18n.mjs','/dispatch-assets.mjs'])assert.equal((await worker.fetch(new Request(origin+path))).status,200);

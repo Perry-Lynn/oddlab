@@ -11,7 +11,7 @@ function targetURL(value,origin){
  if(input.origin!==origin)return input.href==='https://openai.com/policies/privacy-policy/'?input.href:null;
  const path=input.pathname.replace(/\/$/,'')||'/';if(!paths.has(path)||input.username||input.password)return null;
  const safe=new URL(path,origin);const lang=input.searchParams.get('lang');if(languages.has(lang))safe.searchParams.set('lang',lang);
- if(path==='/dispatch'&&input.searchParams.get('level')==='return')safe.searchParams.set('level','return');
+ if(path==='/dispatch'&&['return','market'].includes(input.searchParams.get('level')))safe.searchParams.set('level',input.searchParams.get('level'));
  const id=input.searchParams.get('r');if(resultIds.has(path+':'+id)){safe.searchParams.set('r',id);const v=input.searchParams.get('v');if(path==='/life'&&LIFE_VERSIONS[id]?.includes(v))safe.searchParams.set('v',v);}
  return safe.href;
 }

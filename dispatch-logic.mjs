@@ -18,6 +18,14 @@ export const LEVELS = {
       eggs: { weight: 2, source: 'M', readyAt: 3, destination: 'K', deadline: 7, cold: false },
     },
   },
+  market: {
+    id: 'market', turnLimit: 9, startLocations: { Ember: 'M', Gale: 'K' },
+    orders: {
+      soup: { weight: 2, source: 'T', readyAt: 2, destination: 'M', deadline: 5, cold: false },
+      ice: { weight: 2, source: 'A', readyAt: 2, destination: 'K', deadline: 6, cold: true },
+      eggs: { weight: 2, source: 'M', readyAt: 3, destination: 'T', deadline: 7, cold: false },
+    },
+  },
 };
 // Keep the original first-level export available to existing callers.
 export const ORDERS = LEVELS.first.orders;
@@ -75,7 +83,7 @@ export function createDispatchState({ assignments = { Ember: [], Gale: [] }, sea
   return {
     levelId: level.id,
     turn: 0,
-    locations: { Ember: 'K', Gale: 'K' },
+    locations: { ...(level.startLocations || { Ember: 'K', Gale: 'K' }) },
     stamina: { Ember: 6, Gale: 5 },
     maxStamina: { Ember: 6, Gale: 5 },
     assignments: copied,
