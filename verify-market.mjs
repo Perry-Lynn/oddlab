@@ -52,6 +52,9 @@ for (let turn = 1; turn <= 3; turn++) {
 assert.equal(getDispatchLevel('market').turnLimit, 9);
 for (const invalidLevel of ['missing', 'constructor', '__proto__', '']) assert.equal(getDispatchLevel(invalidLevel).id, 'first');
 for (const lang of ['en', 'zh', 'ja', 'es']) {
+  for (const level of ['first', 'return', 'market']) {
+    assert.ok(copyForDispatchLevel(lang, level).levelMarket, `${lang}/${level} has a non-empty third-level navigation label`);
+  }
   const copy = copyForDispatchLevel(lang, 'market');
   assert.ok(copy.marketDuration, `${lang} has an honest Market difficulty label`);
   assert.match(copy.marketStartLocations, /\{home\}/, `${lang} explicitly includes the return destination`);
