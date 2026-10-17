@@ -5,7 +5,8 @@ import {
   restoreDispatchTurn, DRAGONS, ORDERS, LEVELS, getDispatchLevel, currentLoad,
 } from './dispatch-logic.mjs';
 import { dispatchCopies, copyForDispatchLevel } from './dispatch-copy.mjs';
-import { formatDispatchIssue, formatDispatchEvent, formatPlannerStatus, formatPickupTiming, returnGoalOutcomes } from './dispatch-ui.mjs';
+import { dispatchImageAssets, dispatchImageHasFailed, rememberDispatchImageFailure } from './dispatch-assets.mjs';
+import { formatDispatchIssue, formatDispatchEvent, formatPlannerStatus, formatPickupTiming, returnGoalOutcomes, summarizeDispatchExecution, formatDispatchExecutionSummary } from './dispatch-ui.mjs';
 
 const route = nodes => nodes.map(to => ({ type: 'move', to }));
 const assignment = (ember, gale, sealedIce = false) => ({ assignments: { Ember: ember, Gale: gale }, sealedIce });
@@ -156,6 +157,9 @@ for (const lang of ['en', 'zh', 'ja', 'es']) {
   assert.equal(copy.guideRules.length, dispatchCopies.en.guideRules.length);
   assert.ok(copy.resultTurn && !/completed|completado|完了/.test(copy.resultTurn), `${lang} terminal turn label is neutral`);
   assert.ok(copy.planner.finalDeliveries && copy.planner.tryOtherSplit && copy.planner.statusConflict);
+  for (const key of ['heroAlt', 'profileTitle', 'profileEmber', 'profileGale', 'prepareRoutes', 'executionTitle', 'executionSingle', 'executionBatch', 'executionStopped', 'autoIdleSummary']) {
+    assert.ok(copy[key], `${lang} visual/execution copy provides ${key}`);
+  }
   for (const key of ['responsible', 'pickupTurn', 'loadedBeforeDeparture', 'deliveryTurn', 'notPickedUp', 'pickupWarnings', 'bonusGoalHint']) {
     assert.ok(returnCopy[key], `${lang} Return copy provides ${key}`);
   }
@@ -193,6 +197,25 @@ for (const lang of ['en', 'zh', 'ja', 'es']) {
   assert.deepEqual(formatPlannerStatus({ gameStatus: 'won', forecastIssue: missingGale, copy }), { line: copy.winTitle, hasIssue: false });
   assert.deepEqual(formatPlannerStatus({ gameStatus: 'lost', forecastIssue: missingGale, copy }), { line: copy.loseTitle, hasIssue: false });
 }
+const executionSummary = summarizeDispatchExecution([
+  { turn: 1, events: [{ code: 'dragon_moved' }, { code: 'order_picked_up' }, { code: 'order_delivered' }], warnings: [{ code: 'pickup_over_capacity' }] },
+  { turn: 2, events: [{ code: 'dragon_waited' }, { code: 'dragon_moved' }, { code: 'ration_used' }], warnings: [] },
+], { code: 'unplanned_action', dragon: 'Gale', turn: 3 });
+assert.deepEqual(executionSummary, { turns: 2, from: 1, through: 2, moves: 2, pickups: 1, deliveries: 1, rations: 1, warnings: 1, stopped: { code: 'unplanned_action', dragon: 'Gale', turn: 3 } }, 'execution summary counts only actual settled events and preserves the first unexecuted turn');
+assert.equal(summarizeDispatchExecution([{ turn: 4, events: [], warnings: [] }, { turn: 5, events: [], warnings: [] }]).from, 4, 'a later partial execution reports its real starting turn');
+assert.equal(rememberDispatchImageFailure('/assets/dispatch/unlisted.webp'), false, 'failure memory rejects paths outside the image allowlist');
+for (const asset of dispatchImageAssets) {
+  assert.equal(dispatchImageHasFailed(asset.path), false, `${asset.path} begins available to render`);
+  assert.equal(rememberDispatchImageFailure(asset.path), true, `${asset.path} can be remembered as failed`);
+  assert.equal(dispatchImageHasFailed(asset.path), true, `${asset.path} stays marked failed across rerenders`);
+}
+for (const lang of ['en', 'zh', 'ja', 'es']) {
+  const batch = formatDispatchExecutionSummary('batch', executionSummary, dispatchCopies[lang]);
+  assert.ok(batch.includes('R1') && batch.includes('R2') && !batch.includes('undefined'), `${lang} batch feedback shows the actual round range`);
+  assert.ok(batch.includes('2') && batch.includes('1'), `${lang} batch feedback carries actual event counts, including ration use`);
+  assert.ok(formatDispatchExecutionSummary('single', executionSummary, dispatchCopies[lang]).includes('2'), `${lang} single-turn feedback shows the settled round`);
+}
+assert.match(formatDispatchExecutionSummary('batch', executionSummary, dispatchCopies.en), /turns: 2 · moves: 2 · pickups: 1 · deliveries: 1 · rations: 1/, 'English batch summary uses neutral count labels without singular/plural errors');
 
 // Exhaustively search all eight cargo splits using joint legal actions and memoized states.
 function stateKey(state) {
