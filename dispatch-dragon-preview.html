@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OddLab · 双龙动作提案预览（分支 feat/game-animations）</title>
+<link rel="stylesheet" href="style.css"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* ============ 审查页外壳（不属于产品） ============ */
+body{padding:0 0 60px}
+.rv-wrap{max-width:1200px;margin:0 auto}
+.rv-head{padding:26px 0 18px;border-bottom:1px solid var(--line)}
+.rv-head h1{font-size:26px;letter-spacing:-.5px}
+.rv-head p{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.9}
+.rv-tag{display:inline-block;border:1px solid var(--ink);border-radius:30px;padding:3px 11px;font:10px monospace;margin-right:8px}
+.rv-bar{position:sticky;top:0;z-index:20;background:var(--paper);padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rv-group{margin-top:34px}
+.rv-group>h2{font-size:18px;padding-bottom:8px;border-bottom:2px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+.rv-group>h2 small{font:10px monospace;color:var(--muted);font-weight:400}
+.rv-demo{border:1px solid var(--line);border-radius:10px;background:#fff;margin:16px 0;overflow:hidden}
+.rv-demo-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 14px;background:#f1eee4;border-bottom:1px solid var(--line)}
+.rv-no{font:11px monospace;border:1px solid var(--ink);border-radius:4px;padding:1px 6px}
+.rv-name{font-weight:700;font-size:13px}
+.rv-spec{font:10px/1.7 monospace;color:#5c5f55;flex:1;min-width:220px}
+.rv-demo-head button{min-height:32px;padding:6px 13px;font-size:11px;border:1px solid var(--ink);border-radius:5px;background:transparent}
+.rv-stage{padding:20px;background:var(--paper);display:grid;gap:12px;justify-items:center}
+.rv-note{padding:10px 14px;font-size:11px;color:var(--muted);border-top:1px dashed var(--line);line-height:1.8}
+.rv-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:14px}
+.rv-table th,.rv-table td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+.rv-table th{font:10px monospace;color:var(--muted);white-space:nowrap}
+.rv-hint{background:#fdf6d8;border:1px dashed #c9b45a;border-radius:8px;padding:12px 14px;font-size:11px;line-height:1.9;margin-top:14px}
+.board{background:#f8f5ec;border:1px solid var(--line);border-radius:12px;width:100%;max-width:620px}
+.dragon-card{width:100%;max-width:420px}
+.dragon-card .row{display:flex;gap:14px;align-items:center}
+.dragon-card img{width:74px;height:74px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:10px}
+
+/* ============ 提案：地图双龙 SVG 骨架 ============ */
+/* 把原来并进一条 path 的翅膀拆成独立元素，才能各自扇动 */
+.drg .dr-shadow{fill:#292c25;opacity:.13}
+/* CSS transform overrides an SVG transform attribute, so the position/scale stays
+   on the outer .drg group and everything animated lives on inner layers. */
+.drg .drg-motion{display:block}
+.drg .dr-body,.drg .dr-shadow,.rv-stage .dust,.rv-stage .alarm{transform-box:fill-box;transform-origin:center}
+.drg .dr-wing,.drg .dr-tail{transform-box:fill-box}
+.drg .dr-wing-l{transform-origin:88% 82%}
+.drg .dr-wing-r{transform-origin:12% 82%}
+.drg .dr-tail{transform-origin:6% 30%}
+.rv-stage.is-live .drg .dr-wing-l{animation:dr-flap-l 1.15s ease-in-out infinite}
+.rv-stage.is-live .drg .dr-wing-r{animation:dr-flap-r 1.15s ease-in-out infinite}
+.rv-stage.is-live .drg .dr-tail{animation:dr-sway 2.3s ease-in-out infinite}
+.rv-stage.is-live .drg .dr-body{animation:dr-breathe 2.3s ease-in-out infinite}
+.rv-stage.is-live .drg .drg-motion{animation:dr-hover 2.3s ease-in-out infinite}
+@keyframes dr-flap-l{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(24deg)}}
+@keyframes dr-flap-r{0%,100%{transform:rotate(7deg)}50%{transform:rotate(-24deg)}}
+@keyframes dr-sway{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-8deg)}}
+@keyframes dr-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-1.5px) scale(1.03)}}
+@keyframes dr-hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* D2 沿真实道路曲线飞行 */
+.flyer{offset-path:path("M 355 280 Q 595 20 835 280");offset-rotate:auto;offset-distance:0%}
+.rv-stage.is-fly .flyer{animation:dr-fly 2.1s cubic-bezier(.45,.05,.35,1) forwards}
+@keyframes dr-fly{from{offset-distance:0%}to{offset-distance:100%}}
+
+/* D3 到达落地 */
+.rv-stage.is-land .landing{animation:dr-land .62s cubic-bezier(.2,.9,.25,1.3) both}
+@keyframes dr-land{0%{transform:translateY(-26px) scale(.82,.94)}58%{transform:translateY(2px) scale(1.1,.86)}100%{transform:translateY(0) scale(1)}}
+.rv-stage.is-land .dust{animation:dr-dust .62s ease-out both}
+@keyframes dr-dust{0%{opacity:0;transform:scale(.2)}45%{opacity:.5}100%{opacity:0;transform:scale(2.4)}}
+.rv-stage.is-land .dr-shadow{animation:dr-shadow .62s cubic-bezier(.2,.9,.25,1.3) both}
+@keyframes dr-shadow{0%{transform:scale(.4);opacity:.05}58%{transform:scale(1.25);opacity:.2}100%{transform:scale(1);opacity:.13}}
+
+/* D4 交接货物：低头啄 + 货物跳上背 */
+.rv-stage.is-hand .pecker{animation:dr-peck .7s ease-in-out both}
+@keyframes dr-peck{0%{transform:translateY(0) rotate(0)}26%{transform:translateY(7px) rotate(9deg)}48%{transform:translateY(2px) rotate(-3deg)}100%{transform:translateY(0) rotate(0)}}
+.rv-stage.is-hand .parcel{animation:dr-parcel .78s .16s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes dr-parcel{0%{opacity:1;transform:translate(0,26px) scale(1)}45%{opacity:1;transform:translate(0,2px) scale(1.05)}100%{opacity:0;transform:translate(-1px,-16px) scale(.9)}}
+
+/* D5 超时抖动变暗 */
+.rv-stage.is-fail .failing{animation:dr-shake .52s ease-in-out both}
+@keyframes dr-shake{0%,100%{transform:translateX(0)}12%{transform:translateX(-4px)}28%{transform:translateX(4px)}44%{transform:translateX(-3px)}60%{transform:translateX(3px)}78%{transform:translateX(-1.5px)}}
+.rv-stage.is-fail .failing .dr-body,.rv-stage.is-fail .failing .dr-wing,.rv-stage.is-fail .failing .dr-tail{animation:dr-dull .52s ease-out both;animation-fill-mode:forwards}
+@keyframes dr-dull{to{filter:grayscale(.75) brightness(.86)}}
+.rv-stage.is-fail .alarm{animation:dr-alarm .52s ease-out both}
+@keyframes dr-alarm{0%{opacity:0;transform:scale(.6)}40%{opacity:.85}100%{opacity:0;transform:scale(1.9)}}
+
+/* D6 通关欢呼：两龙同步跳跃 */
+.rv-stage.is-win .cheer{animation:dr-cheer .8s cubic-bezier(.2,.9,.25,1.35) both}
+@keyframes dr-cheer{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(-16px) rotate(-6deg)}55%{transform:translateY(-19px) rotate(5deg)}80%{transform:translateY(-3px)}100%{transform:translateY(0) rotate(0)}}
+
+/* ============ 提案：卡片/选龙里的栅格龙图 ============ */
+.rv-stage.is-live .p-breath{animation:p-breath 3.4s ease-in-out infinite}
+@keyframes p-breath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.035)}}
+.rv-stage.is-hop .p-hop{animation:p-hop .55s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes p-hop{0%{transform:translateY(0) rotate(0)}38%{transform:translateY(-13px) rotate(-3deg)}70%{transform:translateY(-2px) rotate(1deg)}100%{transform:translateY(0) rotate(0)}}
+.rv-stage.is-dive .p-dive{animation:p-dive .6s cubic-bezier(.3,.1,.2,1) both}
+@keyframes p-dive{0%{transform:translateY(-14px) scale(.9) rotate(-9deg)}55%{transform:translateY(6px) scale(1.06,.93) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
+.rv-stage.is-grab .p-grab{animation:p-grab .42s ease-out both}
+@keyframes p-grab{0%{transform:scale(1,1)}34%{transform:scale(1.06,.9)}66%{transform:scale(.96,1.05)}100%{transform:scale(1,1)}}
+.rv-stage.is-pick .p-pick{animation:p-pick .38s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes p-pick{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-4px) scale(1.08)}}
+.rv-stage.is-bad .p-bad{animation:p-bad .5s ease-in-out both}
+@keyframes p-bad{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-5px) rotate(-2deg)}35%{transform:translateX(5px) rotate(2deg)}55%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.rv-stage.is-sweep .p-sweep{animation:p-sweep 4.6s ease-in-out infinite}
+@keyframes p-sweep{0%,72%,100%{transform:translateY(0);filter:none}82%{transform:translateY(-5px);filter:brightness(1.1)}}
+@media(prefers-reduced-motion:reduce){.rv-stage *{animation:none!important}}
+@media(max-width:640px){.rv-head h1{font-size:20px}.rv-stage{padding:12px}}
+</style>
+</head>
+<body>
+<div class="rv-wrap">
+<header class="rv-head">
+ <h1>双龙动作提案预览</h1>
+ <p><span class="rv-tag">分支 feat/game-animations</span><span class="rv-tag">未写入正式代码</span>针对"双龙要有各种动作"。地图上的龙用真实节点坐标（厨房/沼泽/塔楼/集市/档案馆）与真实道路曲线；卡片里的龙直接用线上真实 WebP 龙图。点每张卡右上角<b>重播</b>，或顶部<b>全部重播 / 自动循环</b>。完整录屏见交付说明。</p>
+</header>
+
+<div class="rv-bar">
+ <button class="button dark" id="rv-all" style="min-height:36px;font-size:12px">全部重播</button>
+ <label style="font-size:12px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="rv-loop"> 自动循环</label>
+ <span style="font-size:11px;color:var(--muted)">共 13 项 · 地图龙 6 项 / 卡片龙 6 项 / 首屏大图 1 项</span>
+</div>
+
+<!-- ================= ① 地图上的双龙（SVG） ================= -->
+<section class="rv-group"><h2>① 地图上的双龙 <small>MAP DRAGONS · SVG</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D1</span><span class="rv-name">待机：扇翅 + 悬停 + 摆尾（常驻）</span><span class="rv-spec">翅膀 1.15s / 悬停+摆尾 2.3s，均为慢速循环</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-live>
+   <div class="board"><svg viewBox="0 0 960 400" style="width:100%">
+     <path d="M130 280 L355 280" stroke="#dfd8c8" stroke-width="9" stroke-linecap="round" fill="none"/>
+     <path d="M355 280 L585 105" stroke="#dfd8c8" stroke-width="9" stroke-linecap="round" fill="none"/>
+     <path d="M355 280 L585 455" stroke="#dfd8c8" stroke-width="9" stroke-linecap="round" fill="none"/>
+     <path d="M585 455 L835 280" stroke="#dfd8c8" stroke-width="9" stroke-linecap="round" fill="none"/>
+     <path d="M355 280 Q595 20 835 280" stroke="#e6efe9" stroke-width="7" stroke-dasharray="10 9" fill="none"/>
+     <g fill="#f8f4e9" stroke="#c9c2ae" stroke-width="3">
+       <circle cx="130" cy="280" r="30"/><circle cx="355" cy="280" r="30" fill="#e1e8d7"/><circle cx="585" cy="105" r="30"/><circle cx="585" cy="455" r="30"/><circle cx="835" cy="280" r="30"/>
+     </g>
+     <text x="130" y="285" text-anchor="middle" font-size="15" fill="#74766d">厨房</text>
+     <text x="355" y="285" text-anchor="middle" font-size="15" fill="#74766d">沼泽</text>
+     <text x="585" y="110" text-anchor="middle" font-size="15" fill="#74766d">塔楼</text>
+     <text x="585" y="460" text-anchor="middle" font-size="15" fill="#74766d">集市</text>
+     <text x="835" y="285" text-anchor="middle" font-size="15" fill="#74766d">档案馆</text>
+     <g transform="translate(122 235) scale(1.9)" class="drg d-ember"></g>
+     <g transform="translate(372 235) scale(1.9)" class="drg d-gale"></g>
+   </svg></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：常驻，只要龙停在某个节点就播。<b>做法</b>：把现有 <code>dragonGlyph</code> 里并进同一条 path 的翅膀拆成左右两片独立元素，各自绕肩点扇动；身体呼吸、整体悬停、尾巴摆动。<b>注意</b>：这是本提案唯一的"常驻动画"，幅度极小（≤4px），如需更安静可只保留扇翅。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D2</span><span class="rv-name">飞行：沿真实道路曲线移动 + 朝向自动跟随</span><span class="rv-spec">offset-path 2.1s，扇翅持续</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-fly>
+   <div class="board"><svg viewBox="0 0 960 400" style="width:100%">
+     <path d="M355 280 Q595 20 835 280" stroke="#8fb3a4" stroke-width="7" stroke-dasharray="10 9" fill="none"/>
+     <text x="355" y="286" text-anchor="middle" font-size="15" fill="#74766d">沼泽</text>
+     <text x="835" y="286" text-anchor="middle" font-size="15" fill="#74766d">档案馆</text>
+     <g transform="translate(0 -45)"><g class="flyer"><g transform="scale(1.9)"><g class="drg d-ember"></g></g></g></g>
+   </svg></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：执行一回合、龙从 A 走到 B。<b>做法</b>：改用 <code>offset-path</code> 走真实边（直线/曲线/天空道各不相同），<code>offset-rotate:auto</code> 让龙头朝着飞行方向，替代现在"起点→终点直线平移"的临时 overlay。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D3</span><span class="rv-name">到达落地：下压回弹 + 尘环 + 影子收缩</span><span class="rv-spec">0.62s，过冲曲线</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-land>
+   <div class="board"><svg viewBox="0 0 420 260" style="width:100%;max-width:420px">
+     <circle cx="210" cy="170" r="34" fill="#e1e8d7" stroke="#c9c2ae" stroke-width="3"/>
+     <text x="210" y="176" text-anchor="middle" font-size="15" fill="#74766d">沼泽</text>
+     <ellipse class="dust" cx="210" cy="182" rx="26" ry="9" fill="#cdc6b2" opacity="0"/>
+     <g class="landing"><g class="drg d-ember" transform="translate(210 128) scale(1.9)"></g></g>
+   </svg></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：龙抵达节点。<b>做法</b>：垂直方向压缩-拉伸（squash & stretch）+ 一圈尘环 + 影子随高度收缩，落地才有重量感。配合现有 <code>dispatch-dragon-arrival</code> 用或替换它。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D4</span><span class="rv-name">交接货物：低头啄一下 + 货物跳上背</span><span class="rv-spec">龙 0.7s / 货物 0.78s（延迟 0.16s）</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-hand>
+   <div class="board"><svg viewBox="0 0 420 260" style="width:100%;max-width:420px">
+     <circle cx="210" cy="170" r="34" fill="#f8f4e9" stroke="#c9c2ae" stroke-width="3"/>
+     <text x="210" y="176" text-anchor="middle" font-size="15" fill="#74766d">厨房</text>
+     <g class="pecker"><g class="drg d-ember" transform="translate(210 132) scale(1.9)"></g></g>
+     <g class="parcel" transform="translate(210 168)"><rect x="-11" y="-11" width="22" height="22" rx="4" fill="#c96c43" stroke="#694c38" stroke-width="2"/><path d="M-11-4h22" stroke="#f1d18a" stroke-width="2"/></g>
+   </svg></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：取货 / 送达。<b>做法</b>：龙低头"啄"一下，货物同时从地上跳到龙身上（现有 <code>dispatch-parcel-arrival</code> 只做了货物到场，没做"龙的动作"）。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D5</span><span class="rv-name">超时 / 失败：抖动 + 变灰 + 警示环</span><span class="rv-spec">0.52s</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-fail>
+   <div class="board"><svg viewBox="0 0 420 260" style="width:100%;max-width:420px">
+     <circle cx="210" cy="170" r="34" fill="#f8f4e9" stroke="#c9c2ae" stroke-width="3"/>
+     <text x="210" y="176" text-anchor="middle" font-size="15" fill="#74766d">集市</text>
+     <circle class="alarm" cx="210" cy="140" r="30" fill="none" stroke="#df6441" stroke-width="4" opacity="0"/>
+     <g class="failing"><g class="drg d-gale" transform="translate(210 132) scale(1.9)"></g></g>
+   </svg></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：回合耗尽 / 未能按时送达。<b>做法</b>：短促左右抖动 + 龙身去饱和变暗 + 一圈橙色警示扩张；不做全屏红闪，避免吓人。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D6</span><span class="rv-name">通关欢呼：两龙同步跳跃 + 彩带</span><span class="rv-spec">跳跃 0.8s；彩带复用现有 dispatch-confetti</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-win>
+   <div class="board"><svg viewBox="0 0 520 300" style="width:100%;max-width:520px">
+     <circle cx="170" cy="210" r="34" fill="#e1e8d7" stroke="#c9c2ae" stroke-width="3"/>
+     <circle cx="350" cy="210" r="34" fill="#e1e8d7" stroke="#c9c2ae" stroke-width="3"/>
+     <g class="cheer"><g class="drg d-ember" transform="translate(170 166) scale(1.9)"></g></g>
+     <g class="cheer" style="animation-delay:.09s"><g class="drg d-gale" transform="translate(350 166) scale(1.9)"></g></g>
+   </svg></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：三条货全部按时送达、回到厨房。<b>做法</b>：两条龙错峰 90ms 起跳，和现有 confetti 一起放；现有 <code>.dispatch-result-art</code> 的旋转庆祝保留。</p>
+ </article>
+</section>
+
+<!-- ================= ② 卡片 / 选龙里的龙图 ================= -->
+<section class="rv-group"><h2>② 卡片与选龙里的龙图 <small>RASTER PORTRAITS · 真实 WebP</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E1</span><span class="rv-name">待机呼吸</span><span class="rv-spec">3.4s 慢循环，位移 ≤3px</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-live>
+   <div class="dragon-card"><div class="row">
+    <img class="p-breath" src="assets/dispatch/ember-v1.webp" alt="Ember">
+    <img class="p-breath" src="assets/dispatch/gale-v1.webp" alt="Gale" style="animation-delay:.5s">
+    <span style="font-size:11px;color:var(--muted)">选龙卡 / 龙档案卡里常驻，让龙看起来是活的</span>
+   </div></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：常驻。<b>说明</b>：栅格图无法拆解，所以用极缓的整体呼吸；与 D1 的地图龙动效强度一致，不会各唱各的调。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E2</span><span class="rv-name">移动小跳</span><span class="rv-spec">0.55s，过冲曲线</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-hop>
+   <div class="dragon-card"><div class="row"><img class="p-hop" src="assets/dispatch/ember-v1.webp" alt="Ember"><span style="font-size:11px;color:var(--muted)">本回合这条龙有移动时（结算卡 / 选龙卡）</span></div></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：该龙本回合发生了移动。<b>做法</b>：原地跳一下 + 一点前倾，替代现在只有横向滑入的 <code>dispatch-dragon-arrival</code>。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E3</span><span class="rv-name">送货俯冲</span><span class="rv-spec">0.6s</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-dive>
+   <div class="dragon-card"><div class="row"><img class="p-dive" src="assets/dispatch/gale-v1.webp" alt="Gale"><span style="font-size:11px;color:var(--muted)">送达那一格：从上方俯冲下来压一下</span></div></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：货物送达。<b>做法</b>：由上而下俯冲 + 落地压扁回弹，和 D3 的落地是同一套手感。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E4</span><span class="rv-name">抓取压缩</span><span class="rv-spec">0.42s</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-grab>
+   <div class="dragon-card"><div class="row"><img class="p-grab" src="assets/dispatch/ember-v1.webp" alt="Ember"><span style="font-size:11px;color:var(--muted)">取货那一格：像把货"拽上来"那样压一下</span></div></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：货物被取上。<b>做法</b>：横向压扁再回弹（squash），与 D4 的"啄"配套。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E5</span><span class="rv-name">被选中：抬头 + 放大</span><span class="rv-spec">0.38s</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-pick>
+   <div class="dragon-card"><div class="row"><img class="p-pick" src="assets/dispatch/gale-v1.webp" alt="Gale"><span style="font-size:11px;color:var(--muted)">点选某条龙时</span></div></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点选龙。<b>说明</b>：轻微上抬 + 放大 8%，配合已有的选中描边，明确"现在轮到它"。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E6</span><span class="rv-name">失败抖动</span><span class="rv-spec">0.5s</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-bad>
+   <div class="dragon-card"><div class="row"><img class="p-bad" src="assets/dispatch/ember-v1.webp" alt="Ember"><span style="font-size:11px;color:var(--muted)">该龙本回合被拦下 / 规则冲突时</span></div></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：动作被拒绝（水渠涨水、体力不足、超载…）。<b>说明</b>：与地图上的 D5 呼应，但幅度减半，因为卡片本身较小。</p>
+ </article>
+</section>
+
+<!-- ================= ③ 首屏大图 ================= -->
+<section class="rv-group"><h2>③ 首屏双龙大图 <small>HERO</small></h2>
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">F1</span><span class="rv-name">漂浮 + 呼吸（极缓，常驻）</span><span class="rv-spec">4.6s，位移 ≤5px，偶发一次亮度抬起</span><button data-replay>重播</button></div>
+  <div class="rv-stage" data-sweep>
+   <div style="max-width:420px"><img class="p-sweep" src="assets/dispatch/hero-v1.webp" alt="Ember 与 Gale" style="width:100%;border:1px solid var(--line);border-radius:10px"></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：调度首屏（hero）与首页特色卡。<b>说明</b>：整体极缓漂浮；不做大幅缩放，避免滚动时晃眼。</p>
+ </article>
+</section>
+
+<!-- ================= 清单 ================= -->
+<section class="rv-group"><h2>④ 规格清单 <small>SPEC</small></h2>
+ <table class="rv-table">
+  <thead><tr><th>编号</th><th>龙的什么动作</th><th>触发</th><th>时长</th><th>备注</th></tr></thead>
+  <tbody>
+   <tr><td>D1</td><td>待机扇翅 + 悬停 + 摆尾</td><td>常驻（停在节点）</td><td>1.15s / 2.3s 循环</td><td>唯一常驻项；可只保留扇翅</td></tr>
+   <tr><td>D2</td><td>沿道路曲线飞行 + 朝向跟随</td><td>回合执行移动</td><td>2.1s</td><td>用 offset-path 替代直线平移</td></tr>
+   <tr><td>D3</td><td>到达落地：压弹 + 尘环 + 影子</td><td>抵达节点</td><td>0.62s</td><td>替代/叠加现有 dragon-arrival</td></tr>
+   <tr><td>D4</td><td>交接：低头啄 + 货跳上背</td><td>取货 / 送达</td><td>0.7s / 0.78s</td><td>补上"龙自己的动作"</td></tr>
+   <tr><td>D5</td><td>失败：抖动 + 变灰 + 警示环</td><td>超时 / 被拦</td><td>0.52s</td><td>不做全屏红闪</td></tr>
+   <tr><td>D6</td><td>通关：两龙错峰跳跃</td><td>全部按时送达</td><td>0.8s（错峰 90ms）</td><td>与现有彩带同时</td></tr>
+   <tr><td>E1</td><td>卡片龙待机呼吸</td><td>常驻</td><td>3.4s 循环</td><td>位移 ≤3px</td></tr>
+   <tr><td>E2</td><td>卡片龙移动小跳</td><td>该龙本回合移动</td><td>0.55s</td><td>替代纯横滑入场</td></tr>
+   <tr><td>E3</td><td>送货俯冲</td><td>送达</td><td>0.6s</td><td>与 D3 同一手感</td></tr>
+   <tr><td>E4</td><td>抓取压缩</td><td>取货</td><td>0.42s</td><td>与 D4 配套</td></tr>
+   <tr><td>E5</td><td>选中抬头放大</td><td>点选龙</td><td>0.38s</td><td>配合已有选中描边</td></tr>
+   <tr><td>E6</td><td>失败抖动</td><td>动作被拒</td><td>0.5s</td><td>幅度为地图龙的一半</td></tr>
+   <tr><td>F1</td><td>首屏大图极缓漂浮</td><td>常驻</td><td>4.6s 循环</td><td>位移 ≤5px</td></tr>
+  </tbody>
+ </table>
+ <p class="rv-hint"><b>实现要点</b>：地图龙需要把 <code>dragonGlyph</code> 从"一条 path 画完身体+翅膀"改成 <b>身体 / 左翅 / 右翅 / 尾巴</b> 四个元素，这是本提案唯一需要改画法的地方（不换美术风格，只拆结构）。其余全部是 CSS/WA API 动画，且沿用你现有的 <code>clearMotion()</code> 清理机制与 <code>prefers-reduced-motion</code> 降级（含常驻项——系统开启"减弱动态效果"时 D1/E1/F1 也一并关闭）。不改任何规则、文案与数值。</p>
+</section>
+</div>
+
+<script>
+ (function(){
+  // 注入真实坐标的龙骨架（身体/左翅/右翅/尾），供审查观察各自动作
+  const COLOR={Ember:'#c45b42',Gale:'#4c7890'},LETTER={Ember:'E',Gale:'G'};
+  function rig(dragon){const c=COLOR[dragon],l=LETTER[dragon];
+   return '<g class="drg-motion">'
+   +'<ellipse class="dr-shadow" cx="0" cy="15" rx="15" ry="4"/>'
+   +'<g class="dr-tail"><path d="M 5 10 Q 20 17 29 9 Q 19 21 3 15Z" fill="'+c+'" stroke="#fffaf0" stroke-width="1.6"/></g>'
+   +'<g class="dr-wing dr-wing-l"><path d="M -8 -6 Q -25 -26 -33 -12 Q -24 -6 -8 -6Z" fill="'+c+'" stroke="#fffaf0" stroke-width="1.6"/><path d="M -12 -8 Q -20 -13 -26 -10" fill="none" stroke="#fffaf0" stroke-width="1" opacity=".7"/></g>'
+   +'<g class="dr-wing dr-wing-r"><path d="M 8 -6 Q 25 -26 33 -12 Q 24 -6 8 -6Z" fill="'+c+'" stroke="#fffaf0" stroke-width="1.6"/><path d="M 12 -8 Q 20 -13 26 -10" fill="none" stroke="#fffaf0" stroke-width="1" opacity=".7"/></g>'
+   +'<g class="dr-body"><path d="M -8 -6 Q 0 -16 10 -6 L 12 -1 Q 14 8 4 12 Q -6 14 -10 6 Q -14 0 -8 -6Z" fill="'+c+'" stroke="#fffaf0" stroke-width="2"/><circle cx="6" cy="-4" r="1.5" fill="#fffaf0"/><text x="2" y="7" text-anchor="middle" fill="#fffaf0" font-size="7" font-weight="800">'+l+'</text></g>'
+   +'</g>';
+  }
+  document.querySelectorAll('.drg').forEach(node=>{
+   const dragon=node.classList.contains('d-ember')?'Ember':'Gale';
+   node.classList.remove('d-ember','d-gale');
+   node.innerHTML=rig(dragon);
+  });
+
+  const stages=[...document.querySelectorAll('.rv-stage')];
+  function play(stage){ if(!stage)return; [...stage.classList].forEach(c=>{if(c.startsWith('is-'))stage.classList.remove(c);}); void stage.offsetWidth; (stage.dataset.live!==undefined)?stage.classList.add('is-live'):['fly','land','hand','fail','win','hop','dive','grab','pick','bad','sweep'].forEach(k=>{if(stage.dataset[k]!==undefined)stage.classList.add('is-'+k);}); }
+  document.querySelectorAll('[data-replay]').forEach(b=>b.addEventListener('click',()=>play(b.closest('.rv-demo').querySelector('.rv-stage'))));
+  document.getElementById('rv-all').addEventListener('click',()=>stages.forEach((s,i)=>setTimeout(()=>play(s),i*40)));
+  let timer=null;
+  document.getElementById('rv-loop').addEventListener('change',e=>{ if(e.target.checked) timer=setInterval(()=>stages.forEach((s,i)=>setTimeout(()=>play(s),i*40)),4200); else { clearInterval(timer); timer=null; } });
+  stages.forEach((s,i)=>setTimeout(()=>play(s),180+i*120));
+ })();
+</script>
+</body>
+</html>
