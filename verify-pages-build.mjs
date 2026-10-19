@@ -89,4 +89,11 @@ assert.ok(notFound.includes('name="robots" content="noindex,follow"'), '404.html
 const analytics = await readFile('analytics.mjs', 'utf8');
 assert.ok(analytics.includes('window.ODDLAB_STATS===false'), 'analytics.mjs short-circuits when the backend is absent');
 
+// 7. The privacy text must describe this static deployment, not the Sites one.
+const privacy = await readFile(join(out, 'privacy/index.html'), 'utf8');
+assert.ok(privacy.includes('GitHub Pages'), 'the privacy page names the real host');
+assert.ok(privacy.includes('/api/track'), 'the privacy page states that no activity events are sent');
+assert.ok(!privacy.includes('openai.com/policies'), 'the privacy page drops the Sites-only OpenAI policy link');
+assert.ok(!privacy.includes('本站由 ChatGPT Sites 托管'), 'the privacy page no longer describes the Sites host as the deploy target');
+
 console.log(`PASS: ${publicRoutes.length} static routes under ${base}, base-path links/assets/canonical, sitemap, 404 shell, blocked admin/stats and disabled /api/track.`);

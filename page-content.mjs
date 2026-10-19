@@ -58,9 +58,17 @@ const faq={
  [['Must I provide proof?','需要上传证明吗？','証拠の提出が必要ですか？','¿Tengo que enviar pruebas?'],['No photos, location, or personal information are required. Complete a mission only if you feel comfortable.','无需照片、定位或个人信息，以舒服为准，不想做可以换题。','写真・位置情報・個人情報は不要です。無理せず、合わなければ変更してください。','No hacen falta fotos, ubicación ni datos personales. Hazla solo si te sientes a gusto.']]
  ]
 };
+// The static build keeps nothing that needs an administrator, so its privacy
+// summary describes behaviour that actually matches the Pages deployment.
+const pagesPrivacyDescription=[
+ 'How this static OddLab build handles your input, local progress and sharing, and why it collects no activity statistics.',
+ '了解这版静态试玩页面如何处理你输入的内容、本机进度与分享，以及为什么它不收集访问统计。',
+ 'この静的公開版が入力・端末内の進捗・共有をどう扱い、なぜ利用統計を集めないのかを説明します。',
+ 'Cómo trata esta versión estática tus entradas, el progreso local y el uso compartido, y por qué no recoge estadísticas.'
+];
 export function pageData(path,lang='en'){
  const title=path==='/dispatch'?pick(['Dragon Dispatch','双龙调度局','ドラゴン配送局','Despacho de Dragones'],lang):sourceTitles[path]?translateText(sourceTitles[path],lang):pick(path==='/terms'?['Terms of use','使用说明','利用について','Condiciones de uso']:['Contact & feedback','联系与反馈','お問い合わせ・感想','Contacto y comentarios'],lang);
- return {title,description:pick(descriptions[path]||descriptions['/'],lang),steps:pick(steps[path]||[[],[],[],[]],lang),faqs:(faq[path]||[]).map(([q,a])=>[pick(q,lang),pick(a,lang)])};
+ return {title,description:path==='/privacy'&&PAGES?pick(pagesPrivacyDescription,lang):pick(descriptions[path]||descriptions['/'],lang),steps:pick(steps[path]||[[],[],[],[]],lang),faqs:(faq[path]||[]).map(([q,a])=>[pick(q,lang),pick(a,lang)])};
 }
 export const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function canonicalURL(path,lang=DEFAULT_LANG){const u=new URL(link(path),siteOrigin);if(lang!==DEFAULT_LANG)u.searchParams.set('lang',lang);return u.href;}
