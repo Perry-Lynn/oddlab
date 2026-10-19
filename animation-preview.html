@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OddLab · 动画提案预览（分支 feat/game-animations）</title>
+<!-- 真样式表：所有组件用线上真实 class，保证观感与线上一致 -->
+<link rel="stylesheet" href="style.css">
+<style>
+/* ============ 以下只是审查页外壳，不属于产品 ============ */
+body{padding:0 0 60px}
+.rv-head{max-width:1200px;margin:0 auto;padding:26px 0 18px;border-bottom:1px solid var(--line)}
+.rv-head h1{font-size:26px;letter-spacing:-.5px}
+.rv-head p{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.9}
+.rv-tag{display:inline-block;border:1px solid var(--ink);border-radius:30px;padding:3px 11px;font:10px monospace;margin-right:8px}
+.rv-bar{position:sticky;top:0;z-index:20;background:var(--paper);max-width:1200px;margin:0 auto;padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rv-wrap{max-width:1200px;margin:0 auto}
+.rv-group{margin-top:34px}
+.rv-group>h2{font-size:18px;padding-bottom:8px;border-bottom:2px solid var(--ink);display:flex;align-items:baseline;gap:10px}
+.rv-group>h2 small{font:10px monospace;color:var(--muted);font-weight:400}
+.rv-demo{border:1px solid var(--line);border-radius:10px;background:#fff;margin:16px 0;overflow:hidden}
+.rv-demo-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 14px;background:#f1eee4;border-bottom:1px solid var(--line)}
+.rv-no{font:11px monospace;border:1px solid var(--ink);border-radius:4px;padding:1px 6px}
+.rv-name{font-weight:700;font-size:13px}
+.rv-spec{font:10px/1.7 monospace;color:#5c5f55;flex:1;min-width:220px}
+.rv-demo-head button{min-height:32px;padding:6px 13px;font-size:11px;border:1px solid var(--ink);border-radius:5px;background:transparent}
+.rv-stage{padding:20px;background:var(--paper);display:grid;gap:12px}
+.rv-note{padding:10px 14px;font-size:11px;color:var(--muted);border-top:1px dashed var(--line);line-height:1.8}
+.rv-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:14px}
+.rv-table th,.rv-table td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+.rv-table th{font:10px monospace;color:var(--muted);white-space:nowrap}
+.rv-hint{background:#fdf6d8;border:1px dashed #c9b45a;border-radius:8px;padding:12px 14px;font-size:11px;line-height:1.9;margin-top:14px}
+.rv-fake{outline:1px dashed #c9c9bb;outline-offset:3px}
+
+/* ============ 提案：keyframes（正式实现时加进 style.css） ============ */
+@keyframes a-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes a-slide-next{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes a-slide-prev{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes a-stamp{0%{transform:scale(.97) rotate(-.8deg)}45%{transform:scale(1.03) rotate(.4deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes a-blink{0%,100%{transform:scaleY(1)}45%,55%{transform:scaleY(.1)}}
+@keyframes a-flash{0%{background:#fffdf7}32%{background:var(--yellow)}100%{background:#fffdf7}}
+@keyframes a-scene{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes a-bar{from{transform:scaleY(.12)}to{transform:scaleY(1)}}
+@keyframes a-bump{0%{transform:translateY(0)}40%{transform:translateY(-5px)}100%{transform:translateY(0)}}
+@keyframes a-pop{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+@keyframes a-unfold{from{opacity:.25;transform:translateY(8px) scale(.96)}65%{opacity:1;transform:translateY(-2px) scale(1.015)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes a-blur{from{opacity:.3;filter:blur(7px);transform:translateY(7px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes a-duel-left{from{opacity:0;transform:translateX(-24px) rotate(-1.6deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes a-duel-right{from{opacity:0;transform:translateX(24px) rotate(1.6deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes a-lose{to{opacity:0;transform:scale(.9) rotate(2.4deg)}}
+@keyframes a-stamp-down{0%{opacity:0;transform:translateY(-18px) rotate(-18deg) scale(1.45)}62%{opacity:1;transform:translateY(0) rotate(-8deg) scale(1.03)}100%{opacity:1;transform:translateY(0) rotate(-8deg) scale(1)}}
+@keyframes a-tick{0%{transform:translateY(0)}45%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+@keyframes a-swap-out{to{opacity:0;transform:translateY(-14px)}}
+@keyframes a-spin-once{to{transform:rotate(360deg)}}
+@keyframes a-lift{to{transform:translateY(-5px);border-color:var(--ink)}}
+
+/* 仅在 .rv-stage.is-play 时播放；静止态＝动画终态＝线上现有观感 */
+.rv-stage.is-play .d-rise{animation:a-rise .42s ease-out backwards}
+.rv-stage.is-play .d-spark{animation:a-spin-once .9s ease-out backwards}
+.rv-stage.is-play .d-quiz-next{animation:a-slide-next .3s ease-out backwards}
+.rv-stage.is-play .d-quiz-prev{animation:a-slide-prev .3s ease-out backwards}
+.rv-stage.is-play .d-stamp{animation:a-stamp .22s ease-out backwards}
+.rv-stage.is-play .d-blink{animation:a-blink .34s ease-in-out .22s backwards}
+.rv-stage.is-play .d-flash-a{animation:a-flash .6s ease-out backwards}
+.rv-stage.is-play .d-flash-b{animation:a-flash .6s ease-out .18s backwards}
+.rv-stage.is-play .d-scene{animation:a-scene .35s ease-out backwards}
+.rv-stage.is-play .d-bar{transform-origin:top center;animation:a-bar .32s ease-out backwards}
+.rv-stage.is-play .d-bump{animation:a-bump .45s ease-out backwards}
+.rv-stage.is-play .d-pop{animation:a-pop .3s ease-out backwards}
+.rv-stage.is-play .d-unfold{animation:a-unfold .5s ease-out backwards}
+.rv-stage.is-play .d-blur{animation:a-blur .4s ease-out backwards}
+.rv-stage.is-play .d-duel-left{animation:a-duel-left .32s ease-out backwards}
+.rv-stage.is-play .d-duel-right{animation:a-duel-right .32s ease-out backwards}
+.rv-stage.is-play .d-lose{animation:a-lose .3s ease-out .25s forwards}
+.rv-stage.is-play .d-stamp-down{animation:a-stamp-down .42s cubic-bezier(.2,.9,.3,1.25) backwards}
+.rv-stage.is-play .d-tick{animation:a-tick .3s ease-out backwards}
+.rv-stage.is-play .d-swap-out{animation:a-swap-out .26s ease-in backwards}
+.rv-stage.is-play .d-swap-in{animation:a-rise .34s ease-out .18s backwards}
+.rv-stage.is-play .d-lift{animation:a-lift .25s ease-out forwards}
+.rv-stage.is-play .d-lift .card-art{animation:a-pop .3s ease-out forwards}
+
+@media(prefers-reduced-motion:reduce){.rv-stage.is-play *{animation:none!important}}
+@media(max-width:640px){.rv-head h1{font-size:20px}.rv-stage{padding:14px}}
+</style>
+</head>
+<body>
+<div class="rv-wrap">
+<header class="rv-head">
+ <h1>OddLab 动画提案预览</h1>
+ <p><span class="rv-tag">分支 feat/game-animations</span><span class="rv-tag">未写入正式代码</span>下面是拟增加的动效，全部使用线上真实 class 与样式表，所以看到的就是接上去之后的样子。点每张卡右上角<b>重播</b>可反复看；勾选顶部<b>自动循环</b>会持续轮播。动效的完整录屏见交付说明。</p>
+</header>
+
+<div class="rv-bar">
+ <button class="button dark" id="rv-all" style="min-height:36px;font-size:12px">全部重播</button>
+ <label style="font-size:12px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="rv-loop"> 自动循环</label>
+ <span style="font-size:11px;color:var(--muted)">共 18 项演示 · 单项 ≤0.9s · 全部遵循 prefers-reduced-motion 降级</span>
+</div>
+
+<!-- ===================== 首页与通用 ===================== -->
+<section class="rv-group"><h2>① 首页与通用 <small>HOME / GLOBAL</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">A1</span><span class="rv-name">首屏标题与卡片错峰上浮</span><span class="rv-spec">a-rise 0.42s ease-out，错峰 70ms</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="intro rv-fake">
+    <div class="eyebrow d-rise" style="animation-delay:0s">A LITTLE ODD. A LITTLE JOY.</div>
+    <h1 class="d-rise" style="animation-delay:.07s">今天，<br>来点<em>不一样的。</em></h1>
+    <p class="d-rise" style="animation-delay:.14s">无聊的时候，给生活添点随机和小惊喜。</p>
+   </div>
+   <div class="play-grid">
+    <a class="play-card persona-bg d-rise" style="animation-delay:.21s;min-height:120px"><span class="card-top">NO. 02 / 快速认识自己</span><h3>你的离谱人格</h3></a>
+    <a class="play-card choice-bg d-rise" style="animation-delay:.28s;min-height:120px"><span class="card-top">NO. 03 / 小事随缘</span><h3>今天听天由命</h3></a>
+    <a class="play-card task-bg d-rise" style="animation-delay:.35s;min-height:120px"><span class="card-top">NO. 04 / 今日奇怪任务</span><h3>给日常加点戏</h3></a>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：首页/各玩法首次渲染时一次性播放。<b>落点</b>：app.js 渲染后给容器加 <code>is-enter</code> 类，纯 CSS 控制，不需要逐元素写动画。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">A2</span><span class="rv-name">品牌星标的自发旋转</span><span class="rv-spec">a-spin-once 0.9s ease-out（触发式，非常驻旋转）</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="display:flex;align-items:center;gap:14px">
+    <span class="brand-mark d-spark" style="font-size:44px">✳</span>
+    <span style="font-size:12px;color:var(--muted)">用于：页面切换、提示出现、结果揭晓等“发生了一件事”的瞬间</span>
+   </div>
+   <div class="rv-fake" id="toast" style="position:relative;left:auto;bottom:auto;transform:none;opacity:1;max-width:none;display:inline-block">已复制，把这份脑洞带走吧。</div>
+  </div>
+  <p class="rv-note"><b>触发</b>：事件发生时播放一次。<b>说明</b>：不做常驻无限旋转，避免持续抢占注意力；现有 <code>#toast</code> 的 0.2s 位移过渡保留。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">A3</span><span class="rv-name">卡片悬停加强（现有抬升 + 插图微放大）</span><span class="rv-spec">a-lift .25s ease-out；插图 a-pop .3s</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <a class="play-card persona-bg d-lift" style="min-height:150px">
+    <span class="card-top">NO. 02 / 快速认识自己</span>
+    <div class="card-art"><svg viewBox="0 0 220 220"><path d="M65 44L86 20L111 44L140 26L157 53L188 53L181 88L205 109L180 133L188 165L154 169L136 199L108 181L78 198L65 168L30 163L40 131L18 107L43 83L35 51Z" fill="#f8f4e9" stroke="#292c25" stroke-width="2.5"/><ellipse cx="89" cy="94" rx="20" ry="27" fill="#292c25"/><ellipse cx="137" cy="94" rx="20" ry="27" fill="#292c25"/></svg></div>
+    <h3>你的离谱人格</h3><p>回答六道趣味题，解锁一份离谱人设。</p>
+   </a>
+  </div>
+  <p class="rv-note"><b>触发</b>：鼠标悬停。<b>说明</b>：在现有 <code>.play-card:hover{translateY(-5px)}</code> 基础上补一点“插图弹一下”，不做大幅位移。</p>
+ </article>
+</section>
+
+<!-- ===================== 人格测试 ===================== -->
+<section class="rv-group"><h2>② 你的离谱人格 <small>PERSONA</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">B1</span><span class="rv-name">换题方向性滑入</span><span class="rv-spec">a-slide-next / a-slide-prev 0.3s ease-out</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="border:1px solid var(--line);border-radius:12px;padding:14px">
+    <div class="bench-top"><span>认识你的另一面</span><span>03 / 06</span></div>
+    <h4 class="d-quiz-next" style="font-size:17px;margin:8px 0 12px">Q3 · 如果周五晚上突然空出来，你会？</h4>
+    <div class="experiment-options">
+     <button class="answer d-quiz-next" style="animation-delay:.04s"><span class="answer-key">A</span><span>先睡一觉再说</span></button>
+     <button class="answer d-quiz-next" style="animation-delay:.08s"><span class="answer-key">B</span><span>立刻出门乱逛</span></button>
+    </div>
+   </div>
+   <div class="rv-fake" style="border:1px solid var(--line);border-radius:12px;padding:14px">
+    <div class="bench-top"><span>认识你的另一面</span><span>02 / 06</span></div>
+    <h4 class="d-quiz-prev" style="font-size:17px;margin:8px 0 12px">Q2 · 排队时你通常在做什么？</h4>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点“下一题”右进、点“上一题”左进（方向跟随操作）。<b>落点</b>：games-ui 渲染题目时按方向加 <code>is-next</code>/<code>is-prev</code>。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">B2</span><span class="rv-name">答案选中的“盖章”反馈</span><span class="rv-spec">a-stamp 0.22s ease-out</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="experiment-options rv-fake" style="max-width:520px">
+    <button class="answer d-stamp"><span class="answer-key">A</span><span>先睡一觉再说</span></button>
+    <button class="answer selected d-stamp" style="animation-delay:.1s"><span class="answer-key">B</span><span>立刻出门乱逛</span></button>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点击选项。<b>说明</b>：幅度很小（scale 0.97→1.03→1 + 0.8° 回正），只强化“已选中”，不跳动布局。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">B3</span><span class="rv-name">结果页头像眨眼一次</span><span class="rv-spec">a-blink 0.34s ease-in-out，delay 0.22s</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="result-head rv-fake">
+    <div class="result-art">
+     <svg viewBox="0 0 220 220"><path d="M65 44L86 20L111 44L140 26L157 53L188 53L181 88L205 109L180 133L188 165L154 169L136 199L108 181L78 198L65 168L30 163L40 131L18 107L43 83L35 51Z" fill="#f8f4e9" stroke="#292c25" stroke-width="2.5"/><ellipse class="d-blink" style="transform-origin:89px 94px" cx="89" cy="94" rx="20" ry="27" fill="#292c25"/><ellipse class="d-blink" style="transform-origin:137px 94px" cx="137" cy="94" rx="20" ry="27" fill="#292c25"/><ellipse cx="96" cy="89" rx="6" ry="9" fill="#f8f4e9"/><ellipse cx="143" cy="89" rx="6" ry="9" fill="#f8f4e9"/><path d="M82 139Q110 164 144 135" stroke="#292c25" stroke-width="3" stroke-linecap="round"/></svg>
+    </div>
+    <div><h2 class="result-title d-unfold">凌晨三点的哲学家</h2><p class="tagline">白天很稳，夜里很敢</p></div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：结果卡首次出现。<b>说明</b>：一次性眨眼 + 结果标题沿用现有 <code>odd-unfold</code>；不做循环动画，避免喧闹。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">B4</span><span class="rv-name">“改答案预览”对比高亮</span><span class="rv-spec">a-flash 0.6s，两栏错峰 0.18s</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="experiment-preview rv-fake">
+    <p style="font-size:12px"><strong>改动：</strong> 02 · 排队时你通常在做什么？ → 观察别人穿什么鞋</p>
+    <div class="experiment-compare">
+     <div class="d-flash-a"><small>改前</small><strong>秩序维护员</strong></div>
+     <div class="d-flash-b"><small>改后</small><strong>鞋履统计学家</strong></div>
+     <div class="actions"><button class="button dark">采纳这个结果</button><button class="button">保留原结果</button></div>
+    </div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点“预览不同答案”。<b>说明</b>：先亮“改前”再亮“改后”，让因果顺序一眼可读。</p>
+ </article>
+</section>
+
+<!-- ===================== 平行人生 ===================== -->
+<section class="rv-group"><h2>③ 平行人生模拟器 <small>PARALLEL LIFE</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">C1</span><span class="rv-name">场景切换：新场景上浮 + 左侧标记条展开</span><span class="rv-spec">a-scene 0.35s + a-bar 0.32s</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="workbench life experiment-life rv-fake">
+    <div class="bench-top"><span>深夜便利店</span><span>场景 2 / 3</span></div>
+    <div class="life-progress"><span class="complete d-pop">1</span><span class="complete d-pop" style="animation-delay:.1s">2</span><span>3</span></div>
+    <div class="resource-board"><span>时间：<strong>3</strong></span><span>人情：<strong>2</strong></span></div>
+    <div class="life-scene d-scene" style="position:relative">
+     <span class="d-bar" style="position:absolute;left:-18px;top:0;bottom:0;width:4px;background:var(--orange);display:block"></span>
+     <h2>凌晨的收银台</h2><p>店里只剩你和一个不肯走的客人。</p>
+    </div>
+    <div class="answers experiment-options"><button class="answer">陪他聊到天亮 · 时间 −1</button><button class="answer">提醒他该走了 · 人情 −1</button></div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：每次做出选择进入下一幕。<b>说明</b>：进度圆点同步“盖章”放大；资源条不动，避免整块跳动。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">C2</span><span class="rv-name">资源数字变化提示</span><span class="rv-spec">a-bump 0.45s + 数字底色 a-flash</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="resource-board rv-fake" style="max-width:420px">
+    <span>时间：<strong class="d-bump d-flash-a" style="display:inline-block;padding:0 6px;border-radius:4px">3</strong></span>
+    <span>人情：<strong class="d-bump d-flash-b" style="display:inline-block;padding:0 6px;border-radius:4px">2</strong></span>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：选中带消耗/收益的选项后。<b>说明</b>：只对“本次变化的那个数字”播，便于玩家确认代价。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">C3</span><span class="rv-name">结局揭晓：档案展开</span><span class="rv-spec">a-unfold 0.5s ease-out</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="life-ending rv-fake" style="max-width:560px">
+    <div class="result-kicker">结局</div>
+    <h2 class="result-title d-unfold">你把便利店开成了午夜图书馆</h2>
+    <p>三年后，货架上最畅销的是书，而不是关东煮。</p>
+    <p class="life-cause d-rise" style="animation-delay:.2s">陪他聊到天亮 + 留下那本旧书 → 你把便利店开成了午夜图书馆</p>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：第三幕选择完成。<b>说明</b>：结局标题展开 + 因果行随后淡入，强调“选择→结果”。</p>
+ </article>
+</section>
+
+<!-- ===================== 听天由命 ===================== -->
+<section class="rv-group"><h2>④ 今天听天由命 <small>LET FATE DECIDE</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D1</span><span class="rv-name">快速抽签：结果聚焦定格</span><span class="rv-spec">a-blur 0.4s ease-out（替代现有 pop 的更强版）</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="choice-result rv-fake">
+    <p class="result-kicker" style="font:10px monospace">命运的小纸条写着</p>
+    <h2 class="result-title d-blur" data-no-translate style="font-size:34px">楼下那家面</h2>
+    <div class="actions"><button class="button dark">就这个</button><button class="button">排除它</button></div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点“快速抽签”。<b>说明</b>：由虚到实（blur→清晰）代替纯缩放，更贴近“纸条对上焦”的感觉。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D2</span><span class="rv-name">慢选对决：两张候选卡上桌</span><span class="rv-spec">a-duel-left / a-duel-right 0.32s ease-out</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="max-width:560px">
+    <h4 style="font-size:14px;margin-bottom:8px">这两张，留哪张？</h4>
+    <div class="experiment-compare">
+     <div class="d-duel-left"><small>候选 A</small><strong>麻辣烫</strong></div>
+     <div class="d-duel-right" style="background:var(--blue)"><small>候选 B</small><strong>猪脚饭</strong></div>
+    </div>
+    <div class="answers" style="display:flex;gap:8px"><button class="answer" style="flex:1;justify-content:center">留下 A</button><button class="answer" style="flex:1;justify-content:center">留下 B</button></div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：进入比较轮、点“下一对”。<b>说明</b>：左右分别入场，暗示“二选一”的方向性。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">D3</span><span class="rv-name">落败卡翻出 + 撤销退回</span><span class="rv-spec">a-lose 0.3s（delay .25s）/ a-rise 撤销</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="max-width:560px">
+    <div class="experiment-compare">
+     <div class="d-duel-left" style="background:var(--green)"><small>保留</small><strong>猪脚饭</strong></div>
+     <div class="d-lose"><small>淘汰</small><strong>麻辣烫</strong></div>
+    </div>
+    <div class="rv-fake" style="margin-top:10px;display:flex;gap:10px;align-items:center">
+     <button class="button">撤销这一步</button>
+     <span style="font-size:11px;color:var(--muted)">点撤销：被淘汰的卡片从右侧滑回并轻微回弹</span>
+    </div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点“淘汰”/“撤销”。<b>说明</b>：撤销是正向动画的逆播，保证“可撤回”在视觉上说得通。</p>
+ </article>
+</section>
+
+<!-- ===================== 每日奇怪任务 ===================== -->
+<section class="rv-group"><h2>⑤ 今日奇怪任务 <small>DAILY ODD MISSION</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E1</span><span class="rv-name">打卡：印章落下</span><span class="rv-spec">a-stamp-down 0.42s cubic-bezier(.2,.9,.3,1.25)</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="display:flex;align-items:center;gap:12px;padding:12px;border:1px dashed var(--line);border-radius:10px">
+    <span class="d-stamp-down" style="display:inline-grid;place-items:center;width:46px;height:46px;border:2px solid #577342;border-radius:50%;color:#577342;font-size:11px;transform:rotate(-8deg)">完成</span>
+    <span style="font-size:12px">收到。今天的日常，已经被你悄悄改写。</span>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：点“我做到了”。<b>说明</b>：从上方带旋转落下并过冲一点，模拟盖章；只播一次。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E2</span><span class="rv-name">印章本计数跳动</span><span class="rv-spec">a-tick 0.3s ease-out（数字）</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="display:flex;align-items:center;gap:12px">
+    <span class="pill">印章本</span>
+    <strong class="d-tick" style="display:inline-block;font-size:15px">7 / 30</strong>
+    <span class="d-pop" style="display:inline-block;width:26px;height:26px;border-radius:6px;background:var(--green);border:1px dashed var(--line)"></span>
+   </div>
+   <div class="mission-book" style="padding:0"><article class="mission-card stamped d-pop">TASK-07<p>给随手拍的窗外来客起个名字</p><strong>已完成</strong></article></div>
+  </div>
+  <p class="rv-note"><b>触发</b>：新增一枚印章。<b>说明</b>：数字轻跳 + 新卡片轻微放大，不用滚动或弹窗。</p>
+ </article>
+
+  <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E3</span><span class="rv-name">“选一种做法”错峰入场 + 换题抽走/飘入</span><span class="rv-spec">a-rise 0.42s 错峰 70ms；换题 a-swap-out .26s → a-rise .34s</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="angle-grid rv-fake" style="max-width:560px">
+    <button class="angle-card d-rise" style="animation-delay:0s"><span class="answer-key">01</span><strong>做法 1</strong><span>天气播报：用一个词写天气，再用一个词写心情。</span></button>
+    <button class="angle-card d-rise" style="animation-delay:.07s"><span class="answer-key">02</span><strong>做法 2</strong><span>数字日记：只写 3 个数字，让朋友猜。</span></button>
+   </div>
+   <div class="rv-fake" style="display:flex;gap:10px;align-items:center">
+    <div class="mission-card d-swap-out" style="max-width:260px">TASK-22<p>发一条仅自己可见的朋友圈：天气+心情各一个字</p></div>
+    <span style="font-size:11px;color:var(--muted)">→ 换题：旧卡抽走，新卡随后飘入</span>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：任务页首次渲染 / 点“换一个今日任务”。</p>
+ </article>
+</section>
+
+<!-- ===================== 双龙调度局（可选补强） ===================== -->
+<section class="rv-group"><h2>⑥ 双龙调度局补强 <small>DISPATCH · 可选，你上一版已加过路线/送达动画</small></h2>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">F1</span><span class="rv-name">回合执行：路径描边推进</span><span class="rv-spec">stroke-dashoffset 0.5s ease-out</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="rv-fake" style="background:#f8f5ec;border:1px solid var(--line);border-radius:10px">
+    <svg viewBox="0 0 960 220" style="width:100%;max-width:520px">
+     <path d="M130 160 L355 160" stroke="#c9c4ae" stroke-width="6" stroke-linecap="round"/>
+     <path class="d-draw" d="M130 160 L355 160" stroke="#294b40" stroke-width="6" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+     <path d="M355 160 L585 60" stroke="#c9c4ae" stroke-width="6" stroke-linecap="round"/>
+     <circle cx="130" cy="160" r="13" fill="#e9c85d" stroke="#294b40" stroke-width="2.5"/>
+     <circle cx="355" cy="160" r="13" fill="#f8f4e9" stroke="#294b40" stroke-width="2.5"/>
+     <circle cx="585" cy="60" r="13" fill="#f8f4e9" stroke="#294b40" stroke-width="2.5"/>
+    </svg>
+    <div style="font-size:11px;color:var(--muted);padding:0 0 10px 14px">Ember 移动：厨房 → 沼泽（本回合实际走的那一段）</div>
+   </div>
+  </div>
+  <p class="rv-note"><b>触发</b>：单步/批量执行。<b>说明</b>：只描“这一步真正走过”的边，与已有的龙/货物到场动画叠加使用；如与你现有实现冲突可跳过本项。</p>
+ </article>
+
+ <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">F2</span><span class="rv-name">结算卡展开（复用现有 odd-unfold）</span><span class="rv-spec">a-unfold 0.5s ease-out</span><button data-replay>重播</button></div>
+  <div class="rv-stage">
+   <div class="dispatch-execution-card is-new-single d-unfold rv-fake" style="padding:14px;border:1px solid var(--line);border-radius:10px;background:#fffdf7;max-width:460px">
+    <div class="result-kicker">本回合结果</div>
+    <p style="font-size:13px"><strong>Ember</strong> 把火山汤送到档案馆，用时 2 回合。</p>
+    <p style="font-size:12px;color:var(--muted)">剩余体力 2 · 剩余货物 2 件</p>
+   </div>
+  </div>
+  <p class="rv-note"><b>说明</b>：直接复用你已有的 <code>odd-unfold</code>，统一“结果类卡片”的登场手感。</p>
+ </article>
+</section>
+
+<!-- ===================== 清单 ===================== -->
+<section class="rv-group"><h2>⑦ 规格清单 <small>SPEC</small></h2>
+ <table class="rv-table">
+  <thead><tr><th>编号</th><th>动效</th><th>触发</th><th>时长 / 缓动</th><th>说明</th></tr></thead>
+  <tbody>
+   <tr><td>A1</td><td>首屏标题+卡片错峰上浮</td><td>首页/玩法首次渲染</td><td>0.42s ease-out，错峰 70ms</td><td>位移仅 10px，不改变布局</td></tr>
+   <tr><td>A2</td><td>品牌星标旋转一次 / toast 滑入</td><td>事件发生瞬间</td><td>0.9s ease-out</td><td>不做常驻无限旋转</td></tr>
+   <tr><td>A3</td><td>卡片悬停抬升 + 插图微放大</td><td>:hover</td><td>0.25s / 0.3s ease-out</td><td>在现有 hover 上加强</td></tr>
+   <tr><td>B1</td><td>换题方向滑入</td><td>下一题 / 上一题</td><td>0.3s ease-out</td><td>位移 14px，方向跟随操作</td></tr>
+   <tr><td>B2</td><td>答案盖章</td><td>点击选项</td><td>0.22s ease-out</td><td>scale 0.97→1.03→1</td></tr>
+   <tr><td>B3</td><td>结果头像眨眼</td><td>结果卡首次出现</td><td>0.34s，delay 0.22s</td><td>只眨一次</td></tr>
+   <tr><td>B4</td><td>预览对比先后高亮</td><td>点“预览不同答案”</td><td>0.6s，错峰 0.18s</td><td>先“改前”后“改后”</td></tr>
+   <tr><td>C1</td><td>场景切换 + 进度盖章</td><td>做出选择后</td><td>0.35s / 0.32s</td><td>橙色标记条展开</td></tr>
+   <tr><td>C2</td><td>资源数字跳动</td><td>选中消耗/收益选项</td><td>0.45s</td><td>只提示变化的数字</td></tr>
+   <tr><td>C3</td><td>结局档案展开</td><td>第三幕完成</td><td>0.5s ease-out</td><td>因果行随后淡入</td></tr>
+   <tr><td>D1</td><td>抽签结果聚焦定格</td><td>点“快速抽签”</td><td>0.4s ease-out</td><td>blur→清晰</td></tr>
+   <tr><td>D2</td><td>对决两卡上桌</td><td>进入比较轮 / 下一对</td><td>0.32s ease-out</td><td>左右对称入场</td></tr>
+   <tr><td>D3</td><td>落败翻出 / 撤销退回</td><td>淘汰、撤销</td><td>0.3s / 逆播</td><td>撤销＝正向逆播</td></tr>
+   <tr><td>E1</td><td>打卡印章落下</td><td>点“我做到了”</td><td>0.42s 过冲曲线</td><td>只播一次</td></tr>
+   <tr><td>E2</td><td>印章本计数跳动</td><td>新增印章</td><td>0.3s ease-out</td><td>数字 + 新卡</td></tr>
+   <tr><td>E3</td><td>做法卡错峰 / 换题抽走飘入</td><td>任务页渲染 / 换题</td><td>0.42s / 0.26s+0.34s</td><td>错峰 70ms</td></tr>
+   <tr><td>F1</td><td>路径描边推进（可选）</td><td>单步/批量执行</td><td>0.5s ease-out</td><td>只描本回合实际走过的边</td></tr>
+   <tr><td>F2</td><td>结算卡展开</td><td>回合结算</td><td>0.5s ease-out</td><td>复用已有 odd-unfold</td></tr>
+   <tr><td>G</td><td>全局降级</td><td>—</td><td>—</td><td>prefers-reduced-motion 下全部关闭</td></tr>
+  </tbody>
+ </table>
+ <p class="rv-hint"><b>性能与可访问性</b>：全部动画只改 <code>transform</code>/<code>opacity</code>/<code>filter</code>（合成层，不触发重排）；单项时长 ≤0.9s，不播常驻动画；系统开启“减弱动态效果”时全部关闭（应用现有全局规则）。不会改动任何玩法逻辑、文案、语言与数据行为。</p>
+</section>
+</div>
+
+<script>
+ (function(){
+  const stages=[...document.querySelectorAll('.rv-stage')];
+  function play(stage){ if(!stage)return; stage.classList.remove('is-play'); void stage.offsetWidth; stage.classList.add('is-play'); }
+  document.querySelectorAll('[data-replay]').forEach(b=>b.addEventListener('click',()=>play(b.closest('.rv-demo').querySelector('.rv-stage'))));
+  document.getElementById('rv-all').addEventListener('click',()=>stages.forEach((s,i)=>setTimeout(()=>play(s),i*40)));
+  let timer=null;
+  document.getElementById('rv-loop').addEventListener('change',e=>{
+   if(e.target.checked){ timer=setInterval(()=>stages.forEach((s,i)=>setTimeout(()=>play(s),i*40)),3400); }
+   else{ clearInterval(timer); timer=null; }
+  });
+  // 首次进入自动演示一轮（错峰，避免同时开播）
+  stages.forEach((s,i)=>setTimeout(()=>play(s),180+i*120));
+ })();
+</script>
+</body>
+</html>
