@@ -1,23 +1,23 @@
 # OddLab · Five little experiments
 
-English by default, with Simplified Chinese, Japanese, and Spanish. Reuses the existing Sites project and public URL. Four original games plus Dragon Dispatch run locally; Dispatch has a six-turn first puzzle, an eight-turn return puzzle, and a nine-turn Market Relay. A small Worker/D1 service persists aggregate activity.
+English by default, with Simplified Chinese, Japanese, and Spanish. Reuses the existing Sites project and public URL. Four expanded mini-games plus Dragon Dispatch run locally; Dispatch has a six-turn first puzzle, an eight-turn return puzzle, and a nine-turn Market Relay. A small Worker/D1 service persists aggregate activity.
 
 ## Source and build
 
-- `app.js`, `logic.mjs`: the original four games, result restoration, UTC+8 missions, clipboard/share fallbacks. Dragon Dispatch is the home-page lead game.
+- `app.js`, `logic.mjs`: app routing, original persona scoring and archive restoration, UTC+8 mission rotation/storage, clipboard/share fallbacks. `games-content.mjs`, `games-logic.mjs`, and `games-ui.mjs` provide four-language branching life stories, counterfactual persona previews, choice duels, and two-angle daily missions without changing the original persona scoring or life archive IDs.
 - `dispatch-logic.mjs`: deterministic first/return/market routing rules and immutable projections; the pickup levels model cargo responsibility separately from pickup, with delivery-before-pickup settlement and capacity warnings. `dispatch-ui.mjs` and `dispatch-copy.mjs` provide the shared route board, illustrated cargo/places, event-led execution feedback, and four-language interface. The original image prompts, source provenance, output sizes and byte budget are documented in `assets/dispatch/README.md`; `dispatch-assets.mjs` is the four-image public allowlist.
 - `ui-catalog.mjs`: pure four-language UI catalog; `i18n.mjs`: browser language preference/query handling. `locales/{en,zh,ja,es}.json`: complete localized content packs. All IDs, scoring, versions, and task rotation remain consistent. Edit the committed locale packs together when changing content; the build does not silently overwrite them from the parent folder.
-- `analytics.mjs`: page views and real UI clicks; never reads answer choices, form contents, or browser identifiers.
+- `analytics.mjs`: page views and real UI clicks; new game buttons share only the fixed `experiment-action` category. It never reads answer choices, branch IDs, candidate text, task approaches, form contents, or browser identifiers.
 - `worker/runtime.mjs`: public assets and `/api/track`, `/api/stats`. `prepare.mjs` generates `worker/index.js` with embedded assets; the four versioned WebPs are emitted as base64 source and decoded/cached only for allowlisted image GETs. HEAD keeps an empty body, and other paths use the normal 404 response.
 - `db/schema.ts`, `drizzle/`: D1 schema and versioned migrations. The request handler never creates tables. Sites provisions binding `DB` and applies packaged migrations.
 
-With Node 24+: `node prepare.mjs && bash scripts/build.sh && node scripts/validate-artifact.mjs`. Tests: `node verify.mjs && node verify-server.mjs && node verify-pages.mjs && node verify-dispatch.mjs && node verify-market.mjs` (also available through `npm test`). The server test uses actual in-memory SQLite through a D1-compatible adapter. `node scripts/preview.mjs` serves port 8765 with a separate SQLite file in `/private/tmp`; local data is never deployed. Dev-only drizzle tooling is locked in `pnpm-lock.yaml`; runtime has no package dependencies.
+With Node 24+: `node prepare.mjs && bash scripts/build.sh && node scripts/validate-artifact.mjs`. Tests: `node verify.mjs && node verify-server.mjs && node verify-pages.mjs && node verify-dispatch.mjs && node verify-market.mjs && node verify-games.mjs` (also available through `npm test`). The server test uses actual in-memory SQLite through a D1-compatible adapter. `node scripts/preview.mjs` serves port 8765 with a separate SQLite file in `/private/tmp`; local data is never deployed. Dev-only drizzle tooling is locked in `pnpm-lock.yaml`; runtime has no package dependencies.
 
 The Worker ESM build emits `dist/server/index.js` and `dist/.openai/hosting.json`. The Sites packaging helper copies root `drizzle/` to `dist/.openai/drizzle/`. Keep deployed migration files immutable; generate a new migration for future schema changes.
 
 ## GitHub Pages (static public build)
 
-A second, independent build target serves the same games as a public static site, for example the TRAE 1024 showcase entry. It reuses every game, all four languages, result restoration, sharing and local progress, and adds no accounts, multiplayer, leaderboards or new mechanics.
+A second, independent build target serves the same games as a public static site, for example the TRAE 1024 showcase entry. It includes all four languages, original result restoration, the branching life adventure, counterfactual quiz preview, choice duel, daily mission booklet, and browser-local progress. It adds no accounts, multiplayer, or leaderboards.
 
 ```bash
 npm test              # existing content, routing and Worker checks
@@ -44,11 +44,11 @@ Automatic deployment: `.github/workflows/pages.yml` runs on every push to `main`
 
 ## Language and data behavior
 
-`?lang=en|zh|ja|es` overrides the saved language preference. `/dispatch?level=return` opens the second puzzle and `?level=market` opens Market Relay; omitting `level` opens the first. Challenge links retain only a public level slug and language, never cargo responsibility, routes, or game state. Links carry language even when localStorage is denied. Changing language preserves the current quiz answers, public result ID, life theme, daily progress, and custom decision list; untouched preset lists translate. Shared results display in the link’s language. Custom lists stay in the page and never enter share URLs or analytics.
+`?lang=en|zh|ja|es` overrides the saved language preference. `/dispatch?level=return` opens the second puzzle and `?level=market` opens Market Relay; omitting `level` opens the first. Challenge links retain only a public level slug and language, never cargo responsibility, routes, or game state. Links carry language even when localStorage is denied. Changing language preserves quiz answer indices and the selected counterfactual question, archive result IDs, adventure scene/resources/history, choice scene/mode and duel indices, daily task progress, and custom decision text; preset options translate by stable scene and option index. New adventures and duel progress exist only in page memory; invitation links do not encode either game state or custom candidates.
 
 Activity is administrator-only at `/admin` (legacy `/stats` is equally protected), over the last 7/30/90 UTC+8 dates. Page views and clicks are separate events. Counters group by date, event kind, source page, sanitized destination URL, action category, and language. Only known page paths, the public `/dispatch?level=return|market` slugs, and public result IDs/version are retained in URLs; arbitrary query strings, fragments, IPs, identities, and input text are not stored by the application. The hosting platform may separately keep access logs. Aggregate rows currently have no automatic retention expiry. No unique visitor or fraud-proof claim: repeated clicks count; blocking/network errors can drop events. The stats page does not generate usage events about itself. Totals include all rows in the selected period; detail display is limited to 200 rows. Verification clicks after release are real counted events.
 
-Daily missions still reset at UTC+8 midnight in every language. Progress and language preference are browser-local; no account or cross-device sync. Clipboard fallback selects the current text. Native mobile sharing remains dependent on the device and browser.
+Daily missions still reset at UTC+8 midnight in every language. Task date, task IDs, swap count, completion-today IDs and unique booklet IDs stay in the existing browser-local task record; no angle choice is saved, and nothing syncs across devices. Persona answers, life adventures, and choice-duel progress stay in page memory. Clipboard fallback selects the current text. Native mobile sharing remains dependent on the device and browser.
 
 ## Publish
 

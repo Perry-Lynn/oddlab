@@ -44,7 +44,7 @@ async function exists(rel) { try { await stat(join(out, rel)); return true; } ca
 for (const route of publicRoutes) {
  assert.ok(await exists(route === '/' ? 'index.html' : `${route.slice(1)}/index.html`), `${route} has a static index.html`);
 }
-for (const file of ['404.html', '.nojekyll', 'sitemap.xml', 'robots.txt', 'app.js', 'hosting.mjs', 'page-content.mjs', 'analytics.mjs', 'dispatch-ui.mjs', 'dispatch-assets.mjs', 'style.css', 'favicon.svg']) assert.ok(await exists(file), `missing ${file}`);
+for (const file of ['404.html', '.nojekyll', 'sitemap.xml', 'robots.txt', 'app.js', 'hosting.mjs', 'page-content.mjs', 'analytics.mjs', 'games-content.mjs', 'games-logic.mjs', 'games-ui.mjs', 'dispatch-ui.mjs', 'dispatch-assets.mjs', 'style.css', 'favicon.svg']) assert.ok(await exists(file), `missing ${file}`);
 for (const lang of locales) assert.ok(await exists(`locales/${lang}.json`), `missing locale ${lang}`);
 for (const image of dispatchImageAssets) assert.ok(await exists(image.path), `missing image ${image.path}`);
 

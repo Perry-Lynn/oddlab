@@ -24,6 +24,7 @@
 .dispatch-feature .feature-action{position:absolute;left:28px;right:28px;bottom:23px;border-top-color:#294b4033;z-index:1}
 .dispatch-feature .round-arrow{background:#294b40;color:#f6f3eb}
 .persona-bg{background:#fbf4d9}
+.life-bg{background:#dce8ef}
 .dispatch-game{max-width:1280px;padding-top:24px}
 .dispatch-heading{max-width:930px;margin:0 auto 20px;text-align:center;color:#294b40}
 .dispatch-brandline{display:flex;justify-content:center;align-items:center;gap:10px;font:10px monospace;letter-spacing:1.2px;color:#708078}
@@ -500,3 +501,71 @@
  .play-card:hover,.play-card:hover .card-art,.dispatch-pick:hover .dispatch-portrait,.button:hover:not(:disabled),.button:active:not(:disabled),.chip:active:not(:disabled),.answer:active,.dispatch-pick:active,.dispatch-select:active{transform:none}
  .dispatch-celebration{display:none}
 }
+
+/* Four small experiments */
+.mode-tabs,.experiment-row,.scene-row,.theme-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.experiment-panel,.experiment-life,.experiment-choice,.experiment-task{margin:20px 0;padding:clamp(18px,4vw,30px);border:1px solid var(--line);border-radius:18px;background:#fbf8f0}
+.experiment-panel h3,.experiment-life h3,.experiment-choice h3,.experiment-task h3{margin:18px 0 8px;font-family:var(--serif)}
+.experiment-row .chip,.mode-tabs .chip,.scene-row .chip{min-height:40px}
+.experiment-options{display:grid;gap:10px;margin:14px 0}
+.experiment-options .answer{width:100%;text-align:left}
+.experiment-preview,.life-ending,.angle-detail,.choice-final,.notice-box{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fffdf7}
+.experiment-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.experiment-compare>div{display:grid;gap:6px;padding:12px;background:var(--green);border-radius:12px;overflow-wrap:anywhere}
+.experiment-compare strong{font-family:var(--serif);font-size:1.15rem}
+.life-start-head,.task-title-row{display:flex;align-items:center;gap:16px}
+.game-art{flex:0 0 76px;width:76px;height:76px;display:grid;place-items:center}
+.game-art svg{width:100%;height:100%;max-height:90px}
+.game-art.compact{width:44px;height:44px;flex-basis:44px;margin:8px 0}
+.life-placeholder{flex:1}
+.life-placeholder h2{margin:0 0 5px;font-family:var(--serif)}
+.life-placeholder p{margin:0;color:var(--muted)}
+.resource-board{display:flex;justify-content:space-between;gap:10px;margin:18px 0;padding:12px 15px;border:1px dashed #c8c8ba;border-radius:12px;background:#f5f1e5}
+.resource-board span{font-weight:600}
+.life-scene{margin:14px 0;padding:18px;border-left:4px solid var(--orange);background:#fffdf7}
+.life-scene h2{margin:0 0 5px;font-family:var(--serif)}
+.life-scene p{margin:0;color:#54564f}
+.life-progress{display:flex;gap:8px;margin:10px 0}
+.life-progress span{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;color:var(--muted);font-size:12px}
+.life-progress .complete{background:var(--yellow);border-color:var(--ink);color:var(--ink)}
+.life-history{display:grid;gap:10px;padding-left:22px}
+.life-history li{padding:10px 12px;border-left:2px solid var(--yellow);background:#f6f3eb}
+.life-history li strong,.life-history li span{display:block}
+.life-history li span{margin-top:4px;color:var(--muted)}
+.life-cause{padding:12px;border-radius:10px;background:var(--blue);overflow-wrap:anywhere}
+.editor-label{display:flex;justify-content:space-between;gap:10px;margin:16px 0 6px;font-weight:700}
+.choice-editor{display:block;width:100%;min-height:120px;padding:12px;border:1px solid #c8c8ba;border-radius:12px;background:#fffdf7;color:var(--ink);resize:vertical;overflow-wrap:anywhere}
+.choice-records{padding-left:22px}
+.choice-records li{margin:8px 0;padding:10px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}
+.choice-records li span,.choice-records li small{display:block}
+.choice-records li small{margin-top:5px;color:var(--muted)}
+.choice-final{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;font-size:1.1rem}
+.task-title-row{align-items:flex-start}
+.task-title-row .task-content{flex:1;min-width:0;overflow-wrap:anywhere}
+.angle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.angle-card{display:grid;gap:7px;min-width:0;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fffdf7;color:var(--ink);text-align:left;cursor:pointer}
+.angle-card.selected{border:2px solid var(--ink);background:var(--yellow)}
+.angle-card span:last-child{overflow-wrap:anywhere}
+.mission-details{margin:12px 0;border:1px solid var(--line);border-radius:12px;background:#fffdf7}
+.mission-details>summary{display:flex;justify-content:space-between;gap:12px;padding:14px;cursor:pointer;font-weight:700}
+.mission-book{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 12px 12px}
+.mission-card{min-width:0;padding:10px;border:1px dashed var(--line);border-radius:10px;font-size:12px;overflow-wrap:anywhere}
+.mission-card p{margin:5px 0}
+.mission-card strong{color:var(--muted)}
+.mission-card.stamped{border-style:solid;background:var(--green)}
+@media(max-width:520px){
+ .experiment-panel,.experiment-life,.experiment-choice,.experiment-task{padding:15px;margin:14px 0}
+ .experiment-compare{grid-template-columns:1fr}
+ .angle-grid{grid-template-columns:1fr}
+ .mission-book{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .life-start-head{align-items:flex-start}
+ .game-art{width:56px;height:56px;flex-basis:56px}
+ .game-art.compact{width:38px;height:38px;flex-basis:38px}
+ .life-cause{font-size:13px}
+ .choice-final{align-items:stretch}
+}
+.task-count-caption{margin:4px 0 12px;color:var(--muted);font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+.task-date{flex-wrap:wrap;min-width:0}
+.task-date .pill{max-width:100%;white-space:normal;overflow-wrap:anywhere;letter-spacing:0}
+.task-swap-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:12px 0}
+.task-swap-row .note{margin:0;max-width:100%;overflow-wrap:anywhere}

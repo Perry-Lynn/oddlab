@@ -1,6 +1,6 @@
 import { asset, currentRoute } from './hosting.mjs';
 const routes=new Set(['/','/dispatch','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact']);
-const actions=new Set(['answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action']);
+const actions=new Set(['answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action','experiment-action']);
 function publicPath(pathname){const route=currentRoute(pathname);return route==='index'?'/':'/'+route;}
 export function startAnalytics(getLanguage){
  // The static GitHub Pages build ships with ODDLAB_STATS=false: it has no D1 backend,

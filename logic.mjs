@@ -22,6 +22,7 @@ export function taskState(saved, pack, date = beijingDate()) {
   const sameDay = valid && saved.date === date && saved.rotationVersion === pack.rotation.version;
   return { date, rotationVersion: pack.rotation.version, currentTaskId: sameDay && ids.has(saved.currentTaskId) ? saved.currentTaskId : dailyTask(pack, date).id,
     swapsUsed: sameDay && Number.isInteger(saved.swapsUsed) ? Math.max(0, Math.min(2, saved.swapsUsed)) : 0,
+    todayDoneIds: sameDay && Array.isArray(saved.todayDoneIds) ? [...new Set(saved.todayDoneIds.filter(x => ids.has(x)))] : (sameDay && ids.has(saved.todayDoneId) ? [saved.todayDoneId] : []),
     doneIds: valid && Array.isArray(saved.doneIds) ? [...new Set(saved.doneIds.filter(x => ids.has(x)))] : [] };
 }
 export function randomOne(items, random = Math.random) { return items[Math.floor(random() * items.length)]; }

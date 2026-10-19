@@ -1,6 +1,6 @@
 const paths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/about','/privacy','/terms','/contact','/stats']);
 const languages=new Set(['en','zh','ja','es']);
-const actions=new Set(['view','navigate','language','answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action']);
+const actions=new Set(['view','navigate','language','answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action','experiment-action']);
 const resultIds=new Set(PUBLIC_RESULT_IDS);
 const decodedDispatchImages=new Map();
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-robots-tag':'noindex'}});

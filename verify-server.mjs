@@ -9,6 +9,12 @@ assert.equal((await worker.fetch(request(),{DB})).status,204);assert.equal((awai
 const rows=DB.sqlite.prepare('SELECT * FROM activity_daily').all();assert.equal(rows.length,1);assert.equal(rows[0].count,2);assert.equal(rows[0].target_url,origin+'/choice?lang=es');assert.ok(!JSON.stringify(rows).includes('PRIVATE'));
 assert.equal((await worker.fetch(request(event,{origin:'https://elsewhere.example'}),{DB})).status,403);
 assert.equal((await worker.fetch(request({...event,action:'USER_INPUT'}),{DB})).status,400);
+const experimentEvent={kind:'click',source_path:'/task',target_url:origin+'/task?lang=es&r=task-01&angle=1&privateText=PRIVATE',action:'experiment-action',locale:'es'};
+assert.equal((await worker.fetch(request(experimentEvent),{DB})).status,204,'all new game controls share one public analytics action');
+assert.equal((await worker.fetch(request({...experimentEvent,action:'task-angle'}),{DB})).status,400,'sub-actions cannot become analytics categories');
+const experimentRow=DB.sqlite.prepare('SELECT target_url,action FROM activity_daily WHERE action=?').get('experiment-action');
+assert.equal(experimentRow.target_url,origin+'/task?lang=es&r=task-01');assert.equal(experimentRow.action,'experiment-action');
+assert.ok(!JSON.stringify(experimentRow).includes('PRIVATE'));
 assert.equal((await worker.fetch(request({...event,target_url:'https://elsewhere.example/x'}),{DB})).status,400);
 assert.equal((await worker.fetch(request({...event,target_url:origin+'/choice?r=PRIVATE_INPUT'}),{DB})).status,204);
 const dispatchEvent={kind:'click',source_path:'/dispatch',target_url:origin+'/dispatch?lang=ja&level=return&route=PRIVATE',action:'dispatch-action',locale:'ja'};
@@ -20,10 +26,10 @@ const cleaned=DB.sqlite.prepare('SELECT target_url FROM activity_daily WHERE act
 assert.deepEqual(cleaned,[origin+'/choice?lang=zh',origin+'/dispatch?lang=en&level=market',origin+'/dispatch?lang=es',origin+'/dispatch?lang=ja&level=return']);
 assert.equal((await worker.fetch(request({...event,target_url:'x'.repeat(5000)}),{DB})).status,413);
 assert.equal((await worker.fetch(request(),{})).status,503);
-const stats=await (await worker.fetch(new Request(origin+'/api/stats?days=7',{headers:adminHeaders}),adminEnv)).json();assert.equal(stats.totals.clicks,7);assert.equal(stats.totals.page_views,0);assert.equal(stats.timezone,'UTC+8');assert.equal(stats.daily.length,1);
+const stats=await (await worker.fetch(new Request(origin+'/api/stats?days=7',{headers:adminHeaders}),adminEnv)).json();assert.equal(stats.totals.clicks,8);assert.equal(stats.totals.page_views,0);assert.equal(stats.timezone,'UTC+8');assert.equal(stats.daily.length,1);
 assert.equal((await worker.fetch(new Request(origin+'/api/stats?days=999',{headers:adminHeaders}),adminEnv)).status,400);
 assert.equal((await worker.fetch(new Request(origin+'/api/track'),{DB})).status,405);
-for(const path of ['/','/persona','/life','/task','/choice','/privacy','/locales/es.json','/i18n.mjs','/dispatch-assets.mjs'])assert.equal((await worker.fetch(new Request(origin+path))).status,200);
+for(const path of ['/','/persona','/life','/task','/choice','/privacy','/locales/es.json','/i18n.mjs','/dispatch-assets.mjs','/games-content.mjs','/games-logic.mjs','/games-ui.mjs'])assert.equal((await worker.fetch(new Request(origin+path))).status,200);
 assert.match(await (await worker.fetch(new Request(origin+'/dispatch-assets.mjs'))).text(),/rememberDispatchImageFailure/);
 for(const path of ['/assets/dispatch/hero-v1.webp','/assets/dispatch/ember-v1.webp','/assets/dispatch/gale-v1.webp','/assets/dispatch/terrain-v1.webp']){
  const response=await worker.fetch(new Request(origin+path));assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'image/webp');assert.match(response.headers.get('cache-control'),/immutable/);
