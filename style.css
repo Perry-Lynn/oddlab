@@ -569,3 +569,67 @@
 .task-date .pill{max-width:100%;white-space:normal;overflow-wrap:anywhere;letter-spacing:0}
 .task-swap-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:12px 0}
 .task-swap-row .note{margin:0;max-width:100%;overflow-wrap:anywhere}
+
+/* Micro-animations for the home page and the four experiments.
+   Only transform/opacity/filter/background are animated, each item runs at most
+   once, and the existing global prefers-reduced-motion rule turns them all off. */
+@keyframes odd-slide-next{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes odd-slide-prev{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes odd-stamp{0%{transform:scale(.97) rotate(-.8deg)}45%{transform:scale(1.03) rotate(.4deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes odd-blink{0%,100%{transform:scaleY(1)}45%,55%{transform:scaleY(.1)}}
+@keyframes odd-flash{0%{background:#fffdf7}32%{background:var(--yellow)}100%{background:#fffdf7}}
+@keyframes odd-scene{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes odd-bump{0%{transform:translateY(0)}40%{transform:translateY(-5px)}100%{transform:translateY(0)}}
+@keyframes odd-pop-scale{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+@keyframes odd-blur-in{from{opacity:.3;filter:blur(7px);transform:translateY(7px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes odd-duel-left{from{opacity:0;transform:translateX(-24px) rotate(-1.6deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes odd-duel-right{from{opacity:0;transform:translateX(24px) rotate(1.6deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes odd-stamp-down{0%{opacity:0;transform:translateY(-18px) rotate(-18deg) scale(1.45)}62%{opacity:1;transform:translateY(0) rotate(-8deg) scale(1.03)}100%{opacity:1;transform:translateY(0) rotate(-8deg) scale(1)}}
+@keyframes odd-tick{0%{transform:translateY(0)}45%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+@keyframes odd-spin-once{to{transform:rotate(360deg)}}
+
+/* Home: the first screen rises in, staggered; brand star spins once per load. */
+.home-hero .intro>*,.home-hero .feature,.section-heading,.play-grid .play-card,.home-end,.page-guide>h2,.page-guide>ol,.page-guide>details,.page-guide>nav{animation:odd-reveal .42s ease-out backwards}
+.home-hero .intro>*:nth-child(2){animation-delay:.07s}
+.home-hero .intro>*:nth-child(3){animation-delay:.14s}
+.home-hero .intro>*:nth-child(4){animation-delay:.2s}
+.home-hero .feature{animation-delay:.12s}
+.play-grid .play-card:nth-child(2){animation-delay:.14s}
+.play-grid .play-card:nth-child(3){animation-delay:.21s}
+.play-grid .play-card:nth-child(4){animation-delay:.28s}
+.play-grid .play-card:nth-child(5){animation-delay:.35s}
+.brand-mark{animation:odd-spin-once .9s ease-out}
+.play-card:hover .card-art,.feature:hover .dispatch-feature-art{animation:odd-pop-scale .3s ease-out}
+
+/* Motion hooks, added by the renderers only on the render that needs them. */
+/* .resource-board strong is inline by default, and transforms do not apply to
+   inline boxes, so the resource bump needs an inline-block box. */
+.resource-board strong{display:inline-block}
+.mo-rise{animation:odd-reveal .42s ease-out backwards}
+.mo-next{animation:odd-slide-next .3s ease-out backwards}
+.mo-prev{animation:odd-slide-prev .3s ease-out backwards}
+.mo-stamp{animation:odd-stamp .22s ease-out backwards}
+.mo-flash{animation:odd-flash .6s ease-out backwards}
+.mo-flash-b{animation:odd-flash .6s ease-out .18s backwards}
+.mo-bump.mo-flash{animation:odd-bump .45s ease-out backwards,odd-flash .6s ease-out backwards}
+.mo-scene{animation:odd-scene .35s ease-out backwards}
+.mo-pop{animation:odd-pop-scale .3s ease-out backwards}
+.mo-unfold{animation:odd-unfold .5s ease-out backwards}
+.mo-blur{animation:odd-blur-in .4s ease-out backwards}
+.mo-duel-left{animation:odd-duel-left .32s ease-out backwards}
+.mo-duel-right{animation:odd-duel-right .32s ease-out backwards}
+.mo-stamp-down{animation:odd-stamp-down .42s cubic-bezier(.2,.9,.3,1.25) backwards}
+.mo-tick{animation:odd-tick .3s ease-out backwards}
+.mo-swap-in{animation:odd-reveal .34s ease-out .18s backwards}
+.mo-blink-art ellipse{transform-box:fill-box;transform-origin:center;animation:odd-blink .34s ease-in-out .22s}
+/* Sequenced variants: the container stays still, its children enter in order. */
+.mo-next-seq>*{animation:odd-slide-next .3s ease-out backwards}
+.mo-prev-seq>*{animation:odd-slide-prev .3s ease-out backwards}
+.mo-rise-seq>*{animation:odd-reveal .42s ease-out backwards}
+.mo-next-seq>*:nth-child(2),.mo-prev-seq>*:nth-child(2),.mo-rise-seq>*:nth-child(2){animation-delay:.05s}
+.mo-next-seq>*:nth-child(3),.mo-prev-seq>*:nth-child(3),.mo-rise-seq>*:nth-child(3){animation-delay:.1s}
+.mo-next-seq>*:nth-child(4),.mo-prev-seq>*:nth-child(4),.mo-rise-seq>*:nth-child(4){animation-delay:.15s}
+.mo-next-seq>*:nth-child(n+5),.mo-prev-seq>*:nth-child(n+5),.mo-rise-seq>*:nth-child(n+5){animation-delay:.2s}
+.life-ending.mo-unfold .life-cause{animation:odd-reveal .42s ease-out .2s backwards}
+
+
