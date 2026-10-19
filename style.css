@@ -432,10 +432,11 @@
 .dispatch-execution-icon .dispatch-portrait{--portrait-size:29px!important;width:29px;height:29px}
 .dispatch-execution-event.is-auto-idle{grid-template-columns:45px minmax(0,1fr);color:#72766a;font-size:10px}
 .dispatch-execution-card.is-new-single{animation:dispatch-arrival .28s ease-out both}
-.dispatch-execution-card.is-new-single [data-event-code="dragon_moved"] .dispatch-portrait{animation:dispatch-dragon-arrival .3s ease-out both}
+.dispatch-execution-card.is-new-single [data-event-code="dragon_moved"] .dispatch-portrait{animation:dispatch-portrait-hop .55s cubic-bezier(.2,.9,.3,1.25) both}
+.dispatch-execution-card.is-new-single [data-event-code="order_delivered"] .dispatch-portrait{animation:dispatch-portrait-dive .6s cubic-bezier(.3,.1,.2,1) both}
+.dispatch-execution-card.is-new-single [data-event-code="order_picked_up"] .dispatch-portrait{animation:dispatch-portrait-grab .42s ease-out both}
 .dispatch-execution-card.is-new-single [data-event-code="order_delivered"] .dispatch-parcel-art{animation:dispatch-parcel-arrival .3s cubic-bezier(.2,.8,.2,1) both}
 @keyframes dispatch-arrival{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-@keyframes dispatch-dragon-arrival{from{opacity:.55;transform:translateX(-5px) scale(.9)}to{opacity:1;transform:translateX(0) scale(1)}}
 @keyframes dispatch-parcel-arrival{from{opacity:.45;transform:translateY(-5px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.dispatch-execution-card.is-new-single,.dispatch-execution-card.is-new-single .dispatch-portrait,.dispatch-execution-card.is-new-single .dispatch-parcel-art{animation:none!important}}
 @media(max-width:640px){
@@ -493,7 +494,7 @@
 .dispatch-motion-overlay,.dispatch-motion-overlay *{pointer-events:none}
 .dispatch-result{position:relative;isolation:isolate}
 .dispatch-celebration{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2;border-radius:inherit}
-.dispatch-celebration i{position:absolute;top:0;left:var(--x);width:7px;height:12px;border-radius:2px;background:var(--color);opacity:0;animation:dispatch-confetti 1.5s calc(var(--i) * 35ms) ease-out both}
+.dispatch-celebration i{position:absolute;top:0;left:var(--x);width:7px;height:12px;border-radius:2px;background:var(--color);opacity:0;animation:dispatch-confetti 1.5s calc(var(--delay,0ms) + var(--i) * 35ms) ease-out both}
 @keyframes odd-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes odd-unfold{from{opacity:.25;transform:translateY(8px) scale(.96)}65%{opacity:1;transform:translateY(-2px) scale(1.015)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes dispatch-confetti{0%{opacity:0;transform:translate(-50%,-15px) rotate(0)}12%{opacity:.9}to{opacity:0;transform:translate(var(--drift),180px) rotate(240deg)}}
@@ -501,6 +502,26 @@
  .play-card:hover,.play-card:hover .card-art,.dispatch-pick:hover .dispatch-portrait,.button:hover:not(:disabled),.button:active:not(:disabled),.chip:active:not(:disabled),.answer:active,.dispatch-pick:active,.dispatch-select:active{transform:none}
  .dispatch-celebration{display:none}
 }
+
+/* Dragon Dispatch character motion. The painted artwork is used as the map sprite and
+   the group that animates never carries the positioning transform (its anchor does), so
+   no motion can drop the dragon at the map origin. Transform origin sits at each
+   sprite's own centre so banking and squash stay in place. */
+.dispatch-dragon-anchor{pointer-events:none}
+.dispatch-dragon-sprite,.dispatch-dragon-art{transform-box:fill-box;transform-origin:50% 60%}
+.dispatch-dragon-glyph[hidden]{display:none}
+@keyframes dispatch-portrait-breath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.035)}}
+@keyframes dispatch-portrait-hop{0%{transform:translateY(0) rotate(0)}38%{transform:translateY(-13px) rotate(-3deg)}70%{transform:translateY(-2px) rotate(1deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes dispatch-portrait-dive{0%{transform:translateY(-14px) scale(.9) rotate(-9deg)}55%{transform:translateY(6px) scale(1.06,.93) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
+@keyframes dispatch-portrait-grab{0%{transform:scale(1,1)}34%{transform:scale(1.06,.9)}66%{transform:scale(.96,1.05)}100%{transform:scale(1,1)}}
+@keyframes dispatch-portrait-pick{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-4px) scale(1.08)}}
+@keyframes dispatch-portrait-shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-5px) rotate(-2deg)}35%{transform:translateX(5px) rotate(2deg)}55%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes dispatch-hero-float{0%,72%,100%{transform:translateY(0)}82%{transform:translateY(-5px)}92%{transform:translateY(-2px)}}
+.dispatch-select .dispatch-portrait,.dispatch-dragon-profile .dispatch-portrait{animation:dispatch-portrait-breath 3.4s ease-in-out infinite}
+.dispatch-select .dispatch-portrait[data-portrait-dragon="Gale"],.dispatch-dragon-profile .dispatch-portrait[data-portrait-dragon="Gale"]{animation-delay:.5s}
+.dispatch-select.is-new-select .dispatch-portrait{animation:dispatch-portrait-pick .38s cubic-bezier(.2,.9,.3,1.2) both}
+.dispatch-select.is-rejected .dispatch-portrait{animation:dispatch-portrait-shake .5s ease-in-out both}
+.dispatch-hero-art,.dispatch-feature-art{animation:dispatch-hero-float 4.6s ease-in-out infinite}
 
 /* Four small experiments */
 .mode-tabs,.experiment-row,.scene-row,.theme-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}

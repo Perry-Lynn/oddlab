@@ -11,7 +11,7 @@ const coordinates = { 'K-C': ['M 130 280 L 355 280', 243, 256], 'C-T': ['M 355 2
 let ui = {
   copy: dispatchCopy('en'), lang: 'en',
   state: createDispatchState(), plan: { Ember: [], Gale: [] }, selected: 'Ember',
-  history: [], tutorialDismissed: false, notice: '', noticeIssue: null, latestExecution: null, executionRun: [], executionSequence: 0, lastRenderedExecutionSequence: 0, container: null, pendingFocusKey: null, pendingResultFocus: false,
+  history: [], tutorialDismissed: false, notice: '', noticeIssue: null, noticeDragon: null, latestExecution: null, executionRun: [], executionSequence: 0, lastRenderedExecutionSequence: 0, lastRenderedSelection: null, container: null, pendingFocusKey: null, pendingResultFocus: false,
 };
 
 // Motion only presents completed turns. It never schedules or changes game state.
@@ -30,40 +30,103 @@ function animateElement(element, frames, options) {
   motionAnimations.push(animation);
   return animation;
 }
-function animateExecution(run) {
-  if (reducedMotion() || !run?.records.length) return;
-  const svg = ui.container.querySelector('.dispatch-map');
-  if (!svg?.animate) return;
-  const records = run.records, beat = run.mode === 'single' ? 760 : 560;
-  const markerPosition = (locations, dragon) => {
-    const [x, y] = point[locations[dragon]];
-    return [x + (locations.Ember === locations.Gale ? (dragon === 'Ember' ? -21 : 21) : 0), y - 45];
-  };
-  for (const dragon of DRAGONS) {
-    const frames = records.flatMap((record, index) => {
-      const start = markerPosition(record.from, dragon), end = markerPosition(record.to, dragon);
-      const from = record.from[dragon], to = record.to[dragon];
-      const edge = EDGES.find(item => (item.a === from && item.b === to) || (item.b === from && item.a === to));
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      if (edge) path.setAttribute('d', coordinates[edge.id][0]);
-      const length = edge ? path.getTotalLength() : 0;
-      const samples = Array.from({ length: 25 }, (_, sample) => {
-        const progress = sample / 24;
-        const eased = progress * progress * (3 - 2 * progress);
-        const p = edge ? path.getPointAtLength(length * (edge.a === from ? eased : 1 - eased)) : null;
-        const x = p ? p.x + (start[0] - point[from][0]) * (1 - eased) + (end[0] - point[to][0]) * eased : start[0] + (end[0] - start[0]) * eased;
-        const y = p ? p.y - 45 : start[1] + (end[1] - start[1]) * eased;
-        return { transform: `translate(${x}px, ${y}px)`, offset: (index + progress * .76) / records.length };
-      });
-      return [...samples, { transform: `translate(${end[0]}px, ${end[1]}px)`, offset: (index + 1) / records.length }];
-    });
-    animateElement(svg.querySelector(`[data-marker-dragon="${dragon}"]`), frames, { duration: beat * records.length, easing: 'linear' });
+function motionOverlay(svg) {
+  let overlay = svg.querySelector('.dispatch-motion-overlay');
+  if (!overlay) {
+    overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('pointer-events', 'none');
+    overlay.classList.add('dispatch-motion-overlay');
+    svg.append(overlay);
   }
-  const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  overlay.setAttribute('aria-hidden', 'true');
-  overlay.setAttribute('pointer-events', 'none');
-  overlay.classList.add('dispatch-motion-overlay');
-  svg.append(overlay);
+  return overlay;
+}
+// One run of the map sprite, expressed relative to the anchor it is rendered at, so
+// the animation always ends exactly on the resting position and never snaps back.
+function executionFrames(records, dragon, anchor, moving) {
+  const frames = [], endTransform = (x, y) => `translate(${(x - anchor[0]).toFixed(2)}px, ${(y - anchor[1]).toFixed(2)}px)`;
+  records.forEach((record, index) => {
+    const from = record.from[dragon], to = record.to[dragon];
+    const start = [point[from][0] + overlapOffset(record.from, dragon), point[from][1] - 45];
+    const end = [point[to][0] + overlapOffset(record.to, dragon), point[to][1] - 45];
+    const edge = moving ? EDGES.find(item => (item.a === from && item.b === to) || (item.b === from && item.a === to)) : null;
+    const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    if (edge) shape.setAttribute('d', coordinates[edge.id][0]);
+    const length = edge ? shape.getTotalLength() : 0;
+    const positions = Array.from({ length: 25 }, (_, sample) => {
+      const progress = sample / 24, eased = progress * progress * (3 - 2 * progress);
+      const at = edge ? shape.getPointAtLength(length * (edge.a === from ? eased : 1 - eased)) : null;
+      if (at) return [at.x + (start[0] - point[from][0]) * (1 - eased) + (end[0] - point[to][0]) * eased, at.y - 45];
+      return [start[0] + (end[0] - start[0]) * eased, start[1] + (end[1] - start[1]) * eased];
+    });
+    positions.forEach((position, sample) => {
+      const [x, y] = position, ahead = positions[Math.min(24, sample + 2)];
+      // A mild bank keeps the painting upright; the artwork faces left, so following
+      // the heading outright would turn the dragon upside down on rightward routes.
+      const bank = moving ? Math.max(-14, Math.min(14, Math.atan2(ahead[1] - y, ahead[0] - x) * 180 / Math.PI)) : 0;
+      frames.push({ transform: `${endTransform(x, y)} rotate(${bank.toFixed(1)}deg)`, offset: (index + sample / 24 * .76) / records.length });
+    });
+    if (moving) frames.push({ transform: `${endTransform(end[0], end[1])} scale(1.1,.86)`, offset: (index + .9) / records.length });
+    frames.push({ transform: endTransform(end[0], end[1]), offset: (index + 1) / records.length });
+  });
+  return frames;
+}
+function startIdle(svg, dragon, delay = 0) {
+  if (reducedMotion()) return;
+  const sprite = svg.querySelector(`[data-dragon-sprite="${dragon}"]`);
+  if (!sprite) return;
+  animateElement(sprite, [
+    { transform: 'translate(0px, 0px) rotate(0deg)' },
+    { transform: `translate(0px, -5px) rotate(${dragon === 'Ember' ? -1.4 : 1.4}deg)`, offset: .5 },
+    { transform: 'translate(0px, 0px) rotate(0deg)' },
+  ], { duration: 3000, delay, iterations: Infinity, easing: 'ease-in-out' });
+}
+function runRejectionMotion(svg, dragon) {
+  const sprite = svg.querySelector(`[data-dragon-sprite="${dragon}"]`);
+  if (!sprite) return;
+  animateElement(sprite, [
+    { transform: 'translate(0px, 0px) rotate(0deg)' },
+    { transform: 'translate(-5px, 0px) rotate(-2deg)', offset: .12 },
+    { transform: 'translate(5px, 0px) rotate(2deg)', offset: .3 },
+    { transform: 'translate(-3px, 0px) rotate(-1deg)', offset: .48 },
+    { transform: 'translate(3px, 0px) rotate(1deg)', offset: .66 },
+    { transform: 'translate(-2px, 0px) rotate(0deg)', offset: .82 },
+    { transform: 'translate(0px, 0px) rotate(0deg)' },
+  ], { duration: 550, easing: 'ease-in-out' });
+  animateElement(sprite, [
+    { filter: 'grayscale(0)' }, { filter: 'grayscale(.7) brightness(.88)', offset: .38 }, { filter: 'grayscale(0)' },
+  ], { duration: 550, easing: 'ease-out' });
+  const [x, y] = point[ui.state.locations[dragon]];
+  const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  ring.setAttribute('class', 'dispatch-motion-signal');
+  ring.setAttribute('r', '34');
+  ring.setAttribute('fill', 'none');
+  ring.setAttribute('stroke', '#df6441');
+  ring.setAttribute('stroke-width', '4');
+  motionOverlay(svg).append(ring);
+  const pulse = animateElement(ring, [
+    { transform: `translate(${x}px, ${y}px) scale(.6)`, opacity: 0 },
+    { transform: `translate(${x}px, ${y}px) scale(1.05)`, opacity: .85, offset: .4 },
+    { transform: `translate(${x}px, ${y}px) scale(1.85)`, opacity: 0 },
+  ], { duration: 550, easing: 'ease-out', fill: 'both' });
+  if (pulse) pulse.onfinish = () => ring.remove();
+  startIdle(svg, dragon, 560);
+}
+function runExecutionMotion(svg, run) {
+  const records = run.records, beat = run.mode === 'single' ? 760 : 560, duration = beat * records.length, won = ui.state.status === 'won';
+  for (const dragon of DRAGONS) {
+    const sprite = svg.querySelector(`[data-dragon-sprite="${dragon}"]`);
+    if (!sprite || !records.some(record => record.from[dragon] !== record.to[dragon])) continue;
+    animateElement(sprite, executionFrames(records, dragon, nodeAnchor(ui.state.locations, dragon), true), { duration, easing: 'linear' });
+    if (won) animateElement(sprite, [
+      { transform: 'translate(0px, 0px) rotate(0deg)' },
+      { transform: 'translate(0px, -18px) rotate(-5deg)', offset: .3 },
+      { transform: 'translate(0px, -21px) rotate(4deg)', offset: .55 },
+      { transform: 'translate(0px, -3px) rotate(0deg)', offset: .8 },
+      { transform: 'translate(0px, 0px) rotate(0deg)' },
+    ], { duration: 820, delay: duration + (dragon === 'Gale' ? 90 : 0), easing: 'ease-out' });
+    startIdle(svg, dragon, duration + (won ? 940 : 120));
+  }
   records.forEach((record, index) => {
     animateElement(ui.container.querySelector(`[data-execution-turn="${record.turn}"]`), [{ backgroundColor: '#e3edda' }, { backgroundColor: '#fffdf7' }], { delay: index * beat, duration: beat });
     for (const event of record.events) {
@@ -74,13 +137,20 @@ function animateExecution(run) {
       const signal = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       signal.setAttribute('class', 'dispatch-motion-signal');
       signal.innerHTML = `<circle r="42" fill="none" stroke="${delivered ? '#527853' : '#b68b3f'}" stroke-width="4"/><text y="-56" text-anchor="middle" fill="${delivered ? '#3e6946' : '#946a2e'}" font-size="32" font-weight="700">${delivered ? '✓' : '+'}</text>`;
-      overlay.append(signal);
+      motionOverlay(svg).append(signal);
       const animation = animateElement(signal, [
         { transform: `translate(${x}px, ${y}px) scale(.65)`, opacity: 0 },
         { transform: `translate(${x}px, ${y - 5}px) scale(1)`, opacity: 1, offset: .35 },
         { transform: `translate(${x}px, ${y - 14}px) scale(1.2)`, opacity: 0 },
       ], { delay, duration: 680, fill: 'both', easing: 'ease-out' });
       if (animation) animation.onfinish = () => signal.remove();
+      const art = svg.querySelector(`[data-dragon-sprite="${event.dragon}"] .dispatch-dragon-art`);
+      if (art) animateElement(art, [
+        { transform: 'translate(0px, 0px) rotate(0deg)' },
+        { transform: `translate(0px, ${delivered ? 7 : 9}px) rotate(${delivered ? -6 : 7}deg)`, offset: .26 },
+        { transform: 'translate(0px, 1px) rotate(-2deg)', offset: .5 },
+        { transform: 'translate(0px, 0px) rotate(0deg)' },
+      ], { delay, duration: 740, easing: 'ease-in-out' });
       if (delivered) animateElement(ui.container.querySelector(`.dispatch-cargo-line[data-order="${event.order}"]`), [
         { backgroundColor: '#d9e9ca', transform: 'scale(1.025)' }, { backgroundColor: '#f0f4eb', transform: 'scale(1)' },
       ], { delay, duration: 650 });
@@ -89,15 +159,35 @@ function animateExecution(run) {
   const result = ui.container.querySelector('.dispatch-result');
   if (result) {
     animateElement(result, [{ opacity: .5, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 420, easing: 'ease-out' });
-    if (ui.state.status === 'won') {
+    if (won) {
       const burst = document.createElement('span');
       burst.className = 'dispatch-celebration';
       burst.setAttribute('aria-hidden', 'true');
       burst.innerHTML = Array.from({ length: 18 }, (_, i) => `<i style="--i:${i};--x:${(i / 17 * 100).toFixed(1)}%;--drift:${i % 2 ? 32 : -32}px;--color:${['#c45b42', '#4c7890', '#d1a947', '#718d71'][i % 4]}"></i>`).join('');
+      burst.style.setProperty('--delay', `${duration}ms`);
       result.prepend(burst);
-      animateElement(result.querySelector('.dispatch-result-art'), [{ transform: 'scale(.65) rotate(-30deg)' }, { transform: 'scale(1.15) rotate(8deg)', offset: .65 }, { transform: 'scale(1) rotate(0)' }], { duration: 700, easing: 'ease-out' });
+      animateElement(result.querySelector('.dispatch-result-art'), [{ transform: 'scale(.65) rotate(-30deg)' }, { transform: 'scale(1.15) rotate(8deg)', offset: .65 }, { transform: 'scale(1) rotate(0)' }], { duration: 700, delay: duration, easing: 'ease-out' });
     }
   }
+}
+// Presenting a finished run, a rejected action and the resting pose all live here, so
+// the sprite is never driven by two transform animations at the same time.
+function animateBoardMotion(freshRun) {
+  if (reducedMotion()) return;
+  const svg = ui.container?.querySelector('.dispatch-map');
+  if (!svg?.animate) return;
+  const busy = new Set();
+  if (freshRun?.records?.length) {
+    runExecutionMotion(svg, freshRun);
+    for (const dragon of DRAGONS) if (freshRun.records.some(record => record.from[dragon] !== record.to[dragon])) busy.add(dragon);
+  }
+  const rejected = ui.noticeDragon || (freshRun?.stopped?.dragon && !busy.has(freshRun.stopped.dragon) ? freshRun.stopped.dragon : null);
+  if (rejected) {
+    runRejectionMotion(svg, rejected);
+    busy.add(rejected);
+  }
+  ui.noticeDragon = null;
+  for (const dragon of DRAGONS) if (!busy.has(dragon)) startIdle(svg, dragon);
 }
 
 const activeLevel = () => getDispatchLevel(ui.state.levelId);
@@ -160,7 +250,7 @@ function portraitFallback(dragon) {
 }
 function dragonPortrait(dragon, size = 52, alt = '', extra = '') {
   const path = `/assets/dispatch/${dragon.toLowerCase()}-v1.webp`, src = dispatchImageURL(path), failed = dispatchImageHasFailed(path);
-  return `<span class="dispatch-portrait ${extra}" style="--portrait-size:${size}px">${failed ? '' : `<img class="dispatch-generated-image" data-image-fallback src="${src}" width="${size}" height="${size}" alt="${esc(alt)}">`}<span class="dispatch-portrait-fallback-wrap" ${failed ? '' : 'hidden'}>${portraitFallback(dragon)}</span></span>`;
+  return `<span class="dispatch-portrait ${extra}" data-portrait-dragon="${dragon}" style="--portrait-size:${size}px">${failed ? '' : `<img class="dispatch-generated-image" data-image-fallback src="${src}" width="${size}" height="${size}" alt="${esc(alt)}">`}<span class="dispatch-portrait-fallback-wrap" ${failed ? '' : 'hidden'}>${portraitFallback(dragon)}</span></span>`;
 }
 function parcelGlyph(id, extra = '') {
   const art = {
@@ -194,7 +284,7 @@ function actionText(action, c = ui.copy) {
   if (action.type === 'move') return `${c.move} → ${c.locations[action.to]}`;
   return action.type === 'ration' ? c.ration : c.wait;
 }
-function showNotice(message, issue = null) { ui.notice = message; ui.noticeIssue = issue; render(); }
+function showNotice(message, issue = null, dragon = null) { ui.notice = message; ui.noticeIssue = issue; ui.noticeDragon = issue ? dragon : null; render(); }
 function marketStartCopy(c, level = activeLevel()) {
   return text(c.marketStartLocations, { ember: c.locations[level.startLocations.Ember], gale: c.locations[level.startLocations.Gale], home: c.locations.K });
 }
@@ -247,6 +337,25 @@ function dragonGlyph(dragon, x, y, planned = false) {
   return `<g class="dispatch-dragon-marker" data-marker-dragon="${dragon}" transform="translate(${x} ${y})" aria-hidden="true" pointer-events="none"><path d="M -13 -7 Q -23 -19 -8 -17 L 0 -9 Q 9 -21 20 -12 L 10 -3 Q 19 3 10 13 Q 0 20 -9 12 Q -17 4 -13 -7Z" fill="${color}" stroke="#fffaf0" stroke-width="2"/><circle cx="5" cy="-5" r="1.5" fill="#fffaf0"/><text x="0" y="8" text-anchor="middle" fill="#fffaf0" font-size="8" font-weight="800">${letter}</text></g>`;
 }
 
+// Two dragons sharing a node stand apart so both paintings stay readable.
+function overlapOffset(locations, dragon) {
+  return locations.Ember === locations.Gale ? (dragon === 'Ember' ? -21 : 21) : 0;
+}
+function nodeAnchor(locations, dragon) {
+  const [x, y] = point[locations[dragon]];
+  return [x + overlapOffset(locations, dragon), y - 45];
+}
+// The painted dragon rides on the map inside an anchor that owns the positioning.
+// Only the inner group is animated, so no motion can drop it at the map origin.
+function dragonSprite(dragon, locations) {
+  const path = `/assets/dispatch/${dragon.toLowerCase()}-v1.webp`, [x, y] = nodeAnchor(locations, dragon), failed = dispatchImageHasFailed(path);
+  const art = failed
+    ? dragonGlyph(dragon, 0, 0)
+    : `<image class="dispatch-generated-image dispatch-dragon-painted" data-image-fallback href="${dispatchImageURL(path)}" x="-40" y="-48" width="80" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  const fallback = failed ? '' : `<g class="dispatch-dragon-glyph" hidden>${dragonGlyph(dragon, 0, 0)}</g>`;
+  return `<g class="dispatch-dragon-anchor" transform="translate(${x} ${y})" aria-hidden="true" pointer-events="none"><g class="dispatch-dragon-sprite" data-dragon-sprite="${dragon}"><g class="dispatch-dragon-art">${art}${fallback}</g></g></g>`;
+}
+
 function mapSVG(c, forecast, selectedTurn, projections) {
   const nodeCopy = c.locations, level = activeLevel(), pickupLevel = level.id !== 'first';
   const lines = EDGES.map(edge => {
@@ -276,7 +385,7 @@ function mapSVG(c, forecast, selectedTurn, projections) {
   }).join('');
   const nodes = LOCATIONS.map(id => {
     const [x, y] = point[id];
-    const actual = DRAGONS.filter(d => ui.state.locations[d] === id).map((d, i) => dragonGlyph(d, x + (DRAGONS.length > 1 && ui.state.locations.Ember === ui.state.locations.Gale ? (d === 'Ember' ? -21 : 21) : 0), y - 45));
+    const actual = DRAGONS.filter(d => ui.state.locations[d] === id).map(d => dragonSprite(d, ui.state.locations));
     const plannedEmber = projections.Ember.state.locations.Ember, plannedGale = projections.Gale.state.locations.Gale;
     const markers = DRAGONS.map(d => projections[d].state.locations[d] === id ? dragonGlyph(d, x + (plannedEmber === plannedGale ? (d === 'Ember' ? -21 : 21) : 0), y + 47, true) : '').join('');
     const waiting = pickupLevel ? Object.entries(level.orders).filter(([orderId, spec]) => spec.source === id && ui.state.orderStatus[orderId] === 'waiting_pickup') : [];
@@ -332,6 +441,7 @@ function mapPanel(c, forecast, routes) {
   const turnLimit = level.turnLimit, turn = Math.min(turnLimit, ui.state.turn + ui.plan[dragon].length + 1);
   const routeSlots = ui.plan[dragon].map((action, i) => '<li><span>' + esc(c.plannedTurn) + ' ' + (ui.state.turn + i + 1) + '</span><b>' + esc(actionText(action, c)) + '</b></li>').join('');
   const selectedCargo = ui.state.assignments[dragon].map(id => cargoLine(dragon, id, c)).join('') || '<span class="dispatch-cargo-empty">' + esc(c.noCargo) + '</span>';
+  const rejectedDragon = ui.noticeIssue ? (ui.noticeDragon || ui.selected) : null;
   const selectors = DRAGONS.map(d => {
     const projected = routes[d].state, count = ui.plan[d].length;
     const cargo = ui.state.assignments[d].map(id => {
@@ -343,7 +453,7 @@ function mapPanel(c, forecast, routes) {
     const capacity = capacityForDragon(d), loaded = currentLoad(ui.state, d);
     const ariaLabel = [c.dragons[d], ability, c.actual + ': ' + c.locations[ui.state.locations[d]], c.loadedNow + ' ' + loaded + '/' + capacity, text(copy.plannedSteps, { count, max: turnLimit - ui.state.turn }), c.planned + ': ' + c.locations[projected.locations[d]] + ' · ' + c.staminaNow + ' ' + projected.stamina[d], c.responsible + ': ' + cargo].join(' · ');
     const stateLine = c.staminaNow + ' ' + ui.state.stamina[d] + ' · ' + c.loadedNow + ' ' + loaded + '/' + capacity + ' · ' + text(copy.plannedSteps, { count, max: turnLimit - ui.state.turn });
-    return '<button type="button" class="dispatch-select ' + (dragon === d ? 'selected' : '') + '" data-action="dispatch-action" data-dispatch-action="select-dragon" data-dragon="' + d + '" data-focus-key="select-' + d + '" data-focus-group="dragon-select" aria-label="' + esc(ariaLabel) + '" aria-pressed="' + (dragon === d) + '">' + dragonPortrait(d, 44, '') + '<strong class="dispatch-dragon-chip ' + d.toLowerCase() + '">' + esc(c.dragons[d].split(' · ')[0]) + '</strong><span>' + esc(stateLine) + '</span></button>';
+    return '<button type="button" class="dispatch-select ' + (dragon === d ? 'selected' : '') + (dragon === d && ui.selectionChanged ? ' is-new-select' : '') + (d === rejectedDragon ? ' is-rejected' : '') + '" data-action="dispatch-action" data-dispatch-action="select-dragon" data-dragon="' + d + '" data-focus-key="select-' + d + '" data-focus-group="dragon-select" aria-label="' + esc(ariaLabel) + '" aria-pressed="' + (dragon === d) + '">' + dragonPortrait(d, 44, '') + '<strong class="dispatch-dragon-chip ' + d.toLowerCase() + '">' + esc(c.dragons[d].split(' · ')[0]) + '</strong><span>' + esc(stateLine) + '</span></button>';
   }).join('');
   const rationActions = [...ui.plan.Ember, ...ui.plan.Gale].filter(action => action.type === 'ration').length;
   const rationStatus = !ui.state.rationAvailable ? c.rationSpent : rationActions ? c.rationQueued : c.rationReady;
@@ -471,6 +581,7 @@ function render() {
   const isSetup = ui.state.status === 'setup';
   const forecast = isSetup ? { state: ui.state, timeline: [], issues: [] } : simulatePlan(ui.state, ui.plan);
   const routes = isSetup ? null : projections();
+  ui.selectionChanged = ui.selected !== ui.lastRenderedSelection;
   const tutorialCopy = ui.state.levelId === 'return' ? c.returnTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : ui.state.levelId === 'market' ? c.marketTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : c.tutorial;
   const tutorialTitle = ui.state.levelId === 'return' ? c.returnTutorialTitle : ui.state.levelId === 'market' ? c.marketTutorialTitle : c.tutorialTitle;
   const tutorial = !ui.tutorialDismissed
@@ -521,7 +632,8 @@ function render() {
   }
   ui.pendingFocusKey = null;
   ui.pendingResultFocus = false;
-  animateExecution(freshExecution);
+  ui.lastRenderedSelection = ui.selected;
+  animateBoardMotion(freshExecution);
   if (ui.latestExecution?.sequence) ui.lastRenderedExecutionSequence = ui.latestExecution.sequence;
 }
 
@@ -536,11 +648,11 @@ function validateCandidate(plan) {
 function enqueue(dragon, action) {
   if (ui.state.status !== 'playing') return;
   const remaining = activeLevel().turnLimit - ui.state.turn;
-  if (ui.plan[dragon].length >= remaining) return showNotice(ui.copy.turnLimit || ui.copy.error.turn_limit);
+  if (ui.plan[dragon].length >= remaining) return showNotice(ui.copy.turnLimit || ui.copy.error.turn_limit, null, dragon);
   const nextPlan = { Ember: [...ui.plan.Ember], Gale: [...ui.plan.Gale] };
   nextPlan[dragon].push(action);
   const issue = validateCandidate(nextPlan);
-  if (issue) return showNotice(detailError(issue), issue);
+  if (issue) return showNotice(detailError(issue), issue, dragon);
   ui.plan = nextPlan; ui.notice = ''; ui.noticeIssue = null; render();
 }
 function removeLast(dragon) {
@@ -554,7 +666,7 @@ function advanceTurn() {
   const isFinishedAtHome = dragon => ui.state.locations[dragon] === 'K' && ui.state.assignments[dragon].every(id => ui.state.orderStatus[id] === 'delivered');
   const actions = { Ember: ui.plan.Ember[0] || (isFinishedAtHome('Ember') ? { type: 'wait', automatic: true } : null), Gale: ui.plan.Gale[0] || (isFinishedAtHome('Gale') ? { type: 'wait', automatic: true } : null) };
   const result = stepDispatch(ui.state, actions);
-  if (!result.ok) { ui.noticeIssue = result.issues[0]; ui.notice = detailError(result.issues[0]); return false; }
+  if (!result.ok) { ui.noticeIssue = result.issues[0]; ui.notice = detailError(result.issues[0]); ui.noticeDragon = result.issues[0]?.dragon || null; return false; }
   ui.history.push(snapshotDispatchTurn(ui.state, ui.plan));
   const from = { ...ui.state.locations };
   ui.state = result.state;
@@ -661,6 +773,8 @@ export function mountDispatch(container, lang = 'en', levelId = 'first') {
       } else if (target?.localName === 'image' && target.classList?.contains('dispatch-generated-image')) {
         rememberDispatchImageFailure(target.getAttribute('href'));
         target.style.display = 'none';
+        const fallback = target.nextElementSibling;
+        if (fallback?.classList?.contains('dispatch-dragon-glyph')) fallback.hidden = false;
       }
     }, true);
     container.dataset.dispatchImageErrorsBound = 'true';
