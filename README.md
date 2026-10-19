@@ -15,6 +15,31 @@ With Node 24+: `node prepare.mjs && bash scripts/build.sh && node scripts/valida
 
 The Worker ESM build emits `dist/server/index.js` and `dist/.openai/hosting.json`. The Sites packaging helper copies root `drizzle/` to `dist/.openai/drizzle/`. Keep deployed migration files immutable; generate a new migration for future schema changes.
 
+## GitHub Pages (static public build)
+
+A second, independent build target serves the same games as a public static site, for example the TRAE 1024 showcase entry. It reuses every game, all four languages, result restoration, sharing and local progress, and adds no accounts, multiplayer, leaderboards or new mechanics.
+
+```bash
+npm test              # existing content, routing and Worker checks
+npm run build:pages   # static site -> dist-pages/ (needs no dependencies)
+npm run verify:pages  # static path, base-path and blocked-backend checks
+npm run preview:pages # serve dist-pages/ at http://127.0.0.1:8788/oddlab/
+npm run build         # unchanged Sites/Worker build
+```
+
+Standard-tool local run in a browser: `npm test && npm run build:pages && npm run preview:pages`, then open <http://127.0.0.1:8788/oddlab/>.
+
+How the build renders it:
+
+- **Base path.** GitHub project pages live under `/<repo>/`. `hosting.mjs` derives the base at runtime from its own module URL and exposes `link()`, `asset()` and `currentRoute()`, which every browser module uses for navigation, resources, `fetch`, images, level links, share links, `history` calls, canonical, OG and the sitemap. The static build additionally rewrites root-absolute `href`/`src` attributes and injects `window.ODDLAB_PAGES`, `window.ODDLAB_DEFAULT_LANG` and `window.ODDLAB_STATS` into `<head>`.
+- **Routing without server rewrites.** Each public route is emitted as a directory with its own `index.html` (`dispatch/index.html`, `life/index.html`, …), so direct opens, refreshes, deep links and share links all resolve without any rewrite rule. `404.html` serves unmapped paths with the original URL intact, and the in-page router renders its own not-found view for them.
+- **Level and language parameters** stay query parameters (`?level=return|market&lang=en|zh|ja|es`) and survive refreshes; `?r=` and `?v=` still restore shared results.
+- **Default language** for this entry is Simplified Chinese (`ODDLAB_DEFAULT_LANG=zh`); an explicit `?lang=` and a saved language choice still win.
+- **Backend boundary.** The Pages build ships no D1 statistics backend, no `/admin` and no `/stats`, and no sign-in entry. `analytics.mjs` returns early when `window.ODDLAB_STATS=false`, so the page never requests a non-existent `/api/track`. The in-page privacy text describes this static behaviour instead of the Sites one.
+- **Not published on Pages:** `worker/`, `db/`, `drizzle/`, `.openai/`, and the legacy `/capability.html` and `/tool-test.html` pages. The Sites build keeps all of them.
+
+Automatic deployment: `.github/workflows/pages.yml` runs on every push to `main` and on manual dispatch. It runs `npm test`, derives `ODDLAB_BASE` and `ODDLAB_ORIGIN` from the repository, runs `build:pages` + `verify:pages`, uploads `dist-pages` with `actions/upload-pages-artifact` and deploys with `actions/deploy-pages` using only `contents: read`, `pages: write` and `id-token: write`. The repository Pages setting must be "Build and deployment → Source: GitHub Actions" once.
+
 ## Language and data behavior
 
 `?lang=en|zh|ja|es` overrides the saved language preference. `/dispatch?level=return` opens the second puzzle and `?level=market` opens Market Relay; omitting `level` opens the first. Challenge links retain only a public level slug and language, never cargo responsibility, routes, or game state. Links carry language even when localStorage is denied. Changing language preserves the current quiz answers, public result ID, life theme, daily progress, and custom decision list; untouched preset lists translate. Shared results display in the link’s language. Custom lists stay in the page and never enter share URLs or analytics.

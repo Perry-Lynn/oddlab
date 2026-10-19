@@ -2,5 +2,6 @@
 .playwright-mcp/
 node_modules/
 build/
+dist-pages/
 .wrangler/
 .sites-runtime/
