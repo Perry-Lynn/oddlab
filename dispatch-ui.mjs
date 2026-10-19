@@ -14,6 +14,92 @@ let ui = {
   history: [], tutorialDismissed: false, notice: '', noticeIssue: null, latestExecution: null, executionRun: [], executionSequence: 0, lastRenderedExecutionSequence: 0, container: null, pendingFocusKey: null, pendingResultFocus: false,
 };
 
+// Motion only presents completed turns. It never schedules or changes game state.
+let motionAnimations = [];
+const motionPreference = typeof window === 'undefined' ? null : window.matchMedia?.('(prefers-reduced-motion: reduce)');
+function clearMotion() {
+  for (const animation of motionAnimations) animation.cancel();
+  motionAnimations = [];
+  ui.container?.querySelectorAll('.dispatch-motion-overlay,.dispatch-celebration').forEach(node => node.remove());
+}
+motionPreference?.addEventListener('change', () => { if (motionPreference.matches) clearMotion(); });
+function reducedMotion() { return motionPreference?.matches ?? true; }
+function animateElement(element, frames, options) {
+  if (!element?.animate) return null;
+  const animation = element.animate(frames, options);
+  motionAnimations.push(animation);
+  return animation;
+}
+function animateExecution(run) {
+  if (reducedMotion() || !run?.records.length) return;
+  const svg = ui.container.querySelector('.dispatch-map');
+  if (!svg?.animate) return;
+  const records = run.records, beat = run.mode === 'single' ? 760 : 560;
+  const markerPosition = (locations, dragon) => {
+    const [x, y] = point[locations[dragon]];
+    return [x + (locations.Ember === locations.Gale ? (dragon === 'Ember' ? -21 : 21) : 0), y - 45];
+  };
+  for (const dragon of DRAGONS) {
+    const frames = records.flatMap((record, index) => {
+      const start = markerPosition(record.from, dragon), end = markerPosition(record.to, dragon);
+      const from = record.from[dragon], to = record.to[dragon];
+      const edge = EDGES.find(item => (item.a === from && item.b === to) || (item.b === from && item.a === to));
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      if (edge) path.setAttribute('d', coordinates[edge.id][0]);
+      const length = edge ? path.getTotalLength() : 0;
+      const samples = Array.from({ length: 25 }, (_, sample) => {
+        const progress = sample / 24;
+        const eased = progress * progress * (3 - 2 * progress);
+        const p = edge ? path.getPointAtLength(length * (edge.a === from ? eased : 1 - eased)) : null;
+        const x = p ? p.x + (start[0] - point[from][0]) * (1 - eased) + (end[0] - point[to][0]) * eased : start[0] + (end[0] - start[0]) * eased;
+        const y = p ? p.y - 45 : start[1] + (end[1] - start[1]) * eased;
+        return { transform: `translate(${x}px, ${y}px)`, offset: (index + progress * .76) / records.length };
+      });
+      return [...samples, { transform: `translate(${end[0]}px, ${end[1]}px)`, offset: (index + 1) / records.length }];
+    });
+    animateElement(svg.querySelector(`[data-marker-dragon="${dragon}"]`), frames, { duration: beat * records.length, easing: 'linear' });
+  }
+  const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('pointer-events', 'none');
+  overlay.classList.add('dispatch-motion-overlay');
+  svg.append(overlay);
+  records.forEach((record, index) => {
+    animateElement(ui.container.querySelector(`[data-execution-turn="${record.turn}"]`), [{ backgroundColor: '#e3edda' }, { backgroundColor: '#fffdf7' }], { delay: index * beat, duration: beat });
+    for (const event of record.events) {
+      if (!['order_delivered', 'order_picked_up', 'ration_used'].includes(event.code)) continue;
+      const delivered = event.code === 'order_delivered';
+      const [x, y] = point[record.to[event.dragon]];
+      const delay = (index + .7) * beat;
+      const signal = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      signal.setAttribute('class', 'dispatch-motion-signal');
+      signal.innerHTML = `<circle r="42" fill="none" stroke="${delivered ? '#527853' : '#b68b3f'}" stroke-width="4"/><text y="-56" text-anchor="middle" fill="${delivered ? '#3e6946' : '#946a2e'}" font-size="32" font-weight="700">${delivered ? '✓' : '+'}</text>`;
+      overlay.append(signal);
+      const animation = animateElement(signal, [
+        { transform: `translate(${x}px, ${y}px) scale(.65)`, opacity: 0 },
+        { transform: `translate(${x}px, ${y - 5}px) scale(1)`, opacity: 1, offset: .35 },
+        { transform: `translate(${x}px, ${y - 14}px) scale(1.2)`, opacity: 0 },
+      ], { delay, duration: 680, fill: 'both', easing: 'ease-out' });
+      if (animation) animation.onfinish = () => signal.remove();
+      if (delivered) animateElement(ui.container.querySelector(`.dispatch-cargo-line[data-order="${event.order}"]`), [
+        { backgroundColor: '#d9e9ca', transform: 'scale(1.025)' }, { backgroundColor: '#f0f4eb', transform: 'scale(1)' },
+      ], { delay, duration: 650 });
+    }
+  });
+  const result = ui.container.querySelector('.dispatch-result');
+  if (result) {
+    animateElement(result, [{ opacity: .5, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 420, easing: 'ease-out' });
+    if (ui.state.status === 'won') {
+      const burst = document.createElement('span');
+      burst.className = 'dispatch-celebration';
+      burst.setAttribute('aria-hidden', 'true');
+      burst.innerHTML = Array.from({ length: 18 }, (_, i) => `<i style="--i:${i};--x:${(i / 17 * 100).toFixed(1)}%;--drift:${i % 2 ? 32 : -32}px;--color:${['#c45b42', '#4c7890', '#d1a947', '#718d71'][i % 4]}"></i>`).join('');
+      result.prepend(burst);
+      animateElement(result.querySelector('.dispatch-result-art'), [{ transform: 'scale(.65) rotate(-30deg)' }, { transform: 'scale(1.15) rotate(8deg)', offset: .65 }, { transform: 'scale(1) rotate(0)' }], { duration: 700, easing: 'ease-out' });
+    }
+  }
+}
+
 const activeLevel = () => getDispatchLevel(ui.state.levelId);
 const activeCopy = () => copyForDispatchLevel(ui.lang, ui.state.levelId);
 function responsibilityWeight(dragon) { return ui.state.assignments[dragon].reduce((n, id) => n + (activeLevel().orders[id]?.weight || 0), 0); }
@@ -158,7 +244,7 @@ function edgeStatus(edge, round, c) {
 function dragonGlyph(dragon, x, y, planned = false) {
   const color = dragonColor[dragon], letter = dragon === 'Ember' ? 'E' : 'G';
   if (planned) return `<g class="dispatch-plan-marker" transform="translate(${x} ${y})" aria-hidden="true" pointer-events="none"><circle r="22" fill="#fffcf6" fill-opacity=".45" stroke="${color}" stroke-width="2" stroke-dasharray="4 4"/><text y="4" text-anchor="middle" fill="${color}" font-size="10" font-weight="800">P</text></g>`;
-  return `<g class="dispatch-dragon-marker" transform="translate(${x} ${y})" aria-hidden="true" pointer-events="none"><path d="M -13 -7 Q -23 -19 -8 -17 L 0 -9 Q 9 -21 20 -12 L 10 -3 Q 19 3 10 13 Q 0 20 -9 12 Q -17 4 -13 -7Z" fill="${color}" stroke="#fffaf0" stroke-width="2"/><circle cx="5" cy="-5" r="1.5" fill="#fffaf0"/><text x="0" y="8" text-anchor="middle" fill="#fffaf0" font-size="8" font-weight="800">${letter}</text></g>`;
+  return `<g class="dispatch-dragon-marker" data-marker-dragon="${dragon}" transform="translate(${x} ${y})" aria-hidden="true" pointer-events="none"><path d="M -13 -7 Q -23 -19 -8 -17 L 0 -9 Q 9 -21 20 -12 L 10 -3 Q 19 3 10 13 Q 0 20 -9 12 Q -17 4 -13 -7Z" fill="${color}" stroke="#fffaf0" stroke-width="2"/><circle cx="5" cy="-5" r="1.5" fill="#fffaf0"/><text x="0" y="8" text-anchor="middle" fill="#fffaf0" font-size="8" font-weight="800">${letter}</text></g>`;
 }
 
 function mapSVG(c, forecast, selectedTurn, projections) {
@@ -211,7 +297,7 @@ function cargoLine(dragon, id, c) {
   const pickup = ui.state.pickedUp[id];
   const status = delivered ? c.deliveredStatus : ui.state.orderStatus[id] === 'aboard' ? c.aboardStatus : c.waitingPickup;
   const timing = [formatPickupTiming(pickup, c), delivered ? text(c.deliveryTurn, { turn: delivered.turn }) : ''].filter(Boolean).join(' · ');
-  return '<span class="dispatch-cargo-line ' + (delivered ? 'delivered' : '') + '"><b>' + esc(order.name) + '</b> <small>' + esc(status) + ' · ' + esc(order.recipient) + '</small><small>' + esc(orderDetail(spec, c)) + '</small>' + (timing ? '<em>' + esc(timing) + '</em>' : '') + '</span>';
+  return '<span data-order="' + id + '" class="dispatch-cargo-line ' + (delivered ? 'delivered' : '') + '"><b>' + esc(order.name) + '</b> <small>' + esc(status) + ' · ' + esc(order.recipient) + '</small><small>' + esc(orderDetail(spec, c)) + '</small>' + (timing ? '<em>' + esc(timing) + '</em>' : '') + '</span>';
 }
 
 function executionPanel(c) {
@@ -367,6 +453,8 @@ function rulesPanel(c) {
 function render() {
   const c = activeCopy();
   if (!ui.container) return;
+  clearMotion();
+  const freshExecution = ui.latestExecution?.sequence !== ui.lastRenderedExecutionSequence ? ui.latestExecution : null;
   const active = typeof document === 'undefined' ? null : document.activeElement;
   const hadFocusInside = Boolean(active && ui.container.contains(active));
   const oldFocusKey = hadFocusInside ? active.dataset?.focusKey || null : null;
@@ -433,6 +521,7 @@ function render() {
   }
   ui.pendingFocusKey = null;
   ui.pendingResultFocus = false;
+  animateExecution(freshExecution);
   if (ui.latestExecution?.sequence) ui.lastRenderedExecutionSequence = ui.latestExecution.sequence;
 }
 
@@ -467,8 +556,9 @@ function advanceTurn() {
   const result = stepDispatch(ui.state, actions);
   if (!result.ok) { ui.noticeIssue = result.issues[0]; ui.notice = detailError(result.issues[0]); return false; }
   ui.history.push(snapshotDispatchTurn(ui.state, ui.plan));
+  const from = { ...ui.state.locations };
   ui.state = result.state;
-  ui.executionRun.push({ turn: ui.state.turn, events: result.events, warnings: result.warnings });
+  ui.executionRun.push({ turn: ui.state.turn, events: result.events, warnings: result.warnings, from, to: { ...ui.state.locations } });
   ui.plan = { Ember: ui.plan.Ember.slice(1), Gale: ui.plan.Gale.slice(1) };
   ui.notice = ''; ui.noticeIssue = null;
   if (previousStatus === 'playing' && (ui.state.status === 'won' || ui.state.status === 'lost')) ui.pendingResultFocus = true;

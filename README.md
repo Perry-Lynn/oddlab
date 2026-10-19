@@ -29,6 +29,8 @@ npm run build         # unchanged Sites/Worker build
 
 Standard-tool local run in a browser: `npm test && npm run build:pages && npm run preview:pages`, then open <http://127.0.0.1:8788/oddlab/>.
 
+Motion: Dispatch plays completed turns along the actual roads (including the curved sky road), with pickup/delivery pulses, sequential batch playback and a brief victory celebration. Undo, restart or another interaction cancels playback immediately; animation never drives game state. System reduced-motion preferences disable decorative effects, including when changed during playback. The other games include small button, card and result reveals. All effects use browser-native CSS/Web Animations with no added dependencies.
+
 How the build renders it:
 
 - **Base path.** GitHub project pages live under `/<repo>/`. `hosting.mjs` derives the base at runtime from its own module URL and exposes `link()`, `asset()` and `currentRoute()`, which every browser module uses for navigation, resources, `fetch`, images, level links, share links, `history` calls, canonical, OG and the sitemap. The static build additionally rewrites root-absolute `href`/`src` attributes and injects `window.ODDLAB_PAGES`, `window.ODDLAB_DEFAULT_LANG` and `window.ODDLAB_STATS` into `<head>`.
