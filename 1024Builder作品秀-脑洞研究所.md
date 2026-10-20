@@ -8,7 +8,7 @@
 
 **在线试玩：[打开脑洞研究所](https://perry-lynn.github.io/oddlab/?lang=zh)**
 
-![脑洞研究所首页：常驻玩法快捷入口与双龙调度主打卡](1024Builder作品秀配图/01-home-desktop.png)
+![脑洞研究所首页：常驻玩法快捷入口与双龙调度主打卡](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/01-home-desktop.png)
 
 ## 主打：给两条龙排一趟班
 
@@ -16,13 +16,13 @@
 
 货物只有三件，但两条龙的载重和能力不同。有的路只有地行龙能走，有的路要靠天行龙飞过去；天气、体力和送达期限又会影响安排。第一关的目标是六回合内完成派送，再让两条龙一起回家。
 
-![双龙调度局：认识派送员，分配货物并检查载重](1024Builder作品秀配图/02-dispatch-setup.png)
+![双龙调度局：认识派送员，分配货物并检查载重](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/02-dispatch-setup.png)
 
 分好货以后，点击地图上的相邻地点排路线。可以先看计划预演，再逐回合执行；走错了也能撤回重排。当前一共有五关，后面的关卡还要考虑到哪里取货、什么时候能取，以及怎样留出回家的余力。
 
 对我来说，这个玩法最有意思的地方是：同样三件货，换一条龙负责，整套路线就可能要重新想一遍。
 
-![双龙调度局实际游玩画面：地图、双龙状态、路线队列与计划预演](1024Builder作品秀配图/03-dispatch-route.png)
+![双龙调度局实际游玩画面：地图、双龙状态、路线队列与计划预演](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/03-dispatch-route.png)
 
 ## 只有一分钟，也有别的可玩
 
@@ -32,7 +32,7 @@
 
 纯属娱乐，很适合拉朋友一起看看谁更离谱。
 
-![你的离谱人格：两套题库与六道趣味选择题](1024Builder作品秀配图/04-personality.png)
+![你的离谱人格：两套题库与六道趣味选择题](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/04-personality.png)
 
 ### 平行人生模拟器
 
@@ -40,7 +40,7 @@
 
 当前有五个故事世界和结局图鉴，还保留了 12 份可以翻阅的人生档案。不用写人物设定，点进去就能短暂过一下另一种人生。
 
-![平行人生模拟器：深夜便利店的第一幕与时间、人情资源](1024Builder作品秀配图/05-parallel-life.png)
+![平行人生模拟器：深夜便利店的第一幕与时间、人情资源](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/05-parallel-life.png)
 
 ### 今天听天由命
 
@@ -48,7 +48,7 @@
 
 定下来的结果可以收进本机的抉择合集。小事随缘，大事还是自己定。
 
-![今天听天由命：抽签结果与可以收藏的抉择合集](1024Builder作品秀配图/06-small-decision.png)
+![今天听天由命：抽签结果与可以收藏的抉择合集](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/06-small-decision.png)
 
 ### 今日奇怪任务
 
@@ -56,7 +56,7 @@
 
 每个任务配两种具体做法，做完可以在本机任务册盖章，也有连续打卡和本周挑战。任务不要求上传照片或证明，愿意动手试一下就行。
 
-![今日奇怪任务：任务内容、两种做法、连续打卡与本周挑战](1024Builder作品秀配图/07-daily-mission.png)
+![今日奇怪任务：任务内容、两种做法、连续打卡与本周挑战](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/07-daily-mission.png)
 
 ## 打开就能玩，手机也能用
 
@@ -64,13 +64,13 @@
 
 | 桌面首页全貌 | 手机首屏 |
 | --- | --- |
-| ![桌面首页：五个常驻玩法和页面底部的1024彩蛋入口](1024Builder作品秀配图/08-home-overview.png) | ![手机首页：小门标志、两个轻玩法入口与双龙调度主打卡](1024Builder作品秀配图/09-home-mobile.png) |
+| ![桌面首页：五个常驻玩法和页面底部的1024彩蛋入口](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/08-home-overview.png) | ![手机首页：小门标志、两个轻玩法入口与双龙调度主打卡](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/09-home-mobile.png) |
 
 站点支持中文、英文、日文和西班牙文。切换语言后，正在进行的玩法也可以继续。
 
 | English | 日本語 | Español |
 | --- | --- | --- |
-| ![英文界面](1024Builder作品秀配图/10-english.png) | ![日文界面](1024Builder作品秀配图/11-japanese.png) | ![西班牙文界面](1024Builder作品秀配图/12-spanish.png) |
+| ![英文界面](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/10-english.png) | ![日文界面](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/11-japanese.png) | ![西班牙文界面](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/12-spanish.png) |
 
 这个 Demo 部署在 GitHub Pages，用原生 JavaScript 和 ES Modules 实现，不需要注册或安装。答案、自定义候选和龙的路线在浏览器里处理，不上传；任务记录、结局图鉴等部分进度保存在当前浏览器，不跨设备同步。
 
@@ -82,7 +82,7 @@
 
 | 开始检查 | 找到毛病 | 修复记录与 commit |
 | --- | --- | --- |
-| ![鸭子调试室开局：检查闹钟的四个步骤](1024Builder作品秀配图/13-debug-start.png) | ![指认出问题后，选择如何修复](1024Builder作品秀配图/14-debug-found.png) | ![三关结束后的修复记录和可复制commit文案](1024Builder作品秀配图/15-debug-result.png) |
+| ![鸭子调试室开局：检查闹钟的四个步骤](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/13-debug-start.png) | ![指认出问题后，选择如何修复](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/14-debug-found.png) | ![三关结束后的修复记录和可复制commit文案](https://raw.githubusercontent.com/Perry-Lynn/oddlab/main/1024Builder%E4%BD%9C%E5%93%81%E7%A7%80%E9%85%8D%E5%9B%BE/15-debug-result.png) |
 
 ## 我和 TRAE 怎么一起做这轮迭代
 
