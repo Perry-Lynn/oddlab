@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { createDispatchState, simulatePlan, validateAction, getDispatchLevel } from './dispatch-logic.mjs';
-import { copyForDispatchLevel } from './dispatch-copy.mjs';
+import { createDispatchState, simulatePlan, validateAction, getDispatchLevel } from '../src/dispatch-logic.mjs';
+import { copyForDispatchLevel } from '../src/dispatch-copy.mjs';
 
 const moves = nodes => nodes.map(to => ({ type: 'move', to }));
 const wait = { type: 'wait' }, ration = { type: 'ration' };
@@ -44,7 +44,7 @@ assert.equal(validateAction(flooded, 'Gale', { type: 'move', to: 'M' }, 5), null
 const eggsReady = createDispatchState({ levelId: 'market', assignments: { Ember: ['eggs'], Gale: ['soup', 'ice'] } });
 let state = eggsReady;
 for (let turn = 1; turn <= 3; turn++) {
-  const result = (await import('./dispatch-logic.mjs')).stepDispatch(state, { Ember: wait, Gale: wait });
+  const result = (await import('../src/dispatch-logic.mjs')).stepDispatch(state, { Ember: wait, Gale: wait });
   assert.equal(result.ok, true);
   state = result.state;
   assert.equal(state.orderStatus.eggs, turn < 3 ? 'waiting_pickup' : 'aboard');

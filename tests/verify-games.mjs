@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { calculatePersona, dailyTask, taskState, normalizeChoices } from './logic.mjs';
-import { previewPersonaAnswer, adoptPersonaPreview, createAdventure, chooseAdventure, adventureEndingId, undoLastAdventureChoice, createChoiceRound, drawChoicePair, resolveChoicePair, restoreChoiceRound, undoChoiceRound, acceptChoiceRound, taskCompletion, createDebugRoom, requestDebugHint, inspectDebugStep, chooseDebugFix, advanceDebugRoom, debugRoomDone, debugStepHint } from './games-logic.mjs';
-import { adventureContent, taskAnglePair, debugRoomContent, debugCommit, gameText } from './games-content.mjs';
-import { renderChoice, renderChoiceHistory, renderTasks, renderDebugRoom } from './games-ui.mjs';
+import { calculatePersona, dailyTask, taskState, normalizeChoices } from '../src/logic.mjs';
+import { previewPersonaAnswer, adoptPersonaPreview, createAdventure, chooseAdventure, adventureEndingId, undoLastAdventureChoice, createChoiceRound, drawChoicePair, resolveChoicePair, restoreChoiceRound, undoChoiceRound, acceptChoiceRound, taskCompletion, createDebugRoom, requestDebugHint, inspectDebugStep, chooseDebugFix, advanceDebugRoom, debugRoomDone, debugStepHint } from '../src/games-logic.mjs';
+import { adventureContent, taskAnglePair, debugRoomContent, debugCommit, gameText } from '../src/games-content.mjs';
+import { renderChoice, renderChoiceHistory, renderTasks, renderDebugRoom } from '../src/games-ui.mjs';
 
-const packs=Object.fromEntries(['en','zh','ja','es'].map(lang=>[lang,JSON.parse(fs.readFileSync(`locales/${lang}.json`,'utf8'))]));
+const packs=Object.fromEntries(['en','zh','ja','es'].map(lang=>[lang,JSON.parse(fs.readFileSync(`public/locales/${lang}.json`,'utf8'))]));
 
 // Counterfactual preview stays pure and reuses the unchanged persona scorer.
 const persona=packs.zh.persona;

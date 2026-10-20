@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
-import { calculatePersona, beijingDate, dailyTask, taskState, pickLife, normalizeChoices, resolveLife, addDays, mondayOf, stampStreak, stampWeek, streakView, weekView, WEEK_GOAL } from './logic.mjs';
-const pack = n => JSON.parse(readFileSync(new URL('./data/'+n+'.json',import.meta.url),'utf8'));
+import { calculatePersona, beijingDate, dailyTask, taskState, pickLife, normalizeChoices, resolveLife, addDays, mondayOf, stampStreak, stampWeek, streakView, weekView, WEEK_GOAL } from '../src/logic.mjs';
+const pack = n => JSON.parse(readFileSync(new URL('./fixtures/'+n+'.json',import.meta.url),'utf8'));
 const p=pack('persona'),t=pack('task'),l=pack('life'),counts={};
 for(let n=0;n<4096;n++){let x=n;const answers=Array.from({length:6},()=>{const a=x%4;x=Math.floor(x/4);return a;});const d=calculatePersona(answers,p);counts[d]=(counts[d]||0)+1;}
 assert.deepEqual(counts,{D1:641,D2:577,D3:568,D4:527,D5:442,D6:449,D7:455,D8:437});

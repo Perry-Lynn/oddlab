@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import worker from './worker/index.js';
-import {localD1} from './scripts/local-d1.mjs';
+import worker from '../worker/index.js';
+import {localD1} from '../scripts/local-d1.mjs';
 const DB=await localD1();const adminEnv={DB,ADMIN_EMAIL:'owner@example.test'};const adminHeaders={'oai-authenticated-user-id':'site-scoped-owner','oai-authenticated-user-email':'owner@example.test'};const origin='https://oddlab.example';
 const event={kind:'click',source_path:'/choice',target_url:origin+'/choice?lang=es&secret=PRIVATE_LIST#private',action:'draw-choice',locale:'es'};
 const request=(data=event,extra={})=>new Request(origin+'/api/track',{method:'POST',headers:{origin,'content-type':'application/json',...extra},body:JSON.stringify(data)});
@@ -39,7 +39,7 @@ for(const path of ['/assets/dispatch/hero-v1.webp','/assets/dispatch/ember-v1.we
 }
 assert.equal((await worker.fetch(new Request(origin+'/assets/dispatch/unlisted-v1.webp'))).status,404);
 for(const path of ['/admin','/admin/','/admin.html','/stats','/stats/','/stats.html','/api/stats']){assert.equal((await worker.fetch(new Request(origin+path),adminEnv)).status,401);assert.equal((await worker.fetch(new Request(origin+path,{headers:{...adminHeaders,'oai-authenticated-user-email':'other@example.test'}}),adminEnv)).status,403);assert.equal((await worker.fetch(new Request(origin+path,{headers:adminHeaders}),adminEnv)).status,200);assert.equal((await worker.fetch(new Request(origin+path,{headers:adminHeaders}),{DB})).status,403);}
-const locales=await Promise.all(['en','zh','ja','es'].map(async l=>JSON.parse(await readFile('locales/'+l+'.json','utf8'))));
+const locales=await Promise.all(['en','zh','ja','es'].map(async l=>JSON.parse(await readFile('public/locales/'+l+'.json','utf8'))));
 for(const pack of locales){assert.equal(pack.persona.questions.length,6);assert.equal(Object.keys(pack.persona.results).length,16);assert.equal(pack.life.templates.length,12);assert.equal(pack.task.tasks.length,30);assert.equal(pack.choice.scenes.length,4);assert.deepEqual(pack.task.rotation.order,locales[0].task.rotation.order);assert.equal(pack.task.rotation.baselineDate,locales[0].task.rotation.baselineDate);for(let i=0;i<6;i++){assert.equal(pack.persona.questions[i].options.length,4);for(let j=0;j<4;j++){const a=pack.persona.questions[i].options[j],b=locales[0].persona.questions[i].options[j];assert.equal(a.main,b.main);assert.equal(a.sub,b.sub);assert.ok(a.text);}}assert.deepEqual(pack.life.templates.map(x=>[x.id,x.entryVersion,x.status]),locales[0].life.templates.map(x=>[x.id,x.entryVersion,x.status]));}
 for(const index of [0,3]){const publicText=JSON.stringify(locales[index]);assert.ok(!/[\u4e00-\u9fff]/.test(publicText),'English and Spanish packs have no untranslated Chinese');}
 console.log('PASS: SQLite aggregation, dispatch-level URL allowlist/redaction, origin checks, API errors, static routes, allowlisted WebP GET/HEAD/404 behavior, and 4 locale content contracts.');DB.sqlite.close();

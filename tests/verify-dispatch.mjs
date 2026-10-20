@@ -4,10 +4,10 @@ import {
   simulatePlan, projectDragonRoute, evaluateDispatch, snapshotDispatchTurn,
   restoreDispatchTurn, DRAGONS, ORDERS, LEVELS, getDispatchLevel, currentLoad,
   resolveEdgeRules, airCostFor, WEATHERS, pickDispatchWeather, dispatchStars,
-} from './dispatch-logic.mjs';
-import { dispatchCopies, copyForDispatchLevel } from './dispatch-copy.mjs';
-import { dispatchImageAssets, dispatchImageHasFailed, rememberDispatchImageFailure } from './dispatch-assets.mjs';
-import { formatDispatchIssue, formatDispatchEvent, formatPlannerStatus, formatPickupTiming, returnGoalOutcomes, summarizeDispatchExecution, formatDispatchExecutionSummary } from './dispatch-ui.mjs';
+} from '../src/dispatch-logic.mjs';
+import { dispatchCopies, copyForDispatchLevel } from '../src/dispatch-copy.mjs';
+import { dispatchImageAssets, dispatchImageHasFailed, rememberDispatchImageFailure } from '../src/dispatch-assets.mjs';
+import { formatDispatchIssue, formatDispatchEvent, formatPlannerStatus, formatPickupTiming, returnGoalOutcomes, summarizeDispatchExecution, formatDispatchExecutionSummary } from '../src/dispatch-ui.mjs';
 
 const route = nodes => nodes.map(to => ({ type: 'move', to }));
 const assignment = (ember, gale, sealedIce = false) => ({ assignments: { Ember: ember, Gale: gale }, sealedIce });

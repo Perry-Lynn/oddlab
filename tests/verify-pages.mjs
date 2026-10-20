@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import worker from './worker/index.js';
-import {publicRoutes,canonicalURL,pageData,localeCodes} from './page-content.mjs';
-import {translateText} from './ui-catalog.mjs';
+import worker from '../worker/index.js';
+import {publicRoutes,canonicalURL,pageData,localeCodes} from '../src/page-content.mjs';
+import {translateText} from '../src/ui-catalog.mjs';
 const origin='https://oddlab.example';
 const fetchPath=(path,env)=>worker.fetch(new Request(origin+path),env);
 const decode=s=>s.replaceAll('&amp;','&');
@@ -58,7 +58,7 @@ for(const path of publicRoutes)for(const lang of ['en','zh','ja','es'])assert.ok
 assert.ok((await (await fetchPath('/robots.txt')).text()).includes('/sitemap.xml'));
 for(const path of ['/life.html?lang=ja&r=life-03&v=1','/persona/?lang=es','/index.html?lang=zh']){const response=await fetchPath(path);assert.equal(response.status,308);const target=new URL(response.headers.get('location'),origin);assert.equal(target.search,new URL(path,origin).search);assert.ok(!target.pathname.endsWith('.html'));}
 for(const lang of ['en','zh','ja','es'])for(const path of ['/missing','/life?r=life-03&v=999','/persona?r=not-a-result','/task?r=unknown']){const r=await fetchPath(path+(path.includes('?')?'&':'?')+'lang='+lang);assert.equal(r.status,404);assert.ok(r.headers.get('x-robots-tag').includes('noindex'));}
-const pack=JSON.parse(await readFile('locales/en.json','utf8'));
+const pack=JSON.parse(await readFile('public/locales/en.json','utf8'));
 for(const path of ['/persona?r='+Object.values(pack.persona.results)[0].id,'/life?r=life-03&v=1','/task?r='+pack.task.tasks[0].id,'/tool-test','/capability']){const r=await fetchPath(path);assert.equal(r.status,200);assert.ok(r.headers.get('x-robots-tag').includes('noindex'));}
 let touched=false;const guardedEnv={ADMIN_EMAIL:'owner@example.test',get DB(){touched=true;throw Error('unauthorized database read');}};
 for(const path of ['/admin','/stats.html','/api/stats'])assert.equal((await fetchPath(path,guardedEnv)).status,401);

@@ -1,1 +1,18 @@
-{"name":"oddlab","private":true,"type":"module","scripts":{"build":"node prepare.mjs && bash scripts/build.sh && node scripts/validate-artifact.mjs","build:pages":"node scripts/build-pages.mjs","verify:pages":"node verify-pages-build.mjs","preview":"node scripts/preview.mjs","preview:pages":"node scripts/preview-pages.mjs","test":"node verify.mjs && node verify-server.mjs && node verify-pages.mjs && node verify-dispatch.mjs && node verify-market.mjs && node verify-games.mjs","db:generate":"drizzle-kit generate"},"devDependencies":{"drizzle-kit":"0.31.10","drizzle-orm":"0.45.2"}}
+{
+  "name": "oddlab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/prepare.mjs && bash scripts/build.sh && node scripts/validate-artifact.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
+    "verify:pages": "node tests/verify-pages-build.mjs",
+    "preview": "node scripts/preview.mjs",
+    "preview:pages": "node scripts/preview-pages.mjs",
+    "test": "node scripts/prepare.mjs && node tests/verify.mjs && node tests/verify-server.mjs && node tests/verify-pages.mjs && node tests/verify-dispatch.mjs && node tests/verify-market.mjs && node tests/verify-games.mjs",
+    "db:generate": "drizzle-kit generate"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.10",
+    "drizzle-orm": "0.45.2"
+  }
+}

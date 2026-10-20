@@ -4,7 +4,7 @@
 
 今天，来点不一样的。一个打开就能玩的小游戏与日常灵感小站，从十几秒的小抽签，到需要认真想一想的双龙送货谜题。
 
-**[在线试玩](https://perry-lynn.github.io/oddlab/?lang=zh)** · [双龙调度局](https://perry-lynn.github.io/oddlab/dispatch/?lang=zh) · [1024 作品介绍](1024Builder作品秀-脑洞研究所.md)
+**[在线试玩](https://perry-lynn.github.io/oddlab/?lang=zh)** · [双龙调度局](https://perry-lynn.github.io/oddlab/dispatch/?lang=zh) · [1024 作品介绍](docs/showcase/1024Builder作品秀-脑洞研究所.md)
 
 ![脑洞研究所首页](1024Builder作品秀配图/01-home-desktop.png)
 
@@ -69,18 +69,33 @@ npm run verify:pages
 
 ## 源码结构
 
+```text
+.
+├── src/          应用源码与玩法模块
+├── public/       页面模板、样式、图标、图片与四语内容包
+├── tests/        回归校验与原始数据样本
+├── scripts/      构建、校验和本地预览脚本
+├── docs/         作品介绍、发布和测试记录
+├── previews/     设计提案与旧诊断页面
+├── worker/       独立 Worker 后端源码
+├── db/           数据库定义
+└── drizzle/      数据库迁移
+```
+
+已公开引用的作品截图保留在 `1024Builder作品秀配图/`，避免旧帖子图片链接失效。`dist/`、`dist-pages/` 和 `worker/index.js` 为构建产物，不纳入版本控制。
+
 | 文件 | 职责 |
 | --- | --- |
-| `app.js`、`logic.mjs` | 路由、原有人格计分与档案恢复、每日任务和分享回退。 |
-| `games-content.mjs`、`games-logic.mjs`、`games-ui.mjs` | 人生分支、人格预览、候选比较、每日任务的内容、规则和界面。 |
-| `dispatch-logic.mjs` | 可独立验证的双龙调度规则、不可变状态推演、货物交接与载重检查。 |
-| `dispatch-ui.mjs`、`dispatch-copy.mjs` | 调度地图、执行反馈和四语文案。 |
-| `i18n.mjs`、`ui-catalog.mjs`、`locales/` | 语言选择、界面翻译和四语内容包。修改内容时同步维护各语言包。 |
-| `hosting.mjs`、`page-content.mjs` | 部署路径适配，以及首屏 HTML、玩法说明和可抓取页面内容。 |
-| `scripts/build-pages.mjs`、`verify-pages-build.mjs` | Pages 静态构建与产物检查。 |
+| `src/app.js`、`src/logic.mjs` | 路由、原有人格计分与档案恢复、每日任务和分享回退。 |
+| `src/games-content.mjs`、`src/games-logic.mjs`、`src/games-ui.mjs` | 人生分支、人格预览、候选比较、每日任务的内容、规则和界面。 |
+| `src/dispatch-logic.mjs` | 可独立验证的双龙调度规则、不可变状态推演、货物交接与载重检查。 |
+| `src/dispatch-ui.mjs`、`src/dispatch-copy.mjs` | 调度地图、执行反馈和四语文案。 |
+| `src/i18n.mjs`、`src/ui-catalog.mjs`、`public/locales/` | 语言选择、界面翻译和四语内容包。修改内容时同步维护各语言包。 |
+| `src/hosting.mjs`、`src/page-content.mjs` | 部署路径适配，以及首屏 HTML、玩法说明和可抓取页面内容。 |
+| `scripts/build-pages.mjs`、`tests/verify-pages-build.mjs` | Pages 静态构建与产物检查。 |
 | `worker/runtime.mjs`、`db/`、`drizzle/` | 独立 Sites/Worker 版本的请求处理、数据库定义和迁移。 |
 
-调度美术的来源、尺寸和体积约定见 [素材说明](assets/dispatch/README.md)；公开图片由 `dispatch-assets.mjs` 中的白名单控制。
+调度美术的来源、尺寸和体积约定见 [素材说明](public/assets/dispatch/README.md)；公开图片由 `src/dispatch-assets.mjs` 中的白名单控制。
 
 ## 独立 Sites / Worker 构建
 

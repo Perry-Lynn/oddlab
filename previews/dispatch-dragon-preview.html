@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OddLab · 双龙动作提案 v2（分支 feat/game-animations）</title>
-<link rel="stylesheet" href="style.css"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../public/style.css"><link rel="icon" href="../public/favicon.svg" type="image/svg+xml">
 <style>
 /* ===== 审查页外壳（不属于产品） ===== */
 body{padding:0 0 60px}
@@ -119,8 +119,8 @@ body{padding:0 0 60px}
      <text x="585" y="113" text-anchor="middle" font-size="16" fill="#74766d">塔楼</text>
      <text x="585" y="463" text-anchor="middle" font-size="16" fill="#74766d">集市</text>
      <text x="835" y="288" text-anchor="middle" font-size="16" fill="#74766d">档案馆</text>
-     <g transform="translate(122 235)" class="park"><image class="sprite" href="assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
-     <g transform="translate(372 235)" class="park2"><image class="sprite" href="assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g transform="translate(122 235)" class="park"><image class="sprite" href="../public/assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g transform="translate(372 235)" class="park2"><image class="sprite" href="../public/assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
    </svg></div>
   </div>
   <p class="rv-note"><b>就是你素材库里的龙</b>：<code>ember-v1.webp</code>（赤陶红地面龙）与 <code>gale-v1.webp</code>（尘青天空龙），512×512、透明底，直接当作地图精灵用，缩到约 80px。<b>触发</b>：停在任一节点时常驻，两条龙错峰 0.6s，避免整齐划一地"共振"。</p>
@@ -132,7 +132,7 @@ body{padding:0 0 60px}
      <path d="M355 280 Q595 20 835 280" stroke="#8fb3a4" stroke-width="7" stroke-dasharray="10 9" fill="none"/>
      <text x="355" y="300" text-anchor="middle" font-size="16" fill="#74766d">沼泽</text>
      <text x="835" y="300" text-anchor="middle" font-size="16" fill="#74766d">档案馆</text>
-     <g transform="translate(0 -46)"><g class="flyer"><image class="sprite" href="assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g></g>
+     <g transform="translate(0 -46)"><g class="flyer"><image class="sprite" href="../public/assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g></g>
    </svg></div>
   </div>
   <p class="rv-note"><b>触发</b>：一回合里龙从 A 走到 B。<b>做法</b>：<code>offset-path</code> 走真实边（直线 / 水渠 / 天空道各不相同）＋<code>offset-rotate:auto</code> 让龙头朝飞行方向，替代现在"起点→终点直线平移"的临时 overlay。龙图本身不裁不拉伸。</p>
@@ -144,7 +144,7 @@ body{padding:0 0 60px}
      <circle cx="230" cy="205" r="34" fill="#e1e8d7" stroke="#c9c2ae" stroke-width="3"/>
      <text x="230" y="212" text-anchor="middle" font-size="16" fill="#74766d">沼泽</text>
      <ellipse class="dust" cx="230" cy="220" rx="26" ry="9" fill="#cdc6b2" opacity="0"/>
-     <g class="lander" transform="translate(230 150)"><image class="sprite" href="assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g class="lander" transform="translate(230 150)"><image class="sprite" href="../public/assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
    </svg></div>
   </div>
   <p class="rv-note"><b>触发</b>：抵达节点。<b>做法</b>：垂直方向压弹（squash & stretch）+ 一圈尘环；龙图只是被整体缩放，不变形到失真。</p>
@@ -155,7 +155,7 @@ body{padding:0 0 60px}
    <div class="board"><svg viewBox="0 0 460 300" style="width:100%;max-width:460px">
      <circle cx="230" cy="205" r="34" fill="#f8f4e9" stroke="#c9c2ae" stroke-width="3"/>
      <text x="230" y="212" text-anchor="middle" font-size="16" fill="#74766d">厨房</text>
-     <g class="pecker" transform="translate(230 150)"><image class="sprite" href="assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g class="pecker" transform="translate(230 150)"><image class="sprite" href="../public/assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
      <g class="parcel" transform="translate(230 200)"><rect x="-12" y="-12" width="24" height="24" rx="4" fill="#c96c43" stroke="#694c38" stroke-width="2"/><path d="M-12-5h24" stroke="#f1d18a" stroke-width="2"/></g>
    </svg></div>
   </div>
@@ -168,7 +168,7 @@ body{padding:0 0 60px}
      <circle cx="230" cy="205" r="34" fill="#f8f4e9" stroke="#c9c2ae" stroke-width="3"/>
      <text x="230" y="212" text-anchor="middle" font-size="16" fill="#74766d">集市</text>
      <circle class="alarm" cx="230" cy="160" r="34" fill="none" stroke="#df6441" stroke-width="4" opacity="0"/>
-     <g class="failing" transform="translate(230 150)"><image class="sprite" href="assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g class="failing" transform="translate(230 150)"><image class="sprite" href="../public/assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
    </svg></div>
   </div>
   <p class="rv-note"><b>触发</b>：回合耗尽 / 被拦下。<b>做法</b>：短促抖动 + 龙图去饱和变暗 + 橙环扩张；不做全屏红闪。</p>
@@ -179,8 +179,8 @@ body{padding:0 0 60px}
    <div class="board"><svg viewBox="0 0 560 340" style="width:100%;max-width:560px">
      <circle cx="180" cy="245" r="34" fill="#e1e8d7" stroke="#c9c2ae" stroke-width="3"/>
      <circle cx="380" cy="245" r="34" fill="#e1e8d7" stroke="#c9c2ae" stroke-width="3"/>
-     <g class="cheer" transform="translate(180 190)"><image class="sprite" href="assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
-     <g class="cheer" transform="translate(380 190)" style="animation-delay:.09s"><image class="sprite" href="assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g class="cheer" transform="translate(180 190)"><image class="sprite" href="../public/assets/dispatch/ember-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
+     <g class="cheer" transform="translate(380 190)" style="animation-delay:.09s"><image class="sprite" href="../public/assets/dispatch/gale-v1.webp" x="-40" y="-48" width="80" height="80"/></g>
    </svg></div>
   </div>
   <p class="rv-note"><b>触发</b>：三条货按时送达并回到厨房。<b>做法</b>：两条龙错峰 90ms 起跳，与现有彩带同时放；现有 <code>.dispatch-result-art</code> 的旋转庆祝保留。</p>
@@ -239,19 +239,19 @@ body{padding:0 0 60px}
 <section class="rv-group"><h2>③ 卡片与选龙里的龙 <small>PORTRAITS · 上一版已用你的真实龙图</small></h2>
  <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E1</span><span class="rv-name">待机呼吸（常驻，3.4s，≤3px）</span><span class="rv-spec">3.4s 循环</span><button data-replay>重播</button></div>
   <div class="rv-stage" data-live><div class="dragon-card"><div class="row">
-   <img class="p-breath" src="assets/dispatch/ember-v1.webp" alt="Ember"><img class="p-breath" src="assets/dispatch/gale-v1.webp" alt="Gale" style="animation-delay:.5s">
+   <img class="p-breath" src="../public/assets/dispatch/ember-v1.webp" alt="Ember"><img class="p-breath" src="../public/assets/dispatch/gale-v1.webp" alt="Gale" style="animation-delay:.5s">
    <span style="font-size:11px;color:var(--muted)">选龙卡 / 龙档案卡</span></div></div></div>
   <p class="rv-note"><b>触发</b>：常驻。</p>
  </article>
  <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E2</span><span class="rv-name">移动小跳 / 送货俯冲 / 取货压缩</span><span class="rv-spec">0.55s / 0.6s / 0.42s</span><button data-replay>重播</button></div>
   <div class="rv-stage" data-hop><div class="dragon-card"><div class="row">
-   <img class="p-hop" src="assets/dispatch/ember-v1.webp" alt=""><img class="p-dive" src="assets/dispatch/gale-v1.webp" alt="" style="animation-delay:.2s"><img class="p-grab" src="assets/dispatch/ember-v1.webp" alt="" style="animation-delay:.45s"><img class="p-grab" src="assets/dispatch/gale-v1.webp" alt="" style="animation-delay:.6s">
+   <img class="p-hop" src="../public/assets/dispatch/ember-v1.webp" alt=""><img class="p-dive" src="../public/assets/dispatch/gale-v1.webp" alt="" style="animation-delay:.2s"><img class="p-grab" src="../public/assets/dispatch/ember-v1.webp" alt="" style="animation-delay:.45s"><img class="p-grab" src="../public/assets/dispatch/gale-v1.webp" alt="" style="animation-delay:.6s">
   </div><div style="font-size:11px;color:var(--muted);margin-top:8px">从左到右：移动小跳 → 送货俯冲 → 取货压缩（两种龙对称）</div></div></div>
   <p class="rv-note"><b>触发</b>：该龙本回合移动 / 送达 / 取货。<b>说明</b>：都用你的龙图整体变换，不裁切不变形。</p>
  </article>
  <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">E3</span><span class="rv-name">被选中抬头放大 / 被拒抖动</span><span class="rv-spec">0.38s / 0.5s</span><button data-replay>重播</button></div>
   <div class="rv-stage" data-pick><div class="dragon-card"><div class="row">
-   <img class="p-pick" src="assets/dispatch/gale-v1.webp" alt="" style="animation-delay:.15s"><img class="p-bad" src="assets/dispatch/ember-v1.webp" alt="" style="animation-delay:.5s">
+   <img class="p-pick" src="../public/assets/dispatch/gale-v1.webp" alt="" style="animation-delay:.15s"><img class="p-bad" src="../public/assets/dispatch/ember-v1.webp" alt="" style="animation-delay:.5s">
    <span style="font-size:11px;color:var(--muted)">选中（抬头 + 8%）→ 被拒（抖动）</span></div></div></div>
   <p class="rv-note"><b>触发</b>：点选龙 / 动作被拒。</p>
  </article>
@@ -260,7 +260,7 @@ body{padding:0 0 60px}
 <!-- ===== ④ 首屏 ===== -->
 <section class="rv-group"><h2>④ 首屏双龙大图 <small>HERO</small></h2>
  <article class="rv-demo"><div class="rv-demo-head"><span class="rv-no">F1</span><span class="rv-name">极缓漂浮（常驻，4.6s，≤5px）</span><span class="rv-spec">4.6s 循环</span><button data-replay>重播</button></div>
-  <div class="rv-stage" data-sweep><div style="max-width:460px"><img class="p-sweep" src="assets/dispatch/hero-v1.webp" alt="Ember 与 Gale" style="width:100%;border:1px solid var(--line);border-radius:10px"></div></div>
+  <div class="rv-stage" data-sweep><div style="max-width:460px"><img class="p-sweep" src="../public/assets/dispatch/hero-v1.webp" alt="Ember 与 Gale" style="width:100%;border:1px solid var(--line);border-radius:10px"></div></div>
   <p class="rv-note"><b>触发</b>：调度首屏与首页特色卡。</p>
  </article>
 </section>

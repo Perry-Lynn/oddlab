@@ -5,3 +5,10 @@ build/
 dist-pages/
 .wrangler/
 .sites-runtime/
+
+# Generated builds
+dist/
+worker/index.js
+
+# Local design drafts
+previews/local/

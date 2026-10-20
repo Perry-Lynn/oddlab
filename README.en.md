@@ -4,7 +4,7 @@
 
 A collection of browser games and small everyday experiments. Pick a quick random decision, explore another life, or spend a few minutes planning deliveries for two dragons.
 
-**[Play online](https://perry-lynn.github.io/oddlab/?lang=en)** · [Dragon Dispatch](https://perry-lynn.github.io/oddlab/dispatch/?lang=en) · [1024 showcase post (Chinese)](1024Builder作品秀-脑洞研究所.md)
+**[Play online](https://perry-lynn.github.io/oddlab/?lang=en)** · [Dragon Dispatch](https://perry-lynn.github.io/oddlab/dispatch/?lang=en) · [1024 showcase post (Chinese)](docs/showcase/1024Builder作品秀-脑洞研究所.md)
 
 ![OddLab home page, shown in Chinese](1024Builder作品秀配图/01-home-desktop.png)
 
@@ -69,18 +69,33 @@ Effects use native CSS and Web Animations and never drive game rules. Undo, rest
 
 ## Source layout
 
+```text
+.
+├── src/          Application and game modules
+├── public/       HTML shell, styles, icons, images and locale packs
+├── tests/        Regression checks and original data fixtures
+├── scripts/      Build, validation and local preview scripts
+├── docs/         Showcase, release notes and test records
+├── previews/     Design proposals and legacy diagnostics
+├── worker/       Separate Worker backend source
+├── db/           Database schema
+└── drizzle/      Database migrations
+```
+
+Showcase screenshots keep their existing `1024Builder作品秀配图/` paths so published image links continue to work. `dist/`, `dist-pages/` and `worker/index.js` are generated and excluded from version control.
+
 | Files | Responsibility |
 | --- | --- |
-| `app.js`, `logic.mjs` | Routing, original persona scoring and archive restoration, daily tasks and sharing fallbacks. |
-| `games-content.mjs`, `games-logic.mjs`, `games-ui.mjs` | Content, rules and UI for branching lives, persona previews, candidate comparisons and daily tasks. |
-| `dispatch-logic.mjs` | Independently testable dispatch rules, immutable projections, cargo handoffs and capacity checks. |
-| `dispatch-ui.mjs`, `dispatch-copy.mjs` | Dispatch map, execution feedback and four-language copy. |
-| `i18n.mjs`, `ui-catalog.mjs`, `locales/` | Language selection, interface translations and four locale packs. Keep the packs aligned when editing content. |
-| `hosting.mjs`, `page-content.mjs` | Deployment paths, initial HTML, instructions and crawlable page content. |
-| `scripts/build-pages.mjs`, `verify-pages-build.mjs` | Static Pages build and artifact checks. |
+| `src/app.js`, `src/logic.mjs` | Routing, original persona scoring and archive restoration, daily tasks and sharing fallbacks. |
+| `src/games-content.mjs`, `src/games-logic.mjs`, `src/games-ui.mjs` | Content, rules and UI for branching lives, persona previews, candidate comparisons and daily tasks. |
+| `src/dispatch-logic.mjs` | Independently testable dispatch rules, immutable projections, cargo handoffs and capacity checks. |
+| `src/dispatch-ui.mjs`, `src/dispatch-copy.mjs` | Dispatch map, execution feedback and four-language copy. |
+| `src/i18n.mjs`, `src/ui-catalog.mjs`, `public/locales/` | Language selection, interface translations and four locale packs. Keep the packs aligned when editing content. |
+| `src/hosting.mjs`, `src/page-content.mjs` | Deployment paths, initial HTML, instructions and crawlable page content. |
+| `scripts/build-pages.mjs`, `tests/verify-pages-build.mjs` | Static Pages build and artifact checks. |
 | `worker/runtime.mjs`, `db/`, `drizzle/` | Request handling, database schema and migrations for the separate Sites/Worker target. |
 
-See [dispatch asset notes](assets/dispatch/README.md) for provenance, dimensions and size budgets. `dispatch-assets.mjs` controls the public image allowlist.
+See [dispatch asset notes](public/assets/dispatch/README.md) for provenance, dimensions and size budgets. `src/dispatch-assets.mjs` controls the public image allowlist.
 
 ## Separate Sites / Worker build
 

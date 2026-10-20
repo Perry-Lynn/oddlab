@@ -10,6 +10,7 @@
 //   ODDLAB_DEFAULT_LANG default language for the entry page, default zh
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { browserAssets } from './build-inputs.mjs';
 
 // The hosting flags must be set before the shared modules are evaluated, so the
 // content modules are loaded with dynamic imports below instead of static ones.
@@ -18,16 +19,16 @@ process.env.ODDLAB_BASE = process.env.ODDLAB_BASE || '/oddlab/';
 process.env.ODDLAB_ORIGIN = (process.env.ODDLAB_ORIGIN || 'http://localhost:8788').replace(/\/+$/, '');
 process.env.ODDLAB_DEFAULT_LANG = process.env.ODDLAB_DEFAULT_LANG || 'zh';
 
-const { translateText } = await import('../ui-catalog.mjs');
-const { dispatchImageAssets } = await import('../dispatch-assets.mjs');
-const { BASE } = await import('../hosting.mjs');
-const { publicRoutes, siteOrigin, localeCodes, pageData, canonicalURL, renderInitial, renderGuide, renderDocument, esc } = await import('../page-content.mjs');
+const { translateText } = await import('../src/ui-catalog.mjs');
+const { dispatchImageAssets } = await import('../src/dispatch-assets.mjs');
+const { BASE } = await import('../src/hosting.mjs');
+const { publicRoutes, siteOrigin, localeCodes, pageData, canonicalURL, renderInitial, renderGuide, renderDocument, esc } = await import('../src/page-content.mjs');
 
 const out = 'dist-pages';
 const locales = ['en', 'zh', 'ja', 'es'];
 const base = BASE;
 const defaultLang = process.env.ODDLAB_DEFAULT_LANG;
-const shell = await readFile('index.html', 'utf8');
+const shell = await readFile('public/index.html', 'utf8');
 
 const written = [];
 
@@ -70,12 +71,12 @@ for (const route of publicRoutes) {
 const notFound = withBase(withFlags(localizedShell(defaultLang))).replace(/<title>.*?<\/title>/, '<title>404 · OddLab</title>').replace(/(<meta name="description"[^>]*>)/, '$1<meta name="robots" content="noindex,follow">');
 await write('404.html', notFound);
 
-for (const file of ['app.js', 'logic.mjs', 'i18n.mjs', 'hosting.mjs', 'ui-catalog.mjs', 'page-content.mjs', 'analytics.mjs', 'games-content.mjs', 'games-logic.mjs', 'games-ui.mjs', 'dispatch-logic.mjs', 'dispatch-copy.mjs', 'dispatch-assets.mjs', 'dispatch-ui.mjs', 'style.css', 'favicon.svg','brand-mark.svg']) {
- await copyFile(file, join(out, file));
+for (const {file, source} of browserAssets) {
+ await copyFile(source, join(out, file));
  written.push(file);
 }
-for (const lang of locales) { await mkdir(join(out, 'locales'), { recursive: true }); await copyFile(`locales/${lang}.json`, join(out, 'locales', `${lang}.json`)); written.push(`locales/${lang}.json`); }
-for (const image of dispatchImageAssets) { await mkdir(join(out, image.path, '..'), { recursive: true }); await copyFile(image.file, join(out, image.path)); written.push(image.path); }
+for (const lang of locales) { await mkdir(join(out, 'locales'), { recursive: true }); await copyFile(`public/locales/${lang}.json`, join(out, 'locales', `${lang}.json`)); written.push(`locales/${lang}.json`); }
+for (const image of dispatchImageAssets) { await mkdir(join(out, image.path, '..'), { recursive: true }); await copyFile(join('public', image.file), join(out, image.path)); written.push(image.path); }
 
 await write('sitemap.xml', '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + publicRoutes.flatMap(path => locales.map(lang => `<url><loc>${esc(canonicalURL(path, lang))}</loc></url>`)).join('') + '</urlset>');
 await write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}${base}sitemap.xml\n`);

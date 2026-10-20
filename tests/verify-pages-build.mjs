@@ -12,9 +12,9 @@ process.env.ODDLAB_BASE = process.env.ODDLAB_BASE || '/oddlab/';
 process.env.ODDLAB_ORIGIN = (process.env.ODDLAB_ORIGIN || 'http://localhost:8788').replace(/\/+$/, '');
 process.env.ODDLAB_DEFAULT_LANG = process.env.ODDLAB_DEFAULT_LANG || 'zh';
 
-const { link, asset, currentRoute, BASE, PAGES, DEFAULT_LANG } = await import('./hosting.mjs');
-const { publicRoutes, canonicalURL, localeCodes } = await import('./page-content.mjs');
-const { dispatchImageAssets } = await import('./dispatch-assets.mjs');
+const { link, asset, currentRoute, BASE, PAGES, DEFAULT_LANG } = await import('../src/hosting.mjs');
+const { publicRoutes, canonicalURL, localeCodes } = await import('../src/page-content.mjs');
+const { dispatchImageAssets } = await import('../src/dispatch-assets.mjs');
 
 const out = 'dist-pages';
 const base = process.env.ODDLAB_BASE;
@@ -94,7 +94,7 @@ assert.ok(notFound.includes(`src="${base}app.js"`), '404.html loads the router t
 assert.ok(notFound.includes('name="robots" content="noindex,follow"'), '404.html is not indexable');
 
 // 6. The shared analytics module must keep the static-host guard.
-const analytics = await readFile('analytics.mjs', 'utf8');
+const analytics = await readFile(join(out, 'analytics.mjs'), 'utf8');
 assert.ok(analytics.includes('window.ODDLAB_STATS===false'), 'analytics.mjs short-circuits when the backend is absent');
 
 // 7. The privacy text must describe this static deployment, not the Sites one.
