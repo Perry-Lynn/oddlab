@@ -117,3 +117,41 @@ export function taskCompletion(saved, id, allow = true) {
   return { ...saved, doneIds };
 }
 
+// Duck Debug Room. One "program" per level carries exactly one broken step; the
+// player points at it, the duck explains, and the fix is chosen from two cards.
+// Everything stays in page memory, so the state object is plain data.
+export function createDebugRoom() {
+  return { index: 0, found: null, fixId: null, checked: [], focus: null, wrongFix: null, hint: false, wrong: 0, log: [] };
+}
+
+export function inspectDebugStep(state, level, stepIndex) {
+  if (!level || state.found !== null || !Number.isInteger(stepIndex) || stepIndex < 0 || stepIndex >= level.steps.length) return state;
+  if (stepIndex === level.bugStep) return { ...state, found: stepIndex };
+  const first = !state.checked.includes(stepIndex);
+  return { ...state, focus: stepIndex, checked: first ? [...state.checked, stepIndex] : state.checked, wrong: first ? state.wrong + 1 : state.wrong };
+}
+
+// The duck's one-line note for a step. `clean` lists the innocent steps in order,
+// so the broken index is skipped when the note is looked up.
+export function debugStepHint(level, index) {
+  if (!level || index === level.bugStep) return null;
+  return level.clean[index < level.bugStep ? index : index - 1] ?? null;
+}
+
+export function chooseDebugFix(state, level, fixId) {
+  if (!level || state.found === null || state.fixId !== null) return state;
+  const fix = level.fixes.find(item => item.id === fixId);
+  if (!fix) return state;
+  if (!fix.correct) return { ...state, wrongFix: fixId, wrong: state.wrong + 1 };
+  return { ...state, fixId, wrongFix: null, log: [...state.log, { levelId: level.id, fixId }] };
+}
+
+export function advanceDebugRoom(state) {
+  if (state.fixId === null) return state;
+  return { ...state, index: state.index + 1, found: null, fixId: null, checked: [], focus: null, wrongFix: null, hint: false };
+}
+
+export function debugRoomDone(state, levels) {
+  return state.index >= (levels?.length ?? 0);
+}
+

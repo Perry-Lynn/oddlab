@@ -1,5 +1,5 @@
-import { gameText, resourceEffect } from './games-content.mjs';
-import { adventureEndingId, adventureChoiceAvailable } from './games-logic.mjs';
+import { gameText, resourceEffect, debugCommit } from './games-content.mjs';
+import { adventureEndingId, adventureChoiceAvailable, debugStepHint } from './games-logic.mjs';
 import { WEEK_GOAL, streakView, weekView } from './logic.mjs';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -101,4 +101,41 @@ export function renderTasks({ lang, task, tasks, state, todayDone, alreadyStampe
  const sv=streakView(state,state.date),weekDays=weekView(state,state.date),weekDone=weekDays.length>=WEEK_GOAL;
  const streakPanel=`<div class="task-streak"><div class="task-streak-cell"><strong>${esc(c('streak'))}</strong><span data-no-translate>${esc(c('streakDays').replace('{count}',String(sv.current)))}</span><small>${esc(c('bestStreak').replace('{count}',String(sv.best)))}</small></div><div class="task-streak-cell${weekDone?' complete':''}"><strong>${esc(c('week'))}</strong><span data-no-translate>${esc(c('weekProgress').replace('{count}',String(weekDays.length)).replace('{goal}',String(WEEK_GOAL)))}</span><small>${weekDone?esc(c('weekComplete')):''}</small></div></div>`;
  return `<section class="workbench task experiment-task" data-no-translate><div class="task-date"><span>${esc(state.date)} · ${esc(task.id.toUpperCase())}</span><span class="pill ${mo?.type==='stamp'?'mo-tick':''}">${state.doneIds.length} / 30</span></div><p class="task-count-caption">${esc(c('count'))}</p><div class="task-swap-row"><button class="button light" data-action="experiment-action" data-experiment-action="task-swap" ${state.swapsUsed>=2?'disabled':''}>${esc(c('swap'))}</button><span class="note">${esc(c('swapsLeft').replace('{count}',String(Math.max(0,2-state.swapsUsed))))}</span></div>${streakPanel}<div class="task-title-row"><div class="game-art">${art}</div><h2 class="task-content ${mo?.type==='swap'?'mo-swap-in':enter?'mo-rise':''}">${esc(task.text)}</h2></div><p>${esc(c('angle'))}</p><div class="angle-grid${enter?' mo-rise-seq':''}">${angleCards}</div>${picked}<p class="note">${esc(c('noProof'))}</p>${memoryOnly?`<p class="memory-note">${esc(c('memory'))}</p>`:''}<div class="divider"></div><details class="mission-details"><summary><strong>${esc(c('book'))}</strong><span class="${mo?.type==='stamp'?'mo-tick':''}">${state.doneIds.length} / 30</span></summary><div class="mission-book">${book}</div></details></section>`;
+}
+
+// Duck Debug Room: the duck reads the program with the player, points at the broken
+// step, and the fix is picked from two cards. Nothing here runs or explains real code.
+export function renderDebugRoom({ lang, content, state, motion, art='' }) {
+ const c=key=>gameText(lang,'debug',key);
+ const mo=motion&&typeof motion==='object'?motion:null;
+ const total=content.length;
+ const action=(name,label,value='',cls='button')=>`<button class="${cls}" data-action="experiment-action" data-experiment-action="${name}"${value!==''?` data-value="${esc(value)}"`:''}>${esc(label)}</button>`;
+ const stage=c('stage').replace('{n}',String(Math.min(state.index+1,total)));
+ const head=`<div class="bench-top"><span>${esc(c('stepLabel'))}</span><span>${esc(stage)}</span></div>`;
+ const duck=(text,cls)=>`<div class="debug-duck"><span class="debug-duck-art" aria-hidden="true">${art}</span><p class="debug-bubble ${cls}">${text}</p></div>`;
+ if(state.index>=total){
+  const rows=content.map((level,i)=>{const fix=level.fixes.find(item=>item.correct);return `<li class="debug-log-row"><span class="debug-step-no">${String(i+1).padStart(2,'0')}</span><div><strong>${esc(level.title)}</strong><p><span class="debug-step-mark bug">${esc(c('bugMark'))}</span>${esc(level.steps[level.bugStep])}</p><p><span class="debug-step-mark fixed">${esc(c('fixMark'))}</span>${esc(fix.label)}</p></div></li>`;}).join('');
+  const verdict=state.wrong===0?c('verdictPerfect'):state.wrong<=2?c('verdictGood'):c('verdictSlow');
+  return `<section class="workbench debug-room is-done" data-no-translate>${head}${duck(`<small>${esc(c('duckSays'))}</small>${esc(verdict)}`,'good')}<section class="debug-log ${mo?.type==='done'?'mo-unfold':''}"><p class="result-kicker">${esc(c('logKicker'))}</p><h3>${esc(c('logHeading'))}</h3><ol>${rows}</ol></section><pre class="debug-commit">${esc(debugCommit(lang,state.wrong))}</pre><div class="actions">${action('debug-copy',c('copyCommit'),'','button dark')}${action('debug-invite',c('shareCommit'),'','button light')}${action('debug-restart',c('restart'),'','button push')}</div><p class="note">${esc(c('note'))}</p></section>`;
+ }
+ const level=content[state.index];
+ const found=state.found!==null,fixed=state.fixId!==null;
+ const steps=level.steps.map((text,i)=>{
+  const isBug=i===level.bugStep,checked=state.checked.includes(i);
+  const cls=isBug&&found?(fixed?'fixed':'bug'):checked?'ok':found?'locked':'';
+  const label=isBug&&found?(fixed?c('fixMark'):c('bugMark')):checked?c('okMark'):'';
+  const inner=`<span class="debug-step-no">${String(i+1).padStart(2,'0')}</span><span class="debug-step-text">${esc(text)}</span>${label?`<span class="debug-step-mark ${cls}">${esc(label)}</span>`:''}`;
+  return found?`<li class="debug-step ${cls}">${inner}</li>`:`<li><button class="debug-step ${cls}" data-action="experiment-action" data-experiment-action="debug-inspect" data-value="${i}">${inner}</button></li>`;
+ }).join('');
+ let bubble='',bubbleClass='hint';
+ if(fixed){bubble=`<small>${esc(c('outputLabel'))}</small>${esc(level.fixes.find(item=>item.correct).result)}`;bubbleClass='good';}
+ else if(found&&state.wrongFix){const bad=level.fixes.find(item=>item.id===state.wrongFix);bubble=`${esc(bad.result)}<small>${esc(c('duckSays'))}${esc(bad.duck)}</small>`;bubbleClass='bug';}
+ else if(found){bubble=`<small>${esc(c('duckSays'))}</small>${esc(level.bugNote)}`;bubbleClass='bug';}
+ else if(state.hint||state.checked.length>=2){bubble=`<small>${esc(c('duckSays'))}</small>${esc(level.strongHint)}`;}
+ else if(state.focus!==null&&debugStepHint(level,state.focus)){bubble=`<small>${esc(c('duckSays'))}</small>${esc(debugStepHint(level,state.focus))}`;bubbleClass='ok';}
+ else{bubble=`<small>${esc(c('duckSays'))}</small>${esc(c('intro'))}`;}
+ const fixes=found&&!fixed?`<p class="debug-fix-prompt">${esc(c('fixPrompt'))}</p><div class="debug-fixes${mo?.type==='found'?' mo-rise-seq':''}">${level.fixes.map(fix=>`<button class="debug-fix${state.wrongFix===fix.id?' is-wrong':''}" data-action="experiment-action" data-experiment-action="debug-fix" data-value="${esc(fix.id)}">${esc(fix.label)}</button>`).join('')}</div>${state.wrongFix?`<p class="debug-wrong">${esc(c('wrongFix'))}</p>`:''}`:'';
+ const next=fixed?`<div class="actions">${action('debug-next',state.index+1>=total?c('seeLog'):c('nextLevel'),'','button dark push')}</div>`:'';
+ const ask=!found&&!state.hint?`<div class="actions">${action('debug-hint',c('askDuck'),'','button light')}</div>`:'';
+ return `<section class="workbench debug-room" data-no-translate>${head}${duck(bubble,bubbleClass)}<h2 class="debug-title">${esc(level.title)}</h2><p class="debug-premise">${esc(level.premise)}</p><ol class="debug-steps${mo?.type==='level'?' mo-rise-seq':''}">${steps}</ol>${fixes}${ask}${next}<p class="note">${esc(c('note'))}</p></section>`;
 }

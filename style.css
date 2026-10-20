@@ -698,4 +698,77 @@
 .dispatch-feature h2,.dispatch-feature>p{max-width:none}
 @media(max-width:900px){.dispatch-feature{grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "art" "action";min-height:0}}
 
+/* 1024 本期限定：首页条幅 + 鸭子调试室。条幅放在首屏简介栏的最后（主打卡旁／上方），
+   390×844 与 1280×800 都能不滚动看到，也不占用双龙调度局的主打位；玩法只在本页内存里
+   进行，不写入任何存储。 */
+.limited-banner{display:flex;align-items:center;gap:12px;margin:20px 0 0;padding:12px 15px;border:1px dashed #cdc6a6;border-radius:8px;background:#fbf6e3;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.limited-banner:hover{transform:translateY(-3px);border-color:var(--ink);box-shadow:0 8px 20px #292c250f}
+.limited-badge{flex:0 0 auto;font:10px monospace;letter-spacing:1px;padding:5px 10px;border:1px solid var(--ink);border-radius:20px;background:var(--yellow)}
+.limited-copy{flex:1;min-width:0;display:grid;gap:3px}
+.limited-copy strong{font-size:15px;letter-spacing:-.2px}
+.limited-copy span{font-size:12px;line-height:1.6;color:#6d6f62}
+.limited-banner .round-arrow{width:36px;height:36px;flex:0 0 36px;font-size:19px}
+.workbench.debug-room{background:#f5f2e7}
+.debug-duck{display:flex;align-items:center;gap:13px;margin:0 0 18px}
+.debug-duck-art{flex:0 0 58px;width:58px;height:58px;color:var(--orange);animation:odd-duck-bob 4s ease-in-out infinite}
+.debug-duck-art svg{width:100%;height:100%}
+.debug-bubble{position:relative;flex:1;min-width:0;margin:0;padding:13px 16px;border:1px solid var(--line);border-radius:14px;background:#fffdf7;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+.debug-bubble:before{content:"";position:absolute;left:-7px;top:22px;width:11px;height:11px;background:inherit;border-left:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+.debug-bubble small{display:block;margin-bottom:4px;font:10px monospace;letter-spacing:.6px;color:var(--muted)}
+.debug-bubble.hint{background:#fbf6e3;border-color:#d6cfa9}
+.debug-bubble.bug{background:#fbeee9;border-color:#e6c3b6;color:#8e412d}
+.debug-bubble.ok{background:#f2f6ec;border-color:#cfdac7;color:#4a6349}
+.debug-bubble.good{background:#eef3e7;border-color:#c9d7c1;color:#3f5c46}
+.debug-title{font-size:22px;font-family:var(--serif);letter-spacing:-.3px}
+.debug-premise{margin-top:7px;font-size:13px;line-height:1.7;color:#6d7264}
+.debug-steps{list-style:none;display:grid;gap:8px;margin:18px 0 0;padding:0}
+.debug-step{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;min-height:52px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:#fffdf7;color:var(--ink);font-size:13px;line-height:1.55;text-align:left;transition:border-color .18s ease,background-color .18s ease,transform .18s ease}
+button.debug-step:hover{border-color:var(--ink);transform:translateY(-2px)}
+button.debug-step:active{transform:scale(.98)}
+.debug-step-no{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#eee9d8;color:#6f7264;font:11px monospace}
+.debug-step-text{min-width:0;overflow-wrap:anywhere}
+.debug-step-mark{justify-self:end;padding:3px 8px;border:1px solid currentColor;border-radius:20px;color:var(--muted);font:9px monospace;letter-spacing:.8px;white-space:nowrap}
+.debug-step.ok{border-color:#cfdac7;background:#f3f7ee}
+.debug-step.ok .debug-step-no{background:#e2ebd9}
+.debug-step.ok .debug-step-mark{color:#557b57}
+.debug-step.bug{border-color:#d9805f;background:#fdeee7;box-shadow:inset 0 0 0 1px #d9805f}
+.debug-step.bug .debug-step-no{background:#f6d9cd;color:#8e412d}
+.debug-step.bug .debug-step-mark{color:#a34432}
+.debug-step.fixed{border-color:#b6c9ad;background:#eef3e7}
+.debug-step.fixed .debug-step-mark{color:#40583f}
+.debug-step.locked{opacity:.55}
+.debug-fix-prompt{margin:22px 0 9px;font-size:13px;font-weight:600;color:#4b5145}
+.debug-fixes{display:grid;gap:9px}
+.debug-fix{width:100%;min-height:52px;padding:13px 15px;border:1px solid #dedbcf;border-radius:12px;background:#fffdf7;color:var(--ink);font-size:13px;line-height:1.55;text-align:left;transition:border-color .18s ease,background-color .18s ease,transform .18s ease}
+.debug-fix:hover{border-color:var(--ink);background:#fdf8e6;transform:translateY(-2px)}
+.debug-fix:active{transform:scale(.98)}
+.debug-fix.is-wrong{border-color:#e0a892;background:#fbeee9;color:#8e412d;text-decoration:line-through}
+.debug-wrong{margin:11px 0 0;font-size:12px;color:#9a4a34}
+.debug-log{margin:20px 0 0;padding:16px;border:1px solid var(--line);border-radius:12px;background:#fffdf7}
+.debug-log .result-kicker{color:var(--muted)}
+.debug-log h3{margin:7px 0 12px;font-size:17px;font-family:var(--serif)}
+.debug-log ol{list-style:none;display:grid;gap:9px;margin:0;padding:0}
+.debug-log-row{display:grid;grid-template-columns:30px minmax(0,1fr);gap:11px;align-items:start;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#f8f5ed}
+.debug-log-row div{min-width:0}
+.debug-log-row strong{display:block;margin-bottom:6px;font-size:14px}
+.debug-log-row p{margin:0;font-size:12px;line-height:1.6;color:#63675b;overflow-wrap:anywhere}
+.debug-log-row p+p{margin-top:5px}
+.debug-log-row .debug-step-mark{margin-right:6px}
+.debug-commit{margin:16px 0 0;padding:15px 16px;border:1px dashed #c3bd9f;border-radius:10px;background:#fffdf3;color:#3c4036;font:12px/1.85 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:640px){
+ .limited-banner{gap:10px;margin:16px 0 0;padding:11px 13px}
+ .limited-badge{font-size:9px;padding:4px 8px}
+ .limited-copy strong{font-size:14px}
+ .limited-copy span{font-size:11px}
+ .limited-banner .round-arrow{width:32px;height:32px;flex-basis:32px;font-size:17px}
+ .debug-duck{gap:10px;margin-bottom:15px}
+ .debug-duck-art{flex-basis:46px;width:46px;height:46px}
+ .debug-bubble{padding:11px 13px;font-size:12px}
+ .debug-title{font-size:19px}
+ .debug-step{grid-template-columns:26px minmax(0,1fr);gap:9px;font-size:12px;padding:11px}
+ .debug-step .debug-step-mark{grid-column:2;justify-self:start}
+ .debug-step-no{width:26px;height:26px}
+ .debug-commit{font-size:11px}
+}
+
 
