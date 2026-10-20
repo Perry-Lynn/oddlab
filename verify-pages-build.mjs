@@ -71,6 +71,8 @@ for (const route of publicRoutes) {
  assert.ok(options[0].includes('value="zh"'), `${name} lists Chinese first`);
  assert.ok(options[0].includes('selected'), `${name} selects Chinese by default`);
  assert.ok(!options.slice(1).some(option => option.includes('selected')), `${name} selects a single language`);
+ assert.ok(!html.includes('✳'), `${name} drops the old eight-point star glyph`);
+ assert.ok(html.includes('M8 42c-3-11 6-17 18-17'), `${name} carries the hand-drawn duck mark`);
  assert.equal((html.match(/<title>/g) || []).length, 1, `${name} has exactly one title`);
  assert.equal((html.match(/<h1[ >]/g) || []).length, 1, `${name} has exactly one h1`);
  assert.equal((html.match(/hreflang=/g) || []).length, 5, `${name} lists five hreflang alternates`);

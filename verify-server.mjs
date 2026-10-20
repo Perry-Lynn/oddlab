@@ -30,6 +30,7 @@ const stats=await (await worker.fetch(new Request(origin+'/api/stats?days=7',{he
 assert.equal((await worker.fetch(new Request(origin+'/api/stats?days=999',{headers:adminHeaders}),adminEnv)).status,400);
 assert.equal((await worker.fetch(new Request(origin+'/api/track'),{DB})).status,405);
 for(const path of ['/','/persona','/life','/task','/choice','/privacy','/locales/es.json','/i18n.mjs','/dispatch-assets.mjs','/games-content.mjs','/games-logic.mjs','/games-ui.mjs'])assert.equal((await worker.fetch(new Request(origin+path))).status,200);
+assert.match(await (await worker.fetch(new Request(origin+'/favicon.svg'))).text(),/M8 42c-3-11 6-17 18-17/,'the favicon is the hand-drawn duck, not the old star');
 assert.match(await (await worker.fetch(new Request(origin+'/dispatch-assets.mjs'))).text(),/rememberDispatchImageFailure/);
 for(const path of ['/assets/dispatch/hero-v1.webp','/assets/dispatch/ember-v1.webp','/assets/dispatch/gale-v1.webp','/assets/dispatch/terrain-v1.webp']){
  const response=await worker.fetch(new Request(origin+path));assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'image/webp');assert.match(response.headers.get('cache-control'),/immutable/);

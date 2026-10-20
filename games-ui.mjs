@@ -42,7 +42,7 @@ export function renderEndingGallery({ lang, content, collected }) {
   total+=endings.length;
   const got=new Set(Array.isArray(collected?.[themeId])?collected[themeId]:[]);
   found+=endings.filter(([id])=>got.has(id)).length;
-  const cells=endings.map(([id,[title]])=>`<div class="gallery-cell ${got.has(id)?'unlocked':'locked'}"><span class="gallery-mark">${got.has(id)?'✳':'?'}</span><strong>${got.has(id)?esc(title):esc(c('locked'))}</strong></div>`).join('');
+  const cells=endings.map(([id,[title]])=>`<div class="gallery-cell ${got.has(id)?'unlocked':'locked'}"><span class="gallery-mark">${got.has(id)?'✓':'?'}</span><strong>${got.has(id)?esc(title):esc(c('locked'))}</strong></div>`).join('');
   return `<div class="gallery-theme"><h4>${esc(theme.name)}</h4><div class="gallery-cells">${cells}</div></div>`;
  }).join('');
  return `<section class="ending-gallery" data-no-translate><div class="gallery-head"><h3>${esc(c('gallery'))}</h3><span class="pill">${esc(c('galleryFound').replace('{found}',String(found)).replace('{total}',String(total)))}</span></div><div class="gallery-grid">${rows}</div><p class="note">${esc(c('galleryHint'))}</p></section>`;
