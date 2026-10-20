@@ -3,6 +3,7 @@ import {
   createDispatchState, validateLoadout, validateAction, legalActions, stepDispatch,
   simulatePlan, projectDragonRoute, evaluateDispatch, snapshotDispatchTurn,
   restoreDispatchTurn, DRAGONS, ORDERS, LEVELS, getDispatchLevel, currentLoad,
+  resolveEdgeRules, airCostFor, WEATHERS, pickDispatchWeather, dispatchStars,
 } from './dispatch-logic.mjs';
 import { dispatchCopies, copyForDispatchLevel } from './dispatch-copy.mjs';
 import { dispatchImageAssets, dispatchImageHasFailed, rememberDispatchImageFailure } from './dispatch-assets.mjs';
@@ -454,4 +455,67 @@ assert.ok(returnSuccessfulSplits.some(x => x.Ember.includes('soup') && x.Ember.i
 assert.ok(returnSuccessfulSplits.some(x => x.Ember.includes('ice') && x.Ember.includes('eggs') && x.Gale.includes('soup')));
 assert.ok(returnSuccessfulSplits.some(x => x.Ember.includes('ice') && x.Gale.includes('soup') && x.Gale.includes('eggs')));
 
-console.log(`PASS: first-level fixtures and weather, Return fixtures A/B, dynamic level fallback, responsibility/pickup timing, over-capacity warnings, same-stop deliver-before-pickup, deadline/turn-8 edges, undo, four-language copy and planner priority; actual joint-action search explored ${returnExploredStates} nonterminal states and found exactly 3 solvable Return splits (${exploredStates} first-level states; 2 winning splits).`);
+// Festival and Storm use the same winning joint-plan shape as the first level.
+const festival = createDispatchState({ levelId: 'festival', assignments: { Ember: ['lantern', 'cake'], Gale: ['cracker'] } });
+const festivalPlan = {
+  Ember: route(['C', 'T', 'C', 'M', 'C', 'K']),
+  Gale: [...route(['C', 'A']), { type: 'ration' }, ...route(['C', 'K'])],
+};
+const storm = createDispatchState({ levelId: 'storm', assignments: { Ember: ['lamp', 'blanket'], Gale: ['radio'] } });
+const stormPlan = {
+  Ember: route(['C', 'T', 'C', 'M', 'C', 'K']),
+  Gale: [...route(['C', 'A']), { type: 'ration' }, ...route(['C', 'K'])],
+};
+for (const [name, state, plan, deliveries, orderIds, turnLimit] of [
+  ['festival', festival, festivalPlan, { lantern: 2, cake: 6, cracker: 5 }, ['lantern', 'cake', 'cracker'], 7],
+  ['storm', storm, stormPlan, { lamp: 4, blanket: 6, radio: 5 }, ['lamp', 'blanket', 'radio'], 8],
+]) {
+  const before = structuredClone(state);
+  const forecast = simulatePlan(state, plan);
+  assert.equal(forecast.state.status, 'won', `${name} must win`);
+  assert.equal(forecast.state.turn, 6, `${name} wins on turn 6`);
+  assert.deepEqual(Object.fromEntries(Object.entries(deliveries).map(([id]) => [id, forecast.state.delivered[id].turn])), deliveries);
+  assert.equal(forecast.state.locations.Ember, 'K', `${name} Ember returns home`);
+  assert.equal(forecast.state.locations.Gale, 'K', `${name} Gale returns home`);
+  assert.deepEqual(state, before, `${name} planning must not mutate input`);
+  assert.equal(forecast.issues.length, 0);
+  assert.equal(forecast.state.rationAvailable, false, `${name} spends the shared ration`);
+  assert.equal(dispatchStars(forecast.state), 2, `${name} earns two stars`);
+  for (const id of orderIds) assert.equal(forecast.state.orderStatus[id], 'delivered');
+  assert.equal(getDispatchLevel(name).turnLimit, turnLimit);
+}
+
+// Weather resolution, road rules, and star grading boundaries.
+assert.deepEqual(WEATHERS, ['clear', 'headwind', 'flood']);
+assert.equal(pickDispatchWeather(() => 0), 'clear');
+assert.equal(pickDispatchWeather(() => 0.34), 'headwind');
+assert.equal(pickDispatchWeather(() => 0.999), 'flood');
+assert.deepEqual(resolveEdgeRules('first', 'clear').ridgeClosed, [4, 5]);
+assert.deepEqual(resolveEdgeRules('storm', 'clear').ridgeClosed, [4, 5, 6]);
+assert.deepEqual(resolveEdgeRules('first', 'flood').canalFlood, [3, 4, 5]);
+assert.deepEqual(resolveEdgeRules('first', 'clear').canalFlood, [3, 4]);
+assert.equal(airCostFor('first', 'clear', 2), 3);
+assert.equal(airCostFor('first', 'flood', 4), 1);
+assert.equal(airCostFor('first', 'headwind', 3), 4);
+assert.equal(dispatchStars(createDispatchState({})), 0, 'a setup state earns no stars');
+const threeStar = structuredClone(storm);
+Object.assign(threeStar, { status: 'won', rationAvailable: true, turn: 6 });
+assert.equal(dispatchStars(threeStar), 3, 'a win that keeps the ration and finishes early earns three stars');
+
+// Festival/Storm copy: selector labels, titles, tutorials, rules and order names exist in all languages.
+for (const lang of ['en', 'zh', 'ja', 'es']) {
+  assert.ok(dispatchCopies[lang].weather?.title && dispatchCopies[lang].weather.clear && dispatchCopies[lang].weather.headwind && dispatchCopies[lang].weather.flood, `${lang} weather copy is complete`);
+  for (const levelId of ['festival', 'storm']) {
+    const levelCopy = copyForDispatchLevel(lang, levelId);
+    assert.ok(levelCopy[`${levelId}Title`] && levelCopy[`${levelId}Subtitle`] && levelCopy[`${levelId}Duration`], `${lang} ${levelId} title/subtitle/duration exist`);
+    assert.ok(levelCopy[`${levelId}Assignments`] && levelCopy[`${levelId}LoadoutHint`] && levelCopy[`${levelId}Complete`], `${lang} ${levelId} help copy exists`);
+    assert.ok(levelCopy[`level${levelId[0].toUpperCase()}${levelId.slice(1)}`], `${lang} exposes the ${levelId} level selector label`);
+    assert.ok(Array.isArray(levelCopy[`${levelId}Tutorial`]) && levelCopy[`${levelId}Tutorial`].length >= 3, `${lang} ${levelId} tutorial has three steps`);
+    assert.ok(Array.isArray(levelCopy[`${levelId}Rules`]) && levelCopy[`${levelId}Rules`].length >= 4, `${lang} ${levelId} rules are complete`);
+    for (const id of Object.keys(LEVELS[levelId].orders)) {
+      assert.ok(levelCopy.orders[id]?.name && levelCopy.orders[id]?.recipient, `${lang} ${levelId} order ${id} is fully localized`);
+    }
+  }
+}
+
+console.log(`PASS: first-level fixtures and weather, Return fixtures A/B, festival/storm fixtures, dynamic level fallback, responsibility/pickup timing, over-capacity warnings, same-stop deliver-before-pickup, deadline/turn-8 edges, undo, four-language copy and planner priority; actual joint-action search explored ${returnExploredStates} nonterminal states and found exactly 3 solvable Return splits (${exploredStates} first-level states; 2 winning splits).`);

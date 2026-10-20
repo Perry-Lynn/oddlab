@@ -1,8 +1,9 @@
 import { calculatePersona } from './logic.mjs';
 
-export function previewPersonaAnswer(answers, questionIndex, answerIndex, pack) {
-  if (!Array.isArray(answers) || answers.length !== pack.questions.length ||
-      !Number.isInteger(questionIndex) || !pack.questions[questionIndex]?.options[answerIndex]) {
+export function previewPersonaAnswer(answers, questionIndex, answerIndex, pack, set = 0) {
+  const questions = set ? pack.questions2 : pack.questions;
+  if (!Array.isArray(answers) || answers.length !== questions.length ||
+      !Number.isInteger(questionIndex) || !questions[questionIndex]?.options[answerIndex]) {
     throw new Error('A completed answer set and a valid answer are required.');
   }
   const proposedAnswers = [...answers];
@@ -10,8 +11,8 @@ export function previewPersonaAnswer(answers, questionIndex, answerIndex, pack) 
   return {
     questionIndex,
     answerIndex,
-    previousId: calculatePersona(answers, pack),
-    nextId: calculatePersona(proposedAnswers, pack),
+    previousId: calculatePersona(answers, pack, set),
+    nextId: calculatePersona(proposedAnswers, pack, set),
     proposedAnswers,
   };
 }

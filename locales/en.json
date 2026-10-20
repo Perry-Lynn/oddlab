@@ -21,7 +21,15 @@
       "D5": "Convenience Store Philosopher",
       "D6": "Untamed Inventor",
       "D7": "Chief Bystander",
-      "D8": "Social Battery Manager"
+      "D8": "Social Battery Manager",
+      "D9": "Human Mouthpiece",
+      "D10": "Decluttering Assassin",
+      "D11": "Midnight Emo Laureate",
+      "D12": "Side-hustle Engine",
+      "D13": "Trivia Launcher",
+      "D14": "Emotion Organizer",
+      "D15": "Anti-hustle Pioneer",
+      "D16": "Digital Hoarder"
     },
     "questions": [
       {
@@ -253,8 +261,248 @@
         "pro": "Excellent focus and creativity when left in peace.",
         "habit": "Checking the social calendar before deciding you have a sudden prior commitment.",
         "share": "I got Social Battery Manager. This reply used 80% of my daily charge."
+      },
+      "D9": {
+        "id": "persona-09",
+        "name": "Human Mouthpiece",
+        "tagline": "Saying what everyone else is thinking.",
+        "desc": "You say the thing the group chat will not, and boil a friend's three-day dilemma down to one line. You are not harsh, just fluent in the words everyone swallowed. Without you, gatherings feel like they are missing their interpreter.",
+        "pro": "Direct, and quick to unstick any conversation.",
+        "habit": "Drafting everyone's unspoken line, then picking the right moment to say it.",
+        "share": "I got Human Mouthpiece. I said the thing. Please do not be mad."
+      },
+      "D10": {
+        "id": "persona-10",
+        "name": "Decluttering Assassin",
+        "tagline": "Throwing things away beats buying them.",
+        "desc": "Your wardrobe is a capsule, your apps fit one screen, and your contacts get purged every few months. Others hoard regret; you hoard empty space. Unused, unloved, untouched for three months? Out it goes.",
+        "pro": "A clear space and a quick, decisive mind.",
+        "habit": "A monthly send-off tournament where the losers are gone by morning.",
+        "share": "I got Decluttering Assassin. My room has an echo now."
+      },
+      "D11": {
+        "id": "persona-11",
+        "name": "Midnight Emo Laureate",
+        "tagline": "Sunshine by day, poetry by night.",
+        "desc": "You are a functioning human until midnight, when the caption drafts and a photo of a streetlamp come out. You feel every small shift and can turn it into a line in three words. Your notes app holds an unpublished anthology.",
+        "pro": "Deep empathy and a sharp eye for feeling.",
+        "habit": "Re-translating last night's genius before daring to post it.",
+        "share": "I got Midnight Emo Laureate. Another 8,000 words written. None posted."
+      },
+      "D12": {
+        "id": "persona-12",
+        "name": "Side-hustle Engine",
+        "tagline": "Your day job is staying alive. The hustles are extra.",
+        "desc": "Your resume is a chain of slashes: desk job by day, selling your photos by night, voice-over on weekends. You are not restless, you just like having more than one battery. Even a hustle that earns nothing still earns you a skill.",
+        "pro": "Boundless energy and a fast learning curve.",
+        "habit": "Three projects in progress, each one small push away from launch.",
+        "share": "I got Side-hustle Engine. My 47th hustle is on the way."
+      },
+      "D13": {
+        "id": "persona-13",
+        "name": "Trivia Launcher",
+        "tagline": "Nobody asked. You still want to tell them.",
+        "desc": "You know octopuses have three hearts, that a banana is technically a berry, and why birds on wires never get shocked. You cannot help the \"actually…\" in conversation. Friends sigh, then borrow your facts to show off.",
+        "pro": "A wide knowledge base and delightfully odd ideas.",
+        "habit": "Stockpiling every fact you scroll past for a daily trivia drop.",
+        "share": "I got Trivia Launcher. Octopuses have three hearts. This is true."
+      },
+      "D14": {
+        "id": "persona-14",
+        "name": "Emotion Organizer",
+        "tagline": "Filing every feeling into the right drawer.",
+        "desc": "Where others just feel angry, you name the exact flavour of it — offended, or afraid of being left. You label every mood and know which to air out and which to lock away. When a friend's emotions collapse, you are the first call.",
+        "pro": "Steady feelings and a gift for listening.",
+        "habit": "Tagging each day's mood before bed and filing it in your notes.",
+        "share": "I got Emotion Organizer. Today's mood is filed under \"handled.\""
+      },
+      "D15": {
+        "id": "persona-15",
+        "name": "Anti-hustle Pioneer",
+        "tagline": "You all keep grinding. I am clocking out.",
+        "desc": "Others work late; you shut the laptop on time. Others chase the grind; you ask whether it actually matters. You are not lazy, you just spend your effort on what counts. While they win the KPI, you win your evening back.",
+        "pro": "Clear boundaries and no wasted self-doubt.",
+        "habit": "The minute you log off becomes your own little freedom bell.",
+        "share": "I got Anti-hustle Pioneer. Clocking out now. Carry on."
+      },
+      "D16": {
+        "id": "persona-16",
+        "name": "Digital Hoarder",
+        "tagline": "To save is to own. To open is to use.",
+        "desc": "Your bookmarks hold three thousand articles, five hundred tutorials, and two hundred \"must-watch\" lists. A good thing instantly becomes \"save for later,\" and later never comes. You do not really want to read them. You just fear missing something.",
+        "pro": "A sharp nose for information and a complete archive.",
+        "habit": "Saving to \"read later,\" where later means never.",
+        "share": "I got Digital Hoarder. I saved it, therefore I understood it."
       }
-    }
+    },
+    "tiebreakOrder2": [
+      "D9",
+      "D10",
+      "D11",
+      "D12",
+      "D13",
+      "D14",
+      "D15",
+      "D16"
+    ],
+    "questions2": [
+      {
+        "id": "Q7",
+        "text": "A friend pings you \"you there?\" at midnight, then goes quiet. You…",
+        "options": [
+          {
+            "text": "Reply \"?\" instantly — spit it out",
+            "main": "D9",
+            "sub": "D15"
+          },
+          {
+            "text": "Delete a thousand screenshots to calm down",
+            "main": "D10",
+            "sub": "D16"
+          },
+          {
+            "text": "Imagine what crisis they are in and get more anxious",
+            "main": "D11",
+            "sub": "D14"
+          },
+          {
+            "text": "Use the moment to finish something overdue",
+            "main": "D12",
+            "sub": "D13"
+          }
+        ]
+      },
+      {
+        "id": "Q8",
+        "text": "Which sounds most like your last search?",
+        "options": [
+          {
+            "text": "\"Why do ants move before it rains\"",
+            "main": "D13",
+            "sub": "D9"
+          },
+          {
+            "text": "The difference between being tired and feeling heavy",
+            "main": "D14",
+            "sub": "D11"
+          },
+          {
+            "text": "How to politely decline overtime",
+            "main": "D15",
+            "sub": "D10"
+          },
+          {
+            "text": "Is buy-two-get-one actually worth it",
+            "main": "D16",
+            "sub": "D12"
+          }
+        ]
+      },
+      {
+        "id": "Q9",
+        "text": "The gathering goes awkwardly quiet. Your first move?",
+        "options": [
+          {
+            "text": "Crack a joke to rescue the room",
+            "main": "D9",
+            "sub": "D12"
+          },
+          {
+            "text": "Drop a trivia fact nobody asked about",
+            "main": "D13",
+            "sub": "D14"
+          },
+          {
+            "text": "Wonder if you just said something wrong",
+            "main": "D11",
+            "sub": "D16"
+          },
+          {
+            "text": "Quietly record the moment to keep",
+            "main": "D16",
+            "sub": "D15"
+          }
+        ]
+      },
+      {
+        "id": "Q10",
+        "text": "That task is due tomorrow. Tonight you…",
+        "options": [
+          {
+            "text": "Clear your desk before you start",
+            "main": "D10",
+            "sub": "D16"
+          },
+          {
+            "text": "First figure out what this task makes you feel",
+            "main": "D14",
+            "sub": "D11"
+          },
+          {
+            "text": "Do it while filming, as future side-hustle material",
+            "main": "D12",
+            "sub": "D13"
+          },
+          {
+            "text": "Work at your own pace — no crunch, no all-nighter",
+            "main": "D15",
+            "sub": "D9"
+          }
+        ]
+      },
+      {
+        "id": "Q11",
+        "text": "Which compliment sounds most like you?",
+        "options": [
+          {
+            "text": "You always hit the nail on the head",
+            "main": "D9",
+            "sub": "D15"
+          },
+          {
+            "text": "I feel so much better after talking to you",
+            "main": "D14",
+            "sub": "D11"
+          },
+          {
+            "text": "How do you know a bit of everything",
+            "main": "D12",
+            "sub": "D13"
+          },
+          {
+            "text": "You live so unbothered",
+            "main": "D15",
+            "sub": "D16"
+          }
+        ]
+      },
+      {
+        "id": "Q12",
+        "text": "You see a \"save this for later\" post. You…",
+        "options": [
+          {
+            "text": "Scroll past — saved means never read",
+            "main": "D10",
+            "sub": "D16"
+          },
+          {
+            "text": "Open it to check if it is actually useful",
+            "main": "D13",
+            "sub": "D14"
+          },
+          {
+            "text": "Read it and worry you are not growing enough",
+            "main": "D11",
+            "sub": "D15"
+          },
+          {
+            "text": "Save it to read \"later\"",
+            "main": "D16",
+            "sub": "D12"
+          }
+        ]
+      }
+    ]
   },
   "life": {
     "game": "life",

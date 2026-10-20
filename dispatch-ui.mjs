@@ -1,4 +1,4 @@
-import { createDispatchState, validateLoadout, simulatePlan, projectDragonRoute, stepDispatch, evaluateDispatch, snapshotDispatchTurn, restoreDispatchTurn, getDispatchLevel, capacityForDragon, currentLoad, DRAGONS, LOCATIONS, EDGES } from './dispatch-logic.mjs';
+import { createDispatchState, validateLoadout, simulatePlan, projectDragonRoute, stepDispatch, evaluateDispatch, snapshotDispatchTurn, restoreDispatchTurn, getDispatchLevel, capacityForDragon, currentLoad, DRAGONS, LOCATIONS, EDGES, resolveEdgeRules, airCostFor, WEATHERS, pickDispatchWeather, dispatchStars } from './dispatch-logic.mjs';
 import { dispatchCopy, copyForDispatchLevel } from './dispatch-copy.mjs';
 import { dispatchImageHasFailed, rememberDispatchImageFailure, dispatchImageURL } from './dispatch-assets.mjs';
 import { link } from './hosting.mjs';
@@ -11,7 +11,7 @@ const coordinates = { 'K-C': ['M 130 280 L 355 280', 243, 256], 'C-T': ['M 355 2
 let ui = {
   copy: dispatchCopy('en'), lang: 'en',
   state: createDispatchState(), plan: { Ember: [], Gale: [] }, selected: 'Ember',
-  history: [], tutorialDismissed: false, notice: '', noticeIssue: null, noticeDragon: null, latestExecution: null, executionRun: [], executionSequence: 0, lastRenderedExecutionSequence: 0, lastRenderedSelection: null, container: null, pendingFocusKey: null, pendingResultFocus: false,
+  history: [], tutorialDismissed: false, notice: '', noticeIssue: null, noticeDragon: null, latestExecution: null, executionRun: [], executionSequence: 0, lastRenderedExecutionSequence: 0, lastRenderedSelection: null, container: null, pendingFocusKey: null, pendingResultFocus: false, weatherChosen: false,
 };
 
 // Motion only presents completed turns. It never schedules or changes game state.
@@ -192,6 +192,11 @@ function animateBoardMotion(freshRun) {
 
 const activeLevel = () => getDispatchLevel(ui.state.levelId);
 const activeCopy = () => copyForDispatchLevel(ui.lang, ui.state.levelId);
+const STARS_KEY = 'oddlab_dispatch_stars';
+function readStars() { if (typeof localStorage === 'undefined') return {}; try { return JSON.parse(localStorage.getItem(STARS_KEY)) || {}; } catch { return {}; } }
+function bestStars(levelId) { return readStars()[levelId] || 0; }
+function recordStars(levelId, stars) { if (typeof localStorage === 'undefined') return; const all = readStars(); all[levelId] = Math.max(all[levelId] || 0, stars); try { localStorage.setItem(STARS_KEY, JSON.stringify(all)); } catch {} }
+function starRow(stars) { return '★'.repeat(stars) + '☆'.repeat(Math.max(0, 3 - stars)); }
 function responsibilityWeight(dragon) { return ui.state.assignments[dragon].reduce((n, id) => n + (activeLevel().orders[id]?.weight || 0), 0); }
 function text(template, vars = {}) { return String(template || '').replace(/\{(\w+)\}/g, (_, key) => String(vars[key] ?? '')); }
 export function formatPickupTiming(pickup, c) {
@@ -295,12 +300,12 @@ function orderDetail(spec, c, pickupLevel = ui.state.levelId !== 'first') {
 }
 
 function loadoutPanel(c) {
-  const level = activeLevel(), returnLevel = level.id === 'return', marketLevel = level.id === 'market', pickupLevel = level.id !== 'first';
+  const level = activeLevel(), returnLevel = level.id === 'return', marketLevel = level.id === 'market', festivalLevel = level.id === 'festival', stormLevel = level.id === 'storm', pickupLevel = level.id !== 'first', hasIce = Boolean(level.orders.ice);
   const assigned = DRAGONS.map(d => responsibilityWeight(d));
   const validation = validateLoadout(ui.state.assignments, ui.state.sealedIce, level.id);
   const errors = validation.issues.filter(issue => issue.code !== 'missing_order').map(issue => `<li>${esc(detailError(issue, c))}</li>`).join('');
-  const assignmentTitle = returnLevel ? c.returnAssignments : marketLevel ? c.marketAssignments : c.assignments;
-  const assignmentHint = returnLevel ? c.returnLoadoutHint : marketLevel ? c.marketLoadoutHint : c.loadoutMissing;
+  const assignmentTitle = returnLevel ? c.returnAssignments : marketLevel ? c.marketAssignments : festivalLevel ? c.festivalAssignments : stormLevel ? c.stormAssignments : c.assignments;
+  const assignmentHint = returnLevel ? c.returnLoadoutHint : marketLevel ? c.marketLoadoutHint : festivalLevel ? c.festivalLoadoutHint : stormLevel ? c.stormLoadoutHint : c.loadoutMissing;
   const marketStarts = marketLevel ? `<p class="dispatch-market-starts">${esc(marketStartCopy(c, level))}</p>` : '';
   const capacities = DRAGONS.map((d, i) => {
     const capacity = capacityForDragon(d), loaded = currentLoad(ui.state, d);
@@ -318,16 +323,17 @@ function loadoutPanel(c) {
       return `<article class="dispatch-order" data-order="${id}"><div class="dispatch-order-copy">${parcelGlyph(id, 'dispatch-order-art')}<div><h3>${esc(order.name)}</h3><p>${esc(orderDetail(spec, c, pickupLevel))}</p>${!assignedDragon ? `<small class="dispatch-assignment-prompt">${esc(c.notAssigned)}</small>` : ''}</div><span class="dispatch-weight">${spec.weight} ⚖</span></div><div class="dispatch-order-pick" role="group" aria-label="${esc(order.name)} · ${esc(c.selectDragon)}">${DRAGONS.map(dragon => `<button type="button" class="dispatch-pick ${assignedDragon === dragon ? `is-${dragon.toLowerCase()}` : ''}" data-action="dispatch-action" data-dispatch-action="assign-order" data-order="${id}" data-dragon="${dragon}" data-focus-key="assign-${id}-${dragon}" data-focus-group="assign-${id}" aria-pressed="${assignedDragon === dragon}">${dragonPortrait(dragon, 25, '')}<span>${esc(c.dragons[dragon])}</span></button>`).join('')}</div></article>`;
     }).join('')}</div>
     <div class="dispatch-capacity-row">${capacities}</div>
-    <div class="dispatch-seal-row"><div><strong>${esc(c.seal)}</strong><p>${esc(c.sealHelp)}</p></div><button type="button" class="button ${ui.state.sealedIce ? 'dark' : 'light'}" data-action="dispatch-action" data-dispatch-action="toggle-seal" data-focus-key="toggle-seal" data-focus-group="setup-controls" aria-pressed="${ui.state.sealedIce}">${esc(ui.state.sealedIce ? c.sealOn : c.sealOff)}</button></div>
+    ${hasIce ? `<div class="dispatch-seal-row"><div><strong>${esc(c.seal)}</strong><p>${esc(c.sealHelp)}</p></div><button type="button" class="button ${ui.state.sealedIce ? 'dark' : 'light'}" data-action="dispatch-action" data-dispatch-action="toggle-seal" data-focus-key="toggle-seal" data-focus-group="setup-controls" aria-pressed="${ui.state.sealedIce}">${esc(ui.state.sealedIce ? c.sealOn : c.sealOff)}</button></div>` : ''}
     ${errors ? `<ul class="dispatch-errors" role="status">${errors}</ul>` : `<p class="dispatch-valid">${esc(validation.valid ? c.loadoutReady : c.loadoutMissing)}</p>`}
     <button type="button" class="button dark dispatch-start" data-action="dispatch-action" data-dispatch-action="start" data-focus-key="start" data-focus-group="setup-controls" ${validation.valid ? '' : 'disabled'}>${esc(c.start)} <span aria-hidden="true">→</span></button>
   </section>`;
 }
 
 function edgeStatus(edge, round, c) {
-  if (edge.type === 'ridge') return round === 4 || round === 5 ? c.edgeClosedRidge : c.open;
-  if (edge.type === 'canal') return round === 3 || round === 4 ? c.edgeFlood : c.open;
-  if (edge.type === 'air') return round === 2 || round === 3 ? c.edgeWind : c.open;
+  const rules = resolveEdgeRules(ui.state.levelId, ui.state.weather);
+  if (edge.type === 'ridge') return rules.ridgeClosed.includes(round) ? c.edgeClosedRidge : c.open;
+  if (edge.type === 'canal') return rules.canalFlood.includes(round) ? c.edgeFlood : c.open;
+  if (edge.type === 'air') return rules.airBoost.includes(round) ? c.edgeWind : c.open;
   return c.open;
 }
 
@@ -363,7 +369,7 @@ function mapSVG(c, forecast, selectedTurn, projections) {
     // The sky-road badge sits closer to the curve here, while leaving room for the Tower label below it.
     const ly = edge.type === 'air' || edge.type === 'ridge' ? 135 : sourceLy;
     const typeLabel = ({ road: c.legendRoad, ridge: c.legendRidge, canal: c.legendCanal, tunnel: c.legendTunnel, air: c.legendAir })[edge.type];
-    const cost = edge.type === 'air' && [2, 3].includes(selectedTurn) ? 3 : edge.cost;
+    const cost = edge.type === 'air' ? airCostFor(ui.state.levelId, ui.state.weather, selectedTurn) : edge.cost;
     const status = edgeStatus(edge, selectedTurn, c);
     const hasBadge = status !== c.open || cost !== 1;
     return `<g class="dispatch-edge dispatch-edge-${edge.type} ${hasBadge ? 'has-badge' : ''}" aria-hidden="true" pointer-events="none"><path d="${path}" class="dispatch-edge-line"/><rect x="${lx - 88}" y="${ly - 27}" width="176" height="54" rx="7" class="dispatch-edge-label-bg"/><text x="${lx}" y="${ly - 7}" class="dispatch-edge-cost ${cost === 1 ? 'is-default-cost' : 'is-variable-cost'}" text-anchor="middle">${cost}⚡${cost === 1 ? '' : ' · 1T'}</text><text x="${lx}" y="${ly + 21}" class="dispatch-edge-note ${status === c.open ? 'is-open' : 'is-special'}" text-anchor="middle">${esc(status)}</text><title>${esc(typeLabel)} — ${esc(status)}</title></g>`;
@@ -389,7 +395,7 @@ function mapSVG(c, forecast, selectedTurn, projections) {
     const plannedEmber = projections.Ember.state.locations.Ember, plannedGale = projections.Gale.state.locations.Gale;
     const markers = DRAGONS.map(d => projections[d].state.locations[d] === id ? dragonGlyph(d, x + (plannedEmber === plannedGale ? (d === 'Ember' ? -21 : 21) : 0), y + 47, true) : '').join('');
     const waiting = pickupLevel ? Object.entries(level.orders).filter(([orderId, spec]) => spec.source === id && ui.state.orderStatus[orderId] === 'waiting_pickup') : [];
-    const waitingText = waiting.map(([orderId, spec]) => `${({ soup:'S', ice:'I', eggs:'E' })[orderId]} · R${spec.readyAt}`).join(' / ');
+    const waitingText = waiting.map(([orderId, spec]) => `${orderId[0].toUpperCase()} · R${spec.readyAt}`).join(' / ');
     const waitingLabel = waiting.map(([orderId, spec]) => text(c.sourceWaiting, { order: c.orders[orderId].name, turn: spec.readyAt })).join(' · ');
     const nodeLabel = [nodeCopy[id], waitingLabel].filter(Boolean).join(' · ');
     return `<g class="dispatch-map-node" role="button" tabindex="0" data-action="dispatch-action" data-dispatch-action="map-node" data-node="${id}" data-dragon="${ui.selected}" data-focus-key="map-${id}" data-focus-group="map" aria-label="${esc(nodeLabel)}"><circle cx="${x}" cy="${y}" r="82" fill="transparent" pointer-events="all" class="dispatch-node-hit-target"/><circle cx="${x}" cy="${y}" r="41" class="dispatch-node-ring" aria-hidden="true" pointer-events="none"/><circle cx="${x}" cy="${y}" r="32" class="dispatch-node-core" aria-hidden="true" pointer-events="none"/>${buildingGlyph(id, x, y)}<text x="${x}" y="${y + 112}" class="dispatch-node-name dispatch-node-name-${id}" text-anchor="middle" aria-hidden="true" pointer-events="none">${esc(nodeCopy[id])}</text>${waiting.length ? `<g class="dispatch-node-waiting" data-waiting-node="${id}" aria-hidden="true" pointer-events="none"><rect x="${x - 80}" y="${y + 162}" width="160" height="44" rx="8"/><text x="${x}" y="${y + 191}" text-anchor="middle">${esc(waitingText)}</text></g>` : ''}${actual.join('')}${markers}</g>`;
@@ -437,7 +443,7 @@ function executionPanel(c) {
 }
 
 function mapPanel(c, forecast, routes) {
-  const copy = c.planner, level = activeLevel(), returnLevel = level.id === 'return', marketLevel = level.id === 'market', dragon = ui.selected, own = routes[dragon].state;
+  const copy = c.planner, level = activeLevel(), returnLevel = level.id === 'return', marketLevel = level.id === 'market', festivalLevel = level.id === 'festival', stormLevel = level.id === 'storm', hasIce = Boolean(level.orders.ice), dragon = ui.selected, own = routes[dragon].state;
   const turnLimit = level.turnLimit, turn = Math.min(turnLimit, ui.state.turn + ui.plan[dragon].length + 1);
   const routeSlots = ui.plan[dragon].map((action, i) => '<li><span>' + esc(c.plannedTurn) + ' ' + (ui.state.turn + i + 1) + '</span><b>' + esc(actionText(action, c)) + '</b></li>').join('');
   const selectedCargo = ui.state.assignments[dragon].map(id => cargoLine(dragon, id, c)).join('') || '<span class="dispatch-cargo-empty">' + esc(c.noCargo) + '</span>';
@@ -458,7 +464,7 @@ function mapPanel(c, forecast, routes) {
   const rationActions = [...ui.plan.Ember, ...ui.plan.Gale].filter(action => action.type === 'ration').length;
   const rationStatus = !ui.state.rationAvailable ? c.rationSpent : rationActions ? c.rationQueued : c.rationReady;
   const sealOwner = ui.state.sealedIce;
-  const supplies = '<div class="dispatch-resource-strip" aria-label="' + esc(c.resources) + '"><strong>' + esc(c.resources) + '</strong><span>' + esc(rationStatus) + ' · +3 ' + esc(c.staminaNow) + '</span><span>' + esc(c.seal) + ' · ' + esc(sealOwner ? c.sealAttached : c.sealReserve) + '</span></div>';
+  const supplies = '<div class="dispatch-resource-strip" aria-label="' + esc(c.resources) + '"><strong>' + esc(c.resources) + '</strong><span>' + esc(rationStatus) + ' · +3 ' + esc(c.staminaNow) + '</span>' + (hasIce ? '<span>' + esc(c.seal) + ' · ' + esc(sealOwner ? c.sealAttached : c.sealReserve) + '</span>' : '') + '</div>';
   const routeSummary = '<div class="dispatch-route-summary"><div><strong>' + esc(copy.routeSteps) + '</strong><span>' + esc(text(copy.plannedSteps, { count: ui.plan[dragon].length, max: Math.max(0, turnLimit - ui.state.turn) })) + '</span></div>' + (routeSlots ? '<ol>' + routeSlots + '</ol>' : '<p>' + esc(copy.noRoute) + '</p>') + '<b>' + esc(text(copy.routeTail, { location: c.locations[own.locations[dragon]], stamina: own.stamina[dragon] })) + '</b></div>';
   const controlsFull = ui.state.status !== 'playing' || ui.plan[dragon].length >= turnLimit - ui.state.turn || ui.state.turn >= turnLimit;
   const quickActions = '<div class="dispatch-quick-actions" role="group" aria-label="' + esc(copy.quickActions) + '">' +
@@ -468,7 +474,7 @@ function mapPanel(c, forecast, routes) {
     '<button type="button" class="button light" data-action="dispatch-action" data-dispatch-action="queue-clear" data-dragon="' + dragon + '" data-focus-key="queue-clear" data-focus-group="quick-actions" ' + (!ui.plan[dragon].length ? 'disabled' : '') + '>' + esc(c.clear) + '</button></div>';
   const roadRows = EDGES.map(edge => {
     const label = ({ road: c.legendRoad, ridge: c.legendRidge, canal: c.legendCanal, tunnel: c.legendTunnel, air: c.legendAir })[edge.type];
-    const cost = edge.type === 'air' && [2, 3].includes(turn) ? 3 : edge.cost;
+    const cost = edge.type === 'air' ? airCostFor(ui.state.levelId, ui.state.weather, turn) : edge.cost;
     return '<li><span>' + esc(c.locations[edge.a]) + ' ↔ ' + esc(c.locations[edge.b]) + ' · ' + esc(label) + '</span><strong>' + cost + ' ' + esc(c.staminaNow) + ' · 1 ' + esc(c.turnUnit) + ' · ' + esc(edgeStatus(edge, turn, c)) + '</strong></li>';
   }).join('');
   const roadDetails = '<details class="dispatch-road-details" data-details-key="roads"><summary data-focus-key="detail-roads">' + esc(copy.roadsDetails) + '</summary><ul class="dispatch-edge-list" aria-label="' + esc(c.mapEdges) + '">' + roadRows + '</ul></details>';
@@ -501,7 +507,7 @@ function mapPanel(c, forecast, routes) {
   return '<section class="dispatch-panel dispatch-map-panel" aria-labelledby="dispatch-map-title"><div class="dispatch-panel-head"><span class="dispatch-step">02</span><div><h2 id="dispatch-map-title" tabindex="-1" data-focus-key="map-title">' + esc(c.mapTitle) + '</h2><p>' + esc(c.mapHint) + '</p></div></div>' +
     (marketLevel ? '<p class="dispatch-market-starts">' + esc(marketStartCopy(c, level)) + '</p>' : '') + '<div class="dispatch-dragon-select" role="group" aria-label="' + esc(c.selectDragon) + '">' + selectors + '</div>' + supplies + marker + mapSVG(c, forecast, turn, routes) + executionPanel(c) +
     '<p class="dispatch-map-turn-legend">' + esc(c.mapTurnLegend) + '</p>' + currentError + '<p class="dispatch-weather-summary"><strong>' + esc(copy.weatherTitle) + '</strong> ' + esc(copy.weatherSummary) + '</p>' + roadDetails +
-    (returnLevel ? '<ul class="dispatch-return-rules">' + c.returnRules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ul>' : marketLevel ? '<ul class="dispatch-return-rules">' + c.marketRules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ul>' : '') +
+    (returnLevel ? '<ul class="dispatch-return-rules">' + c.returnRules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ul>' : marketLevel ? '<ul class="dispatch-return-rules">' + c.marketRules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ul>' : festivalLevel ? '<ul class="dispatch-return-rules">' + c.festivalRules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ul>' : stormLevel ? '<ul class="dispatch-return-rules">' + c.stormRules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ul>' : '') +
     '<div class="dispatch-active-cargo"><strong>' + esc(c.cargoAssignment) + ' · ' + esc(c.dragons[dragon]) + ' · ' + esc(c.loadedNow) + ' ' + currentLoad(ui.state, dragon) + '/' + capacityForDragon(dragon) + '</strong>' + selectedCargo + '</div>' +
     routeSummary + quickActions + '<section class="dispatch-compact-preview" aria-labelledby="dispatch-compact-title"><h3 id="dispatch-compact-title">' + esc(c.preview) + '</h3><div class="dispatch-eta-list">' + etaRows + '</div>' + warningPanel + forecastOutcome + (ui.notice ? notice : '') + '</section>' + toolbar + '</section>';
 }
@@ -521,7 +527,10 @@ function queuePanel(c) {
 
 function resultPanel(c) {
   if (ui.state.status === 'playing' || ui.state.status === 'setup') return '';
-  const copy = c.planner, level = activeLevel(), returnLevel = level.id === 'return', marketLevel = level.id === 'market', won = ui.state.status === 'won', result = ui.state.result || {};
+  const copy = c.planner, level = activeLevel(), returnLevel = level.id === 'return', marketLevel = level.id === 'market', festivalLevel = level.id === 'festival', stormLevel = level.id === 'storm', hasIce = Boolean(level.orders.ice), won = ui.state.status === 'won', result = ui.state.result || {};
+  if (won) recordStars(ui.state.levelId, dispatchStars(ui.state));
+  const stars = won ? dispatchStars(ui.state) : 0;
+  const starsLabel = won ? `<p class="dispatch-result-stars" aria-label="${stars} / 3">${starRow(stars)}</p>` : '';
   const badge = result.badge === 'ice_dream_early' ? 'ice' : 'chorus';
   const deliveryRows = Object.entries(level.orders).map(([id, spec]) => {
     const delivery = ui.state.delivered[id], pickup = ui.state.pickedUp[id], carrier = delivery?.dragon || (ui.state.assignments.Ember.includes(id) ? 'Ember' : 'Gale');
@@ -537,13 +546,13 @@ function resultPanel(c) {
   }).join('');
   const ration = ui.state.rationAvailable ? copy.rationKept : copy.rationUsed;
   const sealWasUsed = ui.state.sealedIce && ui.state.pickedUp.ice?.dragon === 'Ember';
-  const supplies = '<p><strong>' + esc(ration) + '</strong></p><p><strong>' + esc(sealWasUsed ? copy.sealUsed : copy.sealKept) + '</strong></p>';
-  const headline = won ? returnLevel ? c.returnTitle : marketLevel ? c.marketTitle : (badge === 'ice' ? c.badgeIce : c.badgeChorus) : detailError(result, c) || c.planEnded;
+  const supplies = '<p><strong>' + esc(ration) + '</strong></p>' + (hasIce ? '<p><strong>' + esc(sealWasUsed ? copy.sealUsed : copy.sealKept) + '</strong></p>' : '');
+  const headline = won ? returnLevel ? c.returnTitle : marketLevel ? c.marketTitle : festivalLevel ? c.festivalTitle : stormLevel ? c.stormTitle : (badge === 'ice' ? c.badgeIce : c.badgeChorus) : detailError(result, c) || c.planEnded;
   const eggsGoal = level.goals?.eggsBy;
   const goalOutcomes = returnGoalOutcomes(ui.state, eggsGoal);
   const goals = returnLevel ? '<p class="dispatch-result-goal-hint">' + esc(c.bonusGoalHint) + '</p><ul class="dispatch-result-goals">' + [[goalOutcomes.eggsByDeadline, text(c.returnGoalEggs, { turn: eggsGoal })], [goalOutcomes.rationUnused, c.returnGoalRation]].map(([passed, label]) => '<li class="' + (passed ? 'passed' : '') + '"><strong>' + (passed ? '✓' : '○') + '</strong> ' + esc(label) + ' · ' + esc(passed ? c.goalAchieved : c.goalMissed) + '</li>').join('') + '</ul>' : '';
-  const badgeCopy = won ? '<p class="dispatch-result-badge">' + esc(headline) + '</p>' + (returnLevel ? '<p>' + esc(c.returnComplete) + '</p>' : marketLevel ? '<p>' + esc(c.marketComplete) + '</p>' : '<p>' + esc(badge === 'ice' ? c.badgeIceDesc : c.badgeChorusDesc) + '</p><p class="dispatch-result-invite">' + esc(copy.tryOtherSplit) + '</p>') + goals : '<p class="dispatch-result-cause">' + esc(headline) + '</p>' + goals;
-  return '<section class="dispatch-result ' + (won ? 'won' : 'lost') + '" aria-labelledby="dispatch-result-title"><div class="dispatch-result-top"><span class="dispatch-result-art" aria-hidden="true">' + (won ? '✦' : '↺') + '</span><div><span class="dispatch-result-kicker">ODDLAB / DISPATCH ' + ui.state.turn + '</span><h2 id="dispatch-result-title" tabindex="-1" data-focus-key="result-title">' + esc(won ? c.winTitle : c.loseTitle) + '</h2>' + badgeCopy + '<small>' + esc(c.resultTurn) + ' ' + ui.state.turn + ' / ' + level.turnLimit + '.</small></div></div><div class="dispatch-result-grid"><section><h3>' + esc(copy.finalDeliveries) + '</h3><ol class="dispatch-result-deliveries">' + deliveryRows + '</ol></section><section><h3>' + esc(copy.finalDragons) + '</h3><ul class="dispatch-result-dragons">' + dragonRows + '</ul><div class="dispatch-result-supplies"><h3>' + esc(copy.finalSupplies) + '</h3>' + supplies + '</div></section></div></section>';
+  const badgeCopy = won ? '<p class="dispatch-result-badge">' + esc(headline) + '</p>' + (returnLevel ? '<p>' + esc(c.returnComplete) + '</p>' : marketLevel ? '<p>' + esc(c.marketComplete) + '</p>' : festivalLevel ? '<p>' + esc(c.festivalComplete) + '</p>' : stormLevel ? '<p>' + esc(c.stormComplete) + '</p>' : '<p>' + esc(badge === 'ice' ? c.badgeIceDesc : c.badgeChorusDesc) + '</p><p class="dispatch-result-invite">' + esc(copy.tryOtherSplit) + '</p>') + goals : '<p class="dispatch-result-cause">' + esc(headline) + '</p>' + goals;
+  return '<section class="dispatch-result ' + (won ? 'won' : 'lost') + '" aria-labelledby="dispatch-result-title"><div class="dispatch-result-top"><span class="dispatch-result-art" aria-hidden="true">' + (won ? '✦' : '↺') + '</span><div><span class="dispatch-result-kicker">ODDLAB / DISPATCH ' + ui.state.turn + '</span><h2 id="dispatch-result-title" tabindex="-1" data-focus-key="result-title">' + esc(won ? c.winTitle : c.loseTitle) + '</h2>' + starsLabel + badgeCopy + '<small>' + esc(c.resultTurn) + ' ' + ui.state.turn + ' / ' + level.turnLimit + '.</small></div></div><div class="dispatch-result-grid"><section><h3>' + esc(copy.finalDeliveries) + '</h3><ol class="dispatch-result-deliveries">' + deliveryRows + '</ol></section><section><h3>' + esc(copy.finalDragons) + '</h3><ul class="dispatch-result-dragons">' + dragonRows + '</ul><div class="dispatch-result-supplies"><h3>' + esc(copy.finalSupplies) + '</h3>' + supplies + '</div></section></div></section>';
 }
 
 function logPanel(c) {
@@ -556,7 +565,9 @@ function rulesPanel(c) {
   const level = activeLevel();
   const rules = ui.state.levelId === 'return'
     ? [c.guideRules[0], c.guideRules[1], c.guideRules[3], c.guideRules[4], c.guideRules[5], ...c.returnRules, text(c.returnWinRule, { turn: level.turnLimit })]
-    : ui.state.levelId === 'market' ? [c.guideRules[1], c.guideRules[4], c.guideRules[5], c.sealHelp, ...c.marketRules] : c.guideRules;
+    : ui.state.levelId === 'market' ? [c.guideRules[1], c.guideRules[4], c.guideRules[5], c.sealHelp, ...c.marketRules]
+    : ui.state.levelId === 'festival' ? [c.guideRules[1], c.guideRules[4], c.guideRules[5], ...c.festivalRules]
+    : ui.state.levelId === 'storm' ? [c.guideRules[1], c.guideRules[4], c.guideRules[5], ...c.stormRules] : c.guideRules;
   return '<details class="dispatch-rules" data-details-key="rules"><summary data-focus-key="detail-rules">' + esc(c.rulesTitle) + '</summary><ol>' + rules.map(rule => '<li>' + esc(rule) + '</li>').join('') + '</ol></details>';
 }
 
@@ -582,23 +593,24 @@ function render() {
   const forecast = isSetup ? { state: ui.state, timeline: [], issues: [] } : simulatePlan(ui.state, ui.plan);
   const routes = isSetup ? null : projections();
   ui.selectionChanged = ui.selected !== ui.lastRenderedSelection;
-  const tutorialCopy = ui.state.levelId === 'return' ? c.returnTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : ui.state.levelId === 'market' ? c.marketTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : c.tutorial;
-  const tutorialTitle = ui.state.levelId === 'return' ? c.returnTutorialTitle : ui.state.levelId === 'market' ? c.marketTutorialTitle : c.tutorialTitle;
+  const tutorialCopy = ui.state.levelId === 'return' ? c.returnTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : ui.state.levelId === 'market' ? c.marketTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : ui.state.levelId === 'festival' ? c.festivalTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : ui.state.levelId === 'storm' ? c.stormTutorial.map(rule => text(rule, { turn: activeLevel().turnLimit })) : c.tutorial;
+  const tutorialTitle = ui.state.levelId === 'return' ? c.returnTutorialTitle : ui.state.levelId === 'market' ? c.marketTutorialTitle : ui.state.levelId === 'festival' ? c.festivalTutorialTitle : ui.state.levelId === 'storm' ? c.stormTutorialTitle : c.tutorialTitle;
   const tutorial = !ui.tutorialDismissed
     ? '<aside class="dispatch-tutorial"><div><strong>' + esc(tutorialTitle) + '</strong><ol>' + tutorialCopy.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol></div><button type="button" class="text-button" data-action="dispatch-action" data-dispatch-action="skip-tutorial" data-focus-key="skip-tutorial" data-focus-group="tutorial">' + esc(c.skip) + ' ×</button></aside>'
     : '';
   const emblem = '<span class="dispatch-emblem" aria-hidden="true"><svg viewBox="0 0 84 52"><path d="M5 35Q18 6 35 28Q46 3 65 13L79 8L73 20Q84 30 70 39Q55 48 42 35Q26 47 15 39Z" fill="#d1a947" stroke="#294b40" stroke-width="2.5"/><circle cx="65" cy="24" r="2.2" fill="#294b40"/><path d="M22 27Q23 11 37 18M47 20Q52 5 65 14" fill="none" stroke="#294b40" stroke-width="2"/></svg></span>';
   const setup = isSetup ? loadoutPanel(c) : '';
   const board = isSetup ? '' : '<section class="dispatch-workbench" aria-label="' + esc(c.routeBoard) + '">' + resultPanel(c) + mapPanel(c, forecast, routes) + queuePanel(c) + logPanel(c) + '</section>';
-  const levelInfo = [['first', c.levelFirst], ['return', c.levelReturn], ['market', c.levelMarket]];
-  const levelLinks = `<nav class="dispatch-levels" aria-label="${esc(c.chooseLevel)}">${levelInfo.map(([id, label]) => `<a class="dispatch-level-choice ${ui.state.levelId === id ? 'selected' : ''}" data-dispatch-level="${id}" href="${link('/dispatch')}${id !== 'first' ? '?level=' + id + '&' : '?'}lang=${encodeURIComponent(ui.lang)}" ${ui.state.levelId === id ? 'aria-current="page"' : ''}>${esc(label)}</a>`).join('')}</nav>`;
-  const title = ui.state.levelId === 'return' ? c.returnTitle : ui.state.levelId === 'market' ? c.marketTitle : c.title;
-  const subtitle = ui.state.levelId === 'return' ? c.returnSubtitle : ui.state.levelId === 'market' ? c.marketSubtitle : c.subtitle;
-  const duration = ui.state.levelId === 'market' ? c.marketDuration : c.duration;
+  const levelInfo = [['first', c.levelFirst], ['return', c.levelReturn], ['market', c.levelMarket], ['festival', c.levelFestival], ['storm', c.levelStorm]];
+  const levelLinks = `<nav class="dispatch-levels" aria-label="${esc(c.chooseLevel)}">${levelInfo.map(([id, label]) => { const earned = bestStars(id); return `<a class="dispatch-level-choice ${ui.state.levelId === id ? 'selected' : ''}" data-dispatch-level="${id}" href="${link('/dispatch')}${id !== 'first' ? '?level=' + id + '&' : '?'}lang=${encodeURIComponent(ui.lang)}" ${ui.state.levelId === id ? 'aria-current="page"' : ''}>${esc(label)}${earned ? `<span class="dispatch-level-stars" aria-label="${earned}/3">${esc(starRow(earned))}</span>` : ''}</a>`; }).join('')}</nav>`;
+  const title = ui.state.levelId === 'return' ? c.returnTitle : ui.state.levelId === 'market' ? c.marketTitle : ui.state.levelId === 'festival' ? c.festivalTitle : ui.state.levelId === 'storm' ? c.stormTitle : c.title;
+  const subtitle = ui.state.levelId === 'return' ? c.returnSubtitle : ui.state.levelId === 'market' ? c.marketSubtitle : ui.state.levelId === 'festival' ? c.festivalSubtitle : ui.state.levelId === 'storm' ? c.stormSubtitle : c.subtitle;
+  const duration = ui.state.levelId === 'market' ? c.marketDuration : ui.state.levelId === 'festival' ? c.festivalDuration : ui.state.levelId === 'storm' ? c.stormDuration : c.duration;
+  const weatherBanner = '<div class="dispatch-weather-banner" data-weather="' + esc(ui.state.weather) + '"><strong>' + esc(c.weather.title) + '</strong><span>' + esc(c.weather[ui.state.weather] || c.weather.clear) + '</span></div>';
   const heading = isSetup
     ? '<header class="dispatch-heading dispatch-heading-setup"><div class="dispatch-heading-copy"><div class="dispatch-brandline">' + emblem + '<span>ODDLAB / ROUTE PUZZLE</span><span class="dispatch-duration">' + esc(duration) + '</span></div><h1>' + esc(title) + '</h1><p class="dispatch-subtitle">' + esc(subtitle) + '</p><p class="dispatch-pitch">' + esc(c.pitch) + '</p><button type="button" class="button light dispatch-prepare" data-action="dispatch-action" data-dispatch-action="prepare-routes" data-focus-key="prepare-routes" data-focus-group="setup-intro">' + esc(c.prepareRoutes) + ' ↓</button></div><figure class="dispatch-hero-art">' + (dispatchImageHasFailed('/assets/dispatch/hero-v1.webp') ? '' : '<img class="dispatch-generated-image" data-image-fallback src="' + dispatchImageURL('/assets/dispatch/hero-v1.webp') + '" width="1536" height="768" alt="' + esc(c.heroAlt) + '">') + '<span class="dispatch-hero-fallback"' + (dispatchImageHasFailed('/assets/dispatch/hero-v1.webp') ? '' : ' hidden') + '><svg viewBox="0 0 960 400" aria-hidden="true">' + dragonGlyph('Ember', 395, 235) + dragonGlyph('Gale', 555, 235) + '</svg></span></figure></header>'
     : '<header class="dispatch-heading dispatch-heading-compact"><div class="dispatch-brandline">' + emblem + '<span>ODDLAB / ROUTE PUZZLE</span><span class="dispatch-duration">' + esc(duration) + '</span></div><h1>' + esc(title) + '</h1><p class="dispatch-subtitle">' + esc(subtitle) + '</p></header>';
-  ui.container.innerHTML = '<div class="tool-wrap dispatch-game"><a class="back" href="' + link('/') + '?lang=' + encodeURIComponent(ui.lang) + '">← ' + esc(c.back) + '</a>' + heading + levelLinks + tutorial + setup + board + rulesPanel(c) + '<button type="button" class="button dark dispatch-share" data-action="dispatch-action" data-dispatch-action="share" data-focus-key="share" data-focus-group="footer">' + esc(c.share) + ' ↗</button><a class="dispatch-archive" href="' + link('/life') + '?lang=' + encodeURIComponent(ui.lang) + '">' + esc(c.archive) + '</a></div>';
+  ui.container.innerHTML = '<div class="tool-wrap dispatch-game"><a class="back" href="' + link('/') + '?lang=' + encodeURIComponent(ui.lang) + '">← ' + esc(c.back) + '</a>' + heading + weatherBanner + levelLinks + tutorial + setup + board + rulesPanel(c) + '<button type="button" class="button dark dispatch-share" data-action="dispatch-action" data-dispatch-action="share" data-focus-key="share" data-focus-group="footer">' + esc(c.share) + ' ↗</button><a class="dispatch-archive" href="' + link('/life') + '?lang=' + encodeURIComponent(ui.lang) + '">' + esc(c.archive) + '</a></div>';
   for (const node of ui.container.querySelectorAll('details[data-details-key]')) node.open = openDetails.has(node.dataset.detailsKey);
   let target = null;
   if (ui.pendingResultFocus) {
@@ -715,14 +727,14 @@ function handleClick(event) {
     const id = el.dataset.order;
     const assignments = Object.fromEntries(DRAGONS.map(d => [d, [...ui.state.assignments[d].filter(x => x !== id)]]));
     assignments[dragon].push(id);
-    ui.state = createDispatchState({ levelId: ui.state.levelId, assignments, sealedIce: ui.state.sealedIce });
+    ui.state = createDispatchState({ levelId: ui.state.levelId, assignments, sealedIce: ui.state.sealedIce, weather: ui.state.weather });
     ui.state.status = 'setup'; ui.notice = ''; ui.noticeIssue = null; render(); return;
   }
   if (action === 'toggle-seal') { ui.state.sealedIce = !ui.state.sealedIce; ui.notice = ''; ui.noticeIssue = null; render(); return; }
   if (action === 'start') {
     const validation = validateLoadout(ui.state.assignments, ui.state.sealedIce, ui.state.levelId);
     if (!validation.valid) { ui.notice = validation.issues.map(issue => detailError(issue)).join(' '); render(); return; }
-    ui.state = createDispatchState({ assignments: ui.state.assignments, sealedIce: ui.state.sealedIce, levelId: ui.state.levelId });
+    ui.state = createDispatchState({ assignments: ui.state.assignments, sealedIce: ui.state.sealedIce, levelId: ui.state.levelId, weather: ui.state.weather });
     ui.plan = { Ember: [], Gale: [] }; ui.history = []; ui.notice = ''; ui.selected = 'Ember'; ui.pendingFocusKey = 'map-title'; render(); return;
   }
   if (action === 'select-dragon') { ui.selected = dragon; ui.notice = ''; ui.noticeIssue = null; render(); return; }
@@ -733,7 +745,7 @@ function handleClick(event) {
   if (action === 'run-next') { dispatchNext(); return; }
   if (action === 'run-plan') { dispatchPlan(); return; }
   if (action === 'undo') { undo(); return; }
-  if (action === 'restart') { ui.state = createDispatchState({ levelId: ui.state.levelId }); ui.plan = { Ember: [], Gale: [] }; ui.history = []; ui.latestExecution = null; ui.executionRun = []; ui.notice = ''; ui.noticeIssue = null; ui.selected = 'Ember'; ui.pendingFocusKey = 'loadout-title'; ui.pendingResultFocus = false; render(); return; }
+  if (action === 'restart') { ui.state = createDispatchState({ levelId: ui.state.levelId, weather: ui.state.weather }); ui.plan = { Ember: [], Gale: [] }; ui.history = []; ui.latestExecution = null; ui.executionRun = []; ui.notice = ''; ui.noticeIssue = null; ui.selected = 'Ember'; ui.pendingFocusKey = 'loadout-title'; ui.pendingResultFocus = false; render(); return; }
   if (action === 'prepare-routes') { ui.pendingFocusKey = 'loadout-title'; render(); return; }
   if (action === 'skip-tutorial') { ui.tutorialDismissed = true; render(); return; }
   if (action === 'share') { shareChallenge(); return; }
@@ -743,9 +755,10 @@ function handleKeydown(event) {
   if (el && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); mapNode(el.dataset.node, el.dataset.dragon); }
 }
 async function shareChallenge() {
-  const url = new URL(link('/dispatch'), location.origin); url.searchParams.set('lang', ui.lang); if (ui.state.levelId !== 'first') url.searchParams.set('level', ui.state.levelId);
+  const url = new URL(link('/dispatch'), location.origin); url.searchParams.set('lang', ui.lang); if (ui.state.levelId !== 'first') url.searchParams.set('level', ui.state.levelId); url.searchParams.set('weather', ui.state.weather);
+  const shareTitle = ui.state.levelId === 'return' ? activeCopy().returnTitle : ui.state.levelId === 'market' ? activeCopy().marketTitle : ui.state.levelId === 'festival' ? activeCopy().festivalTitle : ui.state.levelId === 'storm' ? activeCopy().stormTitle : activeCopy().title;
   try {
-    if (navigator.share) { await navigator.share({ title: ui.state.levelId === 'return' ? activeCopy().returnTitle : ui.state.levelId === 'market' ? activeCopy().marketTitle : activeCopy().title, url: url.href }); return; }
+    if (navigator.share) { await navigator.share({ title: shareTitle, url: url.href }); return; }
     await navigator.clipboard.writeText(url.href);
     showNotice(ui.copy.shareCopied);
   } catch (error) {
@@ -757,10 +770,13 @@ async function shareChallenge() {
 
 export function mountDispatch(container, lang = 'en', levelId = 'first') {
   const requested = getDispatchLevel(levelId).id;
-  if (ui.state.levelId !== requested) {
-    ui.state = createDispatchState({ levelId: requested }); ui.plan = { Ember: [], Gale: [] }; ui.history = [];
+  const params = typeof location === 'undefined' ? new URLSearchParams() : new URLSearchParams(location.search);
+  const weatherParam = params.get('weather');
+  if (ui.state.levelId !== requested || !ui.weatherChosen) {
+    const weather = WEATHERS.includes(weatherParam) ? weatherParam : pickDispatchWeather();
+    ui.state = createDispatchState({ levelId: requested, weather }); ui.plan = { Ember: [], Gale: [] }; ui.history = [];
     ui.latestExecution = null; ui.executionRun = [];
-    ui.selected = 'Ember'; ui.notice = ''; ui.noticeIssue = null;
+    ui.selected = 'Ember'; ui.notice = ''; ui.noticeIssue = null; ui.weatherChosen = true;
   }
   ui.container = container;
   if (!container.dataset.dispatchImageErrorsBound) {

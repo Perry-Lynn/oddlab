@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { calculatePersona, dailyTask, taskState, normalizeChoices } from './logic.mjs';
 import { previewPersonaAnswer, adoptPersonaPreview, createAdventure, chooseAdventure, adventureEndingId, undoLastAdventureChoice, createChoiceRound, drawChoicePair, resolveChoicePair, restoreChoiceRound, undoChoiceRound, acceptChoiceRound, taskCompletion } from './games-logic.mjs';
 import { adventureContent, taskAnglePair } from './games-content.mjs';
-import { renderChoice, renderTasks } from './games-ui.mjs';
+import { renderChoice, renderChoiceHistory, renderTasks } from './games-ui.mjs';
 
 const packs=Object.fromEntries(['en','zh','ja','es'].map(lang=>[lang,JSON.parse(fs.readFileSync(`locales/${lang}.json`,'utf8'))]));
 
@@ -24,7 +24,30 @@ for(let bits=0;bits<4096;bits++){
 }
 assert.deepEqual(distribution,{D1:641,D2:577,D3:568,D4:527,D5:442,D6:449,D7:455,D8:437},'the original 4096-answer result distribution is unchanged');
 
-// All four adventures have eight playable routes, three endings, and reversible final choices.
+// Second question bank: sixteen results, eight new dimensions, reachable outcomes in every locale.
+for(const lang of ['en','zh','ja','es']){
+ const p=packs[lang].persona;
+ assert.equal(Object.keys(p.results).length,16,`${lang} has sixteen results`);
+ assert.equal(p.questions2.length,6,`${lang} has six second-bank questions`);
+ assert.deepEqual(p.tiebreakOrder2,['D9','D10','D11','D12','D13','D14','D15','D16'],`${lang} second-bank tiebreak order`);
+ assert.ok(p.questions2.every(q=>q.options.length===4&&q.options.every(o=>p.tiebreakOrder2.includes(o.main)&&p.tiebreakOrder2.includes(o.sub))),`${lang} second-bank options reference new dimensions`);
+ for(const id of p.tiebreakOrder2){
+  assert.ok(p.results[id],`${lang} has result ${id}`);
+  assert.ok(p.questions2.some(q=>q.options.some(o=>o.main===id)),`${lang} dimension ${id} is reachable as a main option`);
+ }
+}
+const reachable2=new Set();
+for(let bits=0;bits<4096;bits++){
+ const sample=Array.from({length:6},(_,q)=>(bits>>(q*2))&3);
+ reachable2.add(calculatePersona(sample,packs.zh.persona,1));
+}
+assert.deepEqual([...reachable2].sort(),['D9','D10','D11','D12','D13','D14','D15','D16'].sort(),'the second bank reaches all eight new results');
+const answers2=[0,1,2,3,0,1];
+const preview2=previewPersonaAnswer(answers2,2,0,packs.zh.persona,1);
+assert.equal(preview2.previousId,calculatePersona(answers2,packs.zh.persona,1));
+assert.equal(preview2.nextId,calculatePersona(preview2.proposedAnswers,packs.zh.persona,1));
+
+// All five adventures have eight playable routes, three endings, and reversible final choices.
 const adventures=Object.fromEntries(['en','zh','ja','es'].map(lang=>[lang,adventureContent(lang)]));
 const endingsSeen=new Set();
 for(const lang of ['en','zh','ja','es'])for(const [theme,content] of Object.entries(adventures[lang])){
@@ -57,7 +80,7 @@ for(const lang of ['en','zh','ja','es'])for(const [theme,content] of Object.entr
  assert.ok([...seen].some(id=>String(id).startsWith('third-choice:')),`${lang}/${theme} has a prefix where the last choice changes the ending`);
  for(const id of Object.keys(content.endings))endingsSeen.add(`${theme}:${id}`);
 }
-assert.equal(endingsSeen.size,12,'all twelve theme-specific endings exist');
+assert.equal(endingsSeen.size,15,'all fifteen theme-specific endings exist');
 for(const lang of ['en','zh','ja','es']){
  const theme='modern';
  const routes=adventures[lang][theme].endingRoutes;
@@ -98,6 +121,23 @@ assert.ok(rendered.includes('data-experiment-action="choice-draw"'));
 const allExcluded=renderChoice({lang:'en',scenes:packs.en.choice.scenes,sceneId:'eat',mode:'quick',items:['left'],text:'left',round:null,quickResult:null,quickExcluded:[0],quickAccepted:false,busy:false,overLimit:false});
 assert.ok(allExcluded.includes('data-experiment-action="choice-restore"'));
 assert.match(allExcluded,/Candidates remaining: 0/,'remaining count uses a neutral noun phrase');
+const slowResult=renderChoice({lang:'en',scenes:packs.en.choice.scenes,sceneId:'eat',mode:'slow',items:['a','b','c'],text:'a\nb\nc',round:drawChoicePair(createChoiceRound(['a','b','c']),()=>0),quickResult:null,quickExcluded:[],quickAccepted:false,busy:false,overLimit:false});
+assert.match(slowResult,/This round/, 'elimination mode announces its controlled head-to-head pairing');
+
+// The decision archive renders locally-saved entries, scoped to preset scenes or a custom label.
+const emptyHistory=renderChoiceHistory({lang:'en',scenes:packs.en.choice.scenes,entries:[]});
+assert.ok(emptyHistory.includes('data-action="choice-history-clear"')===false,'an empty archive offers nothing to clear');
+assert.match(emptyHistory,/No decisions kept yet/);
+const savedHistory=renderChoiceHistory({lang:'en',scenes:packs.en.choice.scenes,entries:[
+ {sceneId:'eat',mode:'quick',result:'hotpot',total:3,eliminated:['sushi'],at:'2026-10-19'},
+ {sceneId:'custom',mode:'slow',result:'park',total:4,eliminated:['museum','bar'],at:'2026-10-18'},
+]});
+assert.ok(savedHistory.includes('data-action="choice-history-clear"'),'a stored archive can be cleared');
+assert.match(savedHistory,/hotpot/);
+assert.match(savedHistory,/Custom/);
+assert.match(savedHistory,/Set aside/);
+assert.match(savedHistory,/Eliminated/);
+assert.match(savedHistory,/2026-10-19/);
 
 // Every mission has two localized approaches. Completion stays idempotent and old saved formats migrate in place.
 const ids=packs.zh.task.tasks.filter(task=>task.status==='published').map(task=>task.id);
@@ -133,6 +173,10 @@ const friendTaskUI=renderTasks({lang:'en',task:packs.en.task.tasks[0],tasks:pack
 assert.ok(ownTaskUI.includes('data-experiment-action="task-swap"'));
 assert.ok(ownTaskUI.includes('data-experiment-action="task-angle"'));
 assert.ok(!friendTaskUI.includes('data-experiment-action="task-swap"')&&!friendTaskUI.includes('data-experiment-action="task-angle"'),'shared task cannot affect this device’s task state');
+assert.match(ownTaskUI,/Check-in streak/);
+assert.match(ownTaskUI,/Weekly challenge/);
+const streakedUI=renderTasks({lang:'en',task:{...packs.en.task.tasks[0],angles:taskAnglePair('en','task-01'),selectedAngle:null},tasks:packs.en.task.tasks,state:{...migrated,streak:4,bestStreak:7,lastStampDate:'2026-10-19',weekStart:'2026-10-19',weekDays:['2026-10-19','2026-10-20','2026-10-21']},todayDone:false,alreadyStamped:false,memoryOnly:false,shared:false});
+assert.match(streakedUI,/4 days/);assert.match(streakedUI,/Best: 7 days/);assert.match(streakedUI,/3 of 3 check-ins this week/);assert.match(streakedUI,/Weekly challenge complete/);
 assert.equal(dailyTask(packs.zh.task,'2026-10-16').id,'task-19','the existing UTC+8 rotation is unchanged');
 
-console.log('PASS: persona preview and 4096-result distribution; 32 adventure paths, reversible resources and all 12 endings; 2/16-option duels, restore and safe custom rendering; 30×2×4 mission approaches and legacy/local completion behavior.');
+console.log('PASS: persona preview and 4096-result distribution; 40 adventure paths, reversible resources and all 15 endings; 2/16-option duels, restore, safe custom rendering and decision archive; 30×2×4 mission approaches and legacy/local completion behavior.');

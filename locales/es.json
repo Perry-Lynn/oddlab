@@ -21,7 +21,15 @@
       "D5": "Filósofo de la tienda de la esquina",
       "D6": "Inventor indomable",
       "D7": "Director de espectadores",
-      "D8": "Gestor de batería social"
+      "D8": "Gestor de batería social",
+      "D9": "Portavoz sin filtro",
+      "D10": "Asesino del desorden",
+      "D11": "Premio emo de madrugada",
+      "D12": "Motor perpetuo de trabajos extra",
+      "D13": "Lanzador de trivialidades",
+      "D14": "Organizador de emociones",
+      "D15": "Pionero anti-competitividad",
+      "D16": "Acaparador digital"
     },
     "questions": [
       {
@@ -253,8 +261,248 @@
         "pro": "Concentración y creatividad excelentes cuando tienes tranquilidad.",
         "habit": "Revisar la agenda social antes de recordar un compromiso urgente.",
         "share": "Me salió Gestor de batería social. Esta respuesta gastó el 80 % de mi carga diaria."
+      },
+      "D9": {
+        "id": "persona-09",
+        "name": "Portavoz sin filtro",
+        "tagline": "Diciendo lo que todos piensan.",
+        "desc": "Dices lo que el grupo no se atreve y resuelves el dilema de un amigo en una frase. No eres brusco, solo hablas el idioma de lo que todos se tragan. Sin ti, las reuniones se sienten como si faltara el traductor.",
+        "pro": "Directo y rápido para desatascar cualquier conversación.",
+        "habit": "Redactar mentalmente la frase que todos callan y elegir el momento justo.",
+        "share": "Me salió Portavoz sin filtro. Lo dije. No te enfades."
+      },
+      "D10": {
+        "id": "persona-10",
+        "name": "Asesino del desorden",
+        "tagline": "Tirar cosas da más gusto que comprarlas.",
+        "desc": "Tu armario es cápsula, tus apps caben en una pantalla y tus contactos se depuran cada pocos meses. Otros acumulan arrepentimiento; tú acumulas espacio. Lo que no usas, no te importa o no tocas en tres meses, fuera.",
+        "pro": "Un espacio despejado y decisiones rápidas.",
+        "habit": "Un torneo mensual de despedidas; los perdedores se van antes del amanecer.",
+        "share": "Me salió Asesino del desorden. Mi cuarto ya tiene eco."
+      },
+      "D11": {
+        "id": "persona-11",
+        "name": "Premio emo de madrugada",
+        "tagline": "Sol de día, poesía de noche.",
+        "desc": "Eres una persona normal hasta medianoche, cuando salen los borradores y la foto de una farola. Sientes cada pequeño cambio y lo vuelves frase en tres palabras. Tu bloc de notas guarda una antología inédita.",
+        "pro": "Empatía profunda y ojo fino para los sentimientos.",
+        "habit": "Retraducir la genialidad de anoche antes de atreverte a publicarla.",
+        "share": "Me salió Premio emo de madrugada. Otras 8.000 palabras. Ninguna publicada."
+      },
+      "D12": {
+        "id": "persona-12",
+        "name": "Motor perpetuo de trabajos extra",
+        "tagline": "Tu empleo es sobrevivir. Los extras son extra.",
+        "desc": "Tu currículum es una cadena de barras: oficina de día, fotos a la venta de noche, locución los fines de semana. No es que no te quedes quieto; prefieres tener más de una batería. Un extra que no gana nada te deja igual una habilidad.",
+        "pro": "Energía sin fondo y aprendizaje rápido.",
+        "habit": "Tres proyectos en marcha, cada uno a un paso de arrancar.",
+        "share": "Me salió Motor perpetuo de trabajos extra. El número 47 viene en camino."
+      },
+      "D13": {
+        "id": "persona-13",
+        "name": "Lanzador de trivialidades",
+        "tagline": "Nadie preguntó. Aun así quieres contarlo.",
+        "desc": "Sabes que el pulpo tiene tres corazones, que el plátano es técnicamente una baya y por qué los pájaros del cable no se electrocutan. No puedes evitar el \"en realidad…\". Tus amigos se quejan y luego usan tus datos para presumir.",
+        "pro": "Una base amplia de conocimientos e ideas sorprendentes.",
+        "habit": "Guardar cada dato que pasa por tu pantalla para soltarlo cada día.",
+        "share": "Me salió Lanzador de trivialidades. El pulpo tiene tres corazones. Es cierto."
+      },
+      "D14": {
+        "id": "persona-14",
+        "name": "Organizador de emociones",
+        "tagline": "Guardando cada sentimiento en su cajón.",
+        "desc": "Donde otros solo sienten rabia, tú distingues el matiz: ofendido, o con miedo a que te dejen. Etiquetas cada estado de ánimo y sabes cuál airear y cuál dejar bajo llave. Cuando un amigo se rompe, te llama a ti primero.",
+        "pro": "Sentimientos firmes y un don para escuchar.",
+        "habit": "Ponerle etiqueta al ánimo del día antes de dormir y guardarlo en tus notas.",
+        "share": "Me salió Organizador de emociones. El ánimo de hoy, archivado."
+      },
+      "D15": {
+        "id": "persona-15",
+        "name": "Pionero anti-competitividad",
+        "tagline": "Seguid compitiendo. Yo me voy.",
+        "desc": "Otros se quedan hasta tarde; tú cierras el portátil a su hora. Otros compiten; tú preguntas si de verdad importa. No eres vago, solo gastas tu esfuerzo en lo que cuenta. Mientras ellos ganan el indicador, tú recuperas tu noche.",
+        "pro": "Límites claros y cero desgaste innecesario.",
+        "habit": "El minuto en que fichas la salida se vuelve tu campanita de libertad.",
+        "share": "Me salió Pionero anti-competitividad. Yo me voy. Seguid así."
+      },
+      "D16": {
+        "id": "persona-16",
+        "name": "Acaparador digital",
+        "tagline": "Guardar es poseer. Abrir es usar.",
+        "desc": "Tus marcadores tienen tres mil artículos, quinientos tutoriales y doscientas listas de \"imprescindibles\". Lo bueno se vuelve \"para luego\", y luego nunca llega. No es que quieras leerlos: temes perderte algo.",
+        "pro": "Buen olfato para la información y un archivo completo.",
+        "habit": "Guardar para \"leer luego\". Luego significa nunca.",
+        "share": "Me salió Acaparador digital. Lo guardé, o sea que ya lo entendí."
       }
-    }
+    },
+    "tiebreakOrder2": [
+      "D9",
+      "D10",
+      "D11",
+      "D12",
+      "D13",
+      "D14",
+      "D15",
+      "D16"
+    ],
+    "questions2": [
+      {
+        "id": "Q7",
+        "text": "Un amigo escribe \"¿estás?\" a medianoche y no dice más. Tú…",
+        "options": [
+          {
+            "text": "Respondes \"¿?\" al instante — al grano",
+            "main": "D9",
+            "sub": "D15"
+          },
+          {
+            "text": "Borra mil capturas para calmarte",
+            "main": "D10",
+            "sub": "D16"
+          },
+          {
+            "text": "Imaginas su crisis y te pones más nervioso",
+            "main": "D11",
+            "sub": "D14"
+          },
+          {
+            "text": "Aprovechas para acabar algo pendiente",
+            "main": "D12",
+            "sub": "D13"
+          }
+        ]
+      },
+      {
+        "id": "Q8",
+        "text": "¿Cuál se parece más a tu última búsqueda?",
+        "options": [
+          {
+            "text": "\"Por qué las hormigas se mudan antes de llover\"",
+            "main": "D13",
+            "sub": "D9"
+          },
+          {
+            "text": "La diferencia entre estar cansado y sentirse pesado",
+            "main": "D14",
+            "sub": "D11"
+          },
+          {
+            "text": "Cómo rechazar horas extra con educación",
+            "main": "D15",
+            "sub": "D10"
+          },
+          {
+            "text": "Si el 2x1 de verdad compensa",
+            "main": "D16",
+            "sub": "D12"
+          }
+        ]
+      },
+      {
+        "id": "Q9",
+        "text": "La reunión se queda muda tres segundos. Tú…",
+        "options": [
+          {
+            "text": "Suelta un chiste para salvar la sala",
+            "main": "D9",
+            "sub": "D12"
+          },
+          {
+            "text": "Cuentas una trivialidad que nadie pidió",
+            "main": "D13",
+            "sub": "D14"
+          },
+          {
+            "text": "Piensas si acabas de meter la pata",
+            "main": "D11",
+            "sub": "D16"
+          },
+          {
+            "text": "Graba en silencio el momento para guardarlo",
+            "main": "D16",
+            "sub": "D15"
+          }
+        ]
+      },
+      {
+        "id": "Q10",
+        "text": "Esa tarea se entrega mañana. Esta noche tú…",
+        "options": [
+          {
+            "text": "Ordenas el escritorio antes de empezar",
+            "main": "D10",
+            "sub": "D16"
+          },
+          {
+            "text": "Primero aclaras qué te hace sentir esta tarea",
+            "main": "D14",
+            "sub": "D11"
+          },
+          {
+            "text": "Lo haces grabándote, como material futuro",
+            "main": "D12",
+            "sub": "D13"
+          },
+          {
+            "text": "Vas a tu ritmo, sin prisas ni trasnochar",
+            "main": "D15",
+            "sub": "D9"
+          }
+        ]
+      },
+      {
+        "id": "Q11",
+        "text": "¿Qué cumplido te suena más?",
+        "options": [
+          {
+            "text": "Siempre das en el clavo",
+            "main": "D9",
+            "sub": "D15"
+          },
+          {
+            "text": "Hablar contigo me alivia",
+            "main": "D14",
+            "sub": "D11"
+          },
+          {
+            "text": "Cómo sabes un poco de todo",
+            "main": "D12",
+            "sub": "D13"
+          },
+          {
+            "text": "Vives muy tranquilo",
+            "main": "D15",
+            "sub": "D16"
+          }
+        ]
+      },
+      {
+        "id": "Q12",
+        "text": "Ves una publicación de \"guárdate esto\". Tú…",
+        "options": [
+          {
+            "text": "La ignoras — guardado es igual a nunca leído",
+            "main": "D10",
+            "sub": "D16"
+          },
+          {
+            "text": "La abres para ver si de verdad sirve",
+            "main": "D13",
+            "sub": "D14"
+          },
+          {
+            "text": "La lees y te angustias por no crecer",
+            "main": "D11",
+            "sub": "D15"
+          },
+          {
+            "text": "La guardas para \"leerla después\"",
+            "main": "D16",
+            "sub": "D12"
+          }
+        ]
+      }
+    ]
   },
   "life": {
     "game": "life",

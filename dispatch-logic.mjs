@@ -26,6 +26,22 @@ export const LEVELS = {
       eggs: { weight: 2, source: 'M', readyAt: 3, destination: 'T', deadline: 7, cold: false },
     },
   },
+  festival: {
+    id: 'festival', turnLimit: 7,
+    orders: {
+      lantern: { weight: 2, source: 'K', readyAt: 0, destination: 'T', deadline: 3, cold: false },
+      cake: { weight: 1, source: 'M', readyAt: 2, destination: 'K', deadline: 6, cold: false },
+      cracker: { weight: 1, source: 'A', readyAt: 3, destination: 'K', deadline: 7, cold: false },
+    },
+  },
+  storm: {
+    id: 'storm', turnLimit: 8, edgeRules: { ridgeClosed: [4, 5, 6] },
+    orders: {
+      lamp: { weight: 2, source: 'K', readyAt: 0, destination: 'M', deadline: 4, cold: false },
+      blanket: { weight: 1, source: 'T', readyAt: 0, destination: 'K', deadline: 6, cold: false },
+      radio: { weight: 1, source: 'A', readyAt: 3, destination: 'K', deadline: 7, cold: false },
+    },
+  },
 };
 // Keep the original first-level export available to existing callers.
 export const ORDERS = LEVELS.first.orders;
@@ -40,6 +56,30 @@ export const EDGES = [
 const clone = value => structuredClone(value);
 export function getDispatchLevel(levelId = 'first') { return Object.hasOwn(LEVELS, levelId) ? LEVELS[levelId] : LEVELS.first; }
 export function capacityForDragon(dragon) { return dragon === 'Ember' ? 3 : 2; }
+
+// Random weather drawn each game. `clear` has no effect; `headwind` adds +1 to the sky-road cost;
+// `flood` extends the flooded-canal window by one extra turn. `?weather=` pins it for testing.
+export const WEATHERS = ['clear', 'headwind', 'flood'];
+export function pickDispatchWeather(random = Math.random) { return WEATHERS[Math.floor(random() * WEATHERS.length)]; }
+
+const DEFAULT_EDGE_RULES = { ridgeClosed: [4, 5], canalFlood: [3, 4], airBoost: [2, 3], airBoostCost: 3 };
+export function resolveEdgeRules(levelId = 'first', weather = 'clear') {
+  const level = getDispatchLevel(levelId);
+  const rules = { ...DEFAULT_EDGE_RULES, ...(level.edgeRules || {}) };
+  if (weather === 'flood') rules.canalFlood = [...rules.canalFlood, 5];
+  return rules;
+}
+export function airCostFor(levelId = 'first', weather = 'clear', round = 0) {
+  const rules = resolveEdgeRules(levelId, weather);
+  return (rules.airBoost.includes(round) ? rules.airBoostCost : 1) + (weather === 'headwind' ? 1 : 0);
+}
+
+// Win is the base star. Keep the shared ration (+1) and finish before the last turn (+1) for up to three stars.
+export function dispatchStars(state) {
+  if (!state || state.status !== 'won') return 0;
+  const turnLimit = getDispatchLevel(state.levelId).turnLimit;
+  return 1 + (state.rationAvailable ? 1 : 0) + (turnLimit - state.turn >= 1 ? 1 : 0);
+}
 const edgeBetween = (from, to) => EDGES.find(e => (e.a === from && e.b === to) || (e.a === to && e.b === from));
 export function cargoWeight(orders, levelId = 'first') {
   const specs = getDispatchLevel(levelId).orders;
@@ -70,7 +110,7 @@ export function validateLoadout(assignments, sealedIce = false, levelId = 'first
   return { valid: issues.length === 0, issues, owners };
 }
 
-export function createDispatchState({ assignments = { Ember: [], Gale: [] }, sealedIce = false, levelId = 'first', level: levelAlias } = {}) {
+export function createDispatchState({ assignments = { Ember: [], Gale: [] }, sealedIce = false, levelId = 'first', level: levelAlias, weather = 'clear' } = {}) {
   const level = getDispatchLevel(levelAlias || levelId), copied = { Ember: [...(assignments.Ember || [])], Gale: [...(assignments.Gale || [])] };
   const validation = validateLoadout(copied, sealedIce, level.id);
   const held = { Ember: [], Gale: [] }, orderStatus = {}, pickedUp = {};
@@ -89,6 +129,7 @@ export function createDispatchState({ assignments = { Ember: [], Gale: [] }, sea
     assignments: copied,
     held,
     sealedIce: Boolean(sealedIce),
+    weather: WEATHERS.includes(weather) ? weather : 'clear',
     rationAvailable: true,
     delivered: {}, pickedUp, orderStatus,
     status: validation.valid ? 'playing' : 'setup',
@@ -112,12 +153,13 @@ function actionIssue(state, dragon, action, round = state.turn + 1) {
   if (!LOCATIONS.includes(to)) return { code: 'unknown_location', dragon, to };
   const edge = edgeBetween(from, to);
   if (!edge) return { code: 'not_adjacent', dragon, from, to };
-  if (edge.type === 'ridge' && [4, 5].includes(round)) return { code: 'ridge_closed', dragon, round, from, to };
-  if (edge.type === 'canal' && [3, 4].includes(round) && dragon !== 'Ember') return { code: 'flooded_canal', dragon, round, from, to };
+  const rules = resolveEdgeRules(state.levelId, state.weather);
+  if (edge.type === 'ridge' && rules.ridgeClosed.includes(round)) return { code: 'ridge_closed', dragon, round, from, to };
+  if (edge.type === 'canal' && rules.canalFlood.includes(round) && dragon !== 'Ember') return { code: 'flooded_canal', dragon, round, from, to };
   if (edge.type === 'tunnel' && dragon !== 'Ember') return { code: 'dragon_cannot_tunnel', dragon, from, to };
   if (edge.type === 'air' && dragon !== 'Gale') return { code: 'dragon_cannot_fly', dragon, from, to };
   if (edge.type === 'tunnel' && dragon === 'Ember' && state.held.Ember.includes('ice') && orders.ice?.cold && !state.sealedIce) return { code: 'ice_unsealed', dragon: 'Ember', order: 'ice' };
-  const cost = edge.type === 'air' && [2, 3].includes(round) ? 3 : edge.cost;
+  const cost = edge.type === 'air' ? airCostFor(state.levelId, state.weather, round) : edge.cost;
   if (state.stamina[dragon] < cost) return { code: 'stamina_short', dragon, need: cost, have: state.stamina[dragon], from, to };
   return null;
 }
@@ -158,7 +200,7 @@ function settleAtLocation(state, dragon, round, events, warnings) {
 function applyActionForDragon(state, dragon, action, round, events, warnings) {
   if (action.type === 'move') {
     const from = state.locations[dragon], to = action.to, edge = edgeBetween(from, to);
-    const cost = edge.type === 'air' && [2, 3].includes(round) ? 3 : edge.cost;
+    const cost = edge.type === 'air' ? airCostFor(state.levelId, state.weather, round) : edge.cost;
     state.locations[dragon] = to;
     state.stamina[dragon] -= cost;
     events.push({ code: 'dragon_moved', dragon, from, to, cost, remaining: state.stamina[dragon], edge: edge.id, turn: round });
@@ -206,9 +248,10 @@ function finishRound(state, round, events) {
     state.status = 'won';
     const badge = state.levelId === 'first'
       ? (state.delivered.ice.turn < state.delivered.eggs.turn ? 'ice_dream_early' : 'chorus_on_time')
-      : 'return_run_complete';
-    state.result = { code: 'delivered_and_home', badge, turn: round };
-    events.push({ code: 'dispatch_won', badge, turn: round });
+      : state.levelId + '_complete';
+    const stars = dispatchStars(state);
+    state.result = { code: 'delivered_and_home', badge, turn: round, stars };
+    events.push({ code: 'dispatch_won', badge, turn: round, stars });
     return;
   }
   if (round >= turnLimit) {
