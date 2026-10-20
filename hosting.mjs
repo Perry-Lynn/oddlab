@@ -22,8 +22,8 @@ export const PAGES = browser
   : process.env.ODDLAB_PAGES === '1';
 
 export const DEFAULT_LANG = browser
-  ? window.ODDLAB_DEFAULT_LANG || 'en'
-  : process.env.ODDLAB_DEFAULT_LANG || 'en';
+  ? window.ODDLAB_DEFAULT_LANG || 'zh'
+  : process.env.ODDLAB_DEFAULT_LANG || 'zh';
 
 export const SITE_ORIGIN = browser
   ? location.origin

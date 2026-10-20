@@ -39,6 +39,15 @@ for(const lang of ['en','zh','ja','es']){
  // A page delivered in any locale must still be able to switch its persistent shell.
  for(const source of ['关于研究所','关于 / 反馈','隐私说明','使用说明','联系与反馈'])for(const next of ['en','zh','ja','es'])assert.equal(translateText(translateText(source,lang),next),translateText(source,next));
 }
+// The unprefixed entry page must default to Simplified Chinese, with Chinese first in the picker.
+const rootDefault=await (await fetchPath('/')).text();
+assert.ok(rootDefault.includes('<html lang="zh-CN"'),'the default entry document is Chinese');
+assert.ok(rootDefault.includes('今天，来点不一样的。'),'the default entry copy is Chinese');
+const defaultOptions=rootDefault.match(/<option value="\w+"[^>]*>/g)||[];
+assert.equal(defaultOptions.length,4,'the picker offers four languages');
+assert.ok(defaultOptions[0].includes('value="zh"'),'Chinese is the first option');
+assert.ok(defaultOptions[0].includes('selected'),'Chinese is selected by default');
+assert.ok(!defaultOptions.slice(1).some(option=>option.includes('selected')),'only one language is selected');
 const sitemap=await (await fetchPath('/sitemap.xml')).text();
 assert.equal((sitemap.match(/<loc>/g)||[]).length,40);
 for(const [,loc] of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)){const u=new URL(decode(loc));assert.ok(publicRoutes.includes(u.pathname));assert.ok(!u.searchParams.has('r'));}

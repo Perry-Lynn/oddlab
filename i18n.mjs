@@ -1,6 +1,6 @@
 import { translateText } from './ui-catalog.mjs';
 import { DEFAULT_LANG } from './hosting.mjs';
-export const languages={en:'English',zh:'简体中文',ja:'日本語',es:'Español'};
+export const languages={zh:'简体中文',en:'English',ja:'日本語',es:'Español'};
 export function initialLanguage(){const q=new URLSearchParams(location.search).get('lang');if(Object.hasOwn(languages,q))return q;try{const stored=localStorage.getItem('oddlab_locale');if(Object.hasOwn(languages,stored))return stored;}catch{}return Object.hasOwn(languages,DEFAULT_LANG)?DEFAULT_LANG:'en';}
 export let language=initialLanguage();
 export function setLanguage(lang){if(!Object.hasOwn(languages,lang))return;language=lang;try{localStorage.setItem('oddlab_locale',lang);}catch{}const u=new URL(location.href);u.searchParams.set('lang',lang);history.replaceState(null,'',u.pathname+u.search+u.hash);document.documentElement.lang=lang==='zh'?'zh-CN':lang;}

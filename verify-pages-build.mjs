@@ -66,6 +66,11 @@ for (const route of publicRoutes) {
  assert.ok(!/(?:href|src)="\/style\.css"/.test(html), `${name} has no root-absolute stylesheet reference`);
  assert.ok(!/(?:href|src)="\/assets\//.test(html), `${name} has no root-absolute asset reference`);
  assert.ok(html.includes(`<html lang="${localeCodes.zh}"`), `${name} declares the Chinese document language`);
+ const options = html.match(/<option value="\w+"[^>]*>/g) || [];
+ assert.equal(options.length, 4, `${name} offers four languages`);
+ assert.ok(options[0].includes('value="zh"'), `${name} lists Chinese first`);
+ assert.ok(options[0].includes('selected'), `${name} selects Chinese by default`);
+ assert.ok(!options.slice(1).some(option => option.includes('selected')), `${name} selects a single language`);
  assert.equal((html.match(/<title>/g) || []).length, 1, `${name} has exactly one title`);
  assert.equal((html.match(/<h1[ >]/g) || []).length, 1, `${name} has exactly one h1`);
  assert.equal((html.match(/hreflang=/g) || []).length, 5, `${name} lists five hreflang alternates`);
