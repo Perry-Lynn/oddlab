@@ -1,65 +1,104 @@
-# OddLab · Five little experiments
+# 脑洞研究所 · OddLab
 
-Simplified Chinese by default, with English, Japanese, and Spanish. Reuses the existing Sites project and public URL. Four expanded mini-games plus Dragon Dispatch run locally; Dispatch has a six-turn first puzzle, an eight-turn return puzzle, and a nine-turn Market Relay. A small Worker/D1 service persists aggregate activity.
+**简体中文** | [English](README.en.md)
 
-## Source and build
+今天，来点不一样的。一个打开就能玩的小游戏与日常灵感小站，从十几秒的小抽签，到需要认真想一想的双龙送货谜题。
 
-- `app.js`, `logic.mjs`: app routing, original persona scoring and archive restoration, UTC+8 mission rotation/storage, clipboard/share fallbacks. `games-content.mjs`, `games-logic.mjs`, and `games-ui.mjs` provide four-language branching life stories, counterfactual persona previews, choice duels, and two-angle daily missions without changing the original persona scoring or life archive IDs.
-- `dispatch-logic.mjs`: deterministic first/return/market routing rules and immutable projections; the pickup levels model cargo responsibility separately from pickup, with delivery-before-pickup settlement and capacity warnings. `dispatch-ui.mjs` and `dispatch-copy.mjs` provide the shared route board, illustrated cargo/places, event-led execution feedback, and four-language interface. The original image prompts, source provenance, output sizes and byte budget are documented in `assets/dispatch/README.md`; `dispatch-assets.mjs` is the four-image public allowlist.
-- `ui-catalog.mjs`: pure four-language UI catalog; `i18n.mjs`: browser language preference/query handling. `locales/{en,zh,ja,es}.json`: complete localized content packs. All IDs, scoring, versions, and task rotation remain consistent. Edit the committed locale packs together when changing content; the build does not silently overwrite them from the parent folder.
-- `analytics.mjs`: page views and real UI clicks; new game buttons share only the fixed `experiment-action` category. It never reads answer choices, branch IDs, candidate text, task approaches, form contents, or browser identifiers.
-- `worker/runtime.mjs`: public assets and `/api/track`, `/api/stats`. `prepare.mjs` generates `worker/index.js` with embedded assets; the four versioned WebPs are emitted as base64 source and decoded/cached only for allowlisted image GETs. HEAD keeps an empty body, and other paths use the normal 404 response.
-- `db/schema.ts`, `drizzle/`: D1 schema and versioned migrations. The request handler never creates tables. Sites provisions binding `DB` and applies packaged migrations.
+**[在线试玩](https://perry-lynn.github.io/oddlab/?lang=zh)** · [双龙调度局](https://perry-lynn.github.io/oddlab/dispatch/?lang=zh) · [1024 作品介绍](1024Builder作品秀-脑洞研究所.md)
 
-With Node 24+: `node prepare.mjs && bash scripts/build.sh && node scripts/validate-artifact.mjs`. Tests: `node verify.mjs && node verify-server.mjs && node verify-pages.mjs && node verify-dispatch.mjs && node verify-market.mjs && node verify-games.mjs` (also available through `npm test`). The server test uses actual in-memory SQLite through a D1-compatible adapter. `node scripts/preview.mjs` serves port 8765 with a separate SQLite file in `/private/tmp`; local data is never deployed. Dev-only drizzle tooling is locked in `pnpm-lock.yaml`; runtime has no package dependencies.
+![脑洞研究所首页](1024Builder作品秀配图/01-home-desktop.png)
 
-The Worker ESM build emits `dist/server/index.js` and `dist/.openai/hosting.json`. The Sites packaging helper copies root `drizzle/` to `dist/.openai/drizzle/`. Keep deployed migration files immutable; generate a new migration for future schema changes.
+## 可以玩什么
 
-## GitHub Pages (static public build)
+| 玩法 | 内容 |
+| --- | --- |
+| 双龙调度局 | 为两条能力不同的龙分配货物、规划路线，在载重、天气、体力和期限限制下完成派送并回家。共五关，支持计划预演、撤回和逐回合执行。 |
+| 你的离谱人格 | 六道趣味题，两套题库、16 种虚构人设，还能改变一个答案预览结果。纯属娱乐。 |
+| 平行人生模拟器 | 五个故事世界，每次走过三幕，选择影响资源和结局；另有结局图鉴与 12 份人生档案。 |
+| 今天听天由命 | 直接抽签，或让 2–16 个候选逐组比较；可以把结果收进本机抉择合集。 |
+| 今日奇怪任务 | 每天一件小事，每件有两种做法，配有本机任务册、连续打卡和本周挑战。 |
 
-A second, independent build target serves the same games as a public static site, for example the TRAE 1024 showcase entry. It includes all four languages, original result restoration, the branching life adventure, counterfactual quiz preview, choice duel, daily mission booklet, and browser-local progress. It adds no accounts, multiplayer, or leaderboards.
+页面底部还有 1024 小彩蛋「鸭子调试室」：检查三个用日常语言写的“程序”，找问题、选修复，生成趣味 commit 文案。
+
+网站默认简体中文，也支持英文、日文和西班牙文。网址中的 `?lang=zh|en|ja|es` 优先于已保存的语言偏好；游戏中的语言切换会保留当前进度。README 的语言切换只切换说明文档。
+
+## 本地运行
+
+需要 **Node.js 24 或以上版本**。游戏运行时没有第三方包依赖，以下静态预览流程无需安装依赖。
 
 ```bash
-npm test              # existing content, routing and Worker checks
-npm run build:pages   # static site -> dist-pages/ (needs no dependencies)
-npm run verify:pages  # static path, base-path and blocked-backend checks
-npm run preview:pages # serve dist-pages/ at http://127.0.0.1:8788/oddlab/
-npm run build         # unchanged Sites/Worker build
+npm test
+npm run build:pages
+npm run verify:pages
+npm run preview:pages
 ```
 
-Standard-tool local run in a browser: `npm test && npm run build:pages && npm run preview:pages`, then open <http://127.0.0.1:8788/oddlab/>.
+浏览器打开 [http://127.0.0.1:8788/oddlab/](http://127.0.0.1:8788/oddlab/)。
 
-Motion: Dispatch plays completed turns along the actual roads (including the curved sky road), with pickup/delivery pulses, sequential batch playback and a brief victory celebration. Undo, restart or another interaction cancels playback immediately; animation never drives game state. System reduced-motion preferences disable decorative effects, including when changed during playback. The other games include small button, card and result reveals. All effects use browser-native CSS/Web Animations with no added dependencies.
+`npm test` 包含内容、页面、Worker、调度规则和小游戏的六段校验；Worker 测试通过兼容 D1 的适配器使用真实内存 SQLite。
 
-How the build renders it:
+## 部署到 GitHub Pages
 
-- **Base path.** GitHub project pages live under `/<repo>/`. `hosting.mjs` derives the base at runtime from its own module URL and exposes `link()`, `asset()` and `currentRoute()`, which every browser module uses for navigation, resources, `fetch`, images, level links, share links, `history` calls, canonical, OG and the sitemap. The static build additionally rewrites root-absolute `href`/`src` attributes and injects `window.ODDLAB_PAGES`, `window.ODDLAB_DEFAULT_LANG` and `window.ODDLAB_STATS` into `<head>`.
-- **Routing without server rewrites.** Each public route is emitted as a directory with its own `index.html` (`dispatch/index.html`, `life/index.html`, …), so direct opens, refreshes, deep links and share links all resolve without any rewrite rule. `404.html` serves unmapped paths with the original URL intact, and the in-page router renders its own not-found view for them.
-- **Level and language parameters** stay query parameters (`?level=return|market&lang=en|zh|ja|es`) and survive refreshes; `?r=` and `?v=` still restore shared results.
-- **Default language** for this entry is Simplified Chinese (`ODDLAB_DEFAULT_LANG=zh`); an explicit `?lang=` and a saved language choice still win.
-- **Backend boundary.** The Pages build ships no D1 statistics backend, no `/admin` and no `/stats`, and no sign-in entry. `analytics.mjs` returns early when `window.ODDLAB_STATS=false`, so the page never requests a non-existent `/api/track`. The in-page privacy text describes this static behaviour instead of the Sites one.
-- **Not published on Pages:** `worker/`, `db/`, `drizzle/`, `.openai/`, and the legacy `/capability.html` and `/tool-test.html` pages. The Sites build keeps all of them.
+公开 Demo 使用独立静态构建，输出目录为 `dist-pages/`。推送到 `main` 后，GitHub Actions 会运行测试、构建、静态校验并部署。首次配置仓库时，在 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
 
-Automatic deployment: `.github/workflows/pages.yml` runs on every push to `main` and on manual dispatch. It runs `npm test`, derives `ODDLAB_BASE` and `ODDLAB_ORIGIN` from the repository, runs `build:pages` + `verify:pages`, uploads `dist-pages` with `actions/upload-pages-artifact` and deploys with `actions/deploy-pages` using only `contents: read`, `pages: write` and `id-token: write`. The repository Pages setting must be "Build and deployment → Source: GitHub Actions" once.
+构建到当前正式地址时，使用相同参数完成构建和校验：
 
-## Language and data behavior
+```bash
+export ODDLAB_BASE=/oddlab/
+export ODDLAB_ORIGIN=https://perry-lynn.github.io
+export ODDLAB_PAGES=1
+export ODDLAB_DEFAULT_LANG=zh
+npm run build:pages
+npm run verify:pages
+```
 
-`?lang=en|zh|ja|es` overrides the saved language preference. `/dispatch?level=return` opens the second puzzle and `?level=market` opens Market Relay; omitting `level` opens the first. Challenge links retain only a public level slug and language, never cargo responsibility, routes, or game state. Links carry language even when localStorage is denied. Changing language preserves quiz answer indices and the selected counterfactual question, archive result IDs, adventure scene/resources/history, choice scene/mode and duel indices, daily task progress, and custom decision text; preset options translate by stable scene and option index. New adventures and duel progress exist only in page memory; invitation links do not encode either game state or custom candidates.
+部署到其他仓库时调整路径和域名；现有工作流会根据仓库信息自动推导它们。
 
-Activity is administrator-only at `/admin` (legacy `/stats` is equally protected), over the last 7/30/90 UTC+8 dates. Page views and clicks are separate events. Counters group by date, event kind, source page, sanitized destination URL, action category, and language. Only known page paths, the public `/dispatch?level=return|market` slugs, and public result IDs/version are retained in URLs; arbitrary query strings, fragments, IPs, identities, and input text are not stored by the application. The hosting platform may separately keep access logs. Aggregate rows currently have no automatic retention expiry. No unique visitor or fraud-proof claim: repeated clicks count; blocking/network errors can drop events. The stats page does not generate usage events about itself. Totals include all rows in the selected period; detail display is limited to 200 rows. Verification clicks after release are real counted events.
+- 每个公开路由生成独立的 `index.html`，支持直接访问、刷新和分享链接。
+- 导航、图片、模块、语言包及 canonical 等地址均适配仓库子路径。
+- `?level=first|return|market|festival|storm` 选择调度关卡；分享链接只包含公开关卡和语言，不包含玩家路线或货物分配。
+- Pages 不提供 `/api/track`、管理后台或 D1 统计，也不发布 Worker、数据库和内部测试页面；浏览器统计上报在此构建中关闭。
 
-Daily missions still reset at UTC+8 midnight in every language. Task date, task IDs, swap count, completion-today IDs and unique booklet IDs stay in the existing browser-local task record; no angle choice is saved, and nothing syncs across devices. Persona answers, life adventures, and choice-duel progress stay in page memory. Clipboard fallback selects the current text. Native mobile sharing remains dependent on the device and browser.
+## 语言、进度与隐私
 
-## Publish
+公开小游戏不需要注册。人格答案、人生冒险和候选比较等进行中状态在页面内存中处理；自定义候选、答案和路线不会上传。任务记录、部分结局图鉴和抉择合集保存在当前浏览器，不跨设备同步。每日任务按 UTC+8 零点轮换。
 
-Use the existing `.openai/hosting.json` project. Open source through Sites workflow, build/test, push exact source, package, save the matching version, deploy with the existing public audience. Never create a replacement site. Keep local checks and actual production/D1 verification separate. Legacy `/capability.html` and `/tool-test.html` remain available but are outside the product navigation.
+分享链接可以恢复受支持的公开结果；冒险过程、候选比较进度和自定义候选不会编码进邀请链接。原生分享是否可用取决于设备和浏览器，复制失败时会选中文本供手动复制。
 
-## Administrator access
+动效使用原生 CSS 和 Web Animations，不驱动游戏规则。撤回、重开或新的交互会取消正在播放的调度动画，并尊重系统的“减少动态效果”设置。
 
-Protected pages and `/api/stats` require both Sites-injected identity headers and an exact email match against server-only secret `ADMIN_EMAIL`. The allowlist is set from the confirmed Site owner; another signed-in visitor is rejected. No admin links appear in public navigation. Sign-in uses the platform-owned `/signin-with-chatgpt` route; public games and event submission remain anonymous. Runtime secrets are configured in Sites, never source.
+## 源码结构
 
-## Crawlable pages
+| 文件 | 职责 |
+| --- | --- |
+| `app.js`、`logic.mjs` | 路由、原有人格计分与档案恢复、每日任务和分享回退。 |
+| `games-content.mjs`、`games-logic.mjs`、`games-ui.mjs` | 人生分支、人格预览、候选比较、每日任务的内容、规则和界面。 |
+| `dispatch-logic.mjs` | 可独立验证的双龙调度规则、不可变状态推演、货物交接与载重检查。 |
+| `dispatch-ui.mjs`、`dispatch-copy.mjs` | 调度地图、执行反馈和四语文案。 |
+| `i18n.mjs`、`ui-catalog.mjs`、`locales/` | 语言选择、界面翻译和四语内容包。修改内容时同步维护各语言包。 |
+| `hosting.mjs`、`page-content.mjs` | 部署路径适配，以及首屏 HTML、玩法说明和可抓取页面内容。 |
+| `scripts/build-pages.mjs`、`verify-pages-build.mjs` | Pages 静态构建与产物检查。 |
+| `worker/runtime.mjs`、`db/`、`drizzle/` | 独立 Sites/Worker 版本的请求处理、数据库定义和迁移。 |
 
-`page-content.mjs` shares public descriptions, instructions, FAQ and document copy between initial HTML and browser rendering. The build emits ten routes in four languages, each with one H1, its own title/description, canonical, reciprocal hreflang and OG text. Chinese canonical addresses omit `lang=zh`; other locales keep their query. `/sitemap.xml` contains those 40 canonical URLs. `/robots.txt` links it without blocking access to noindex responses. Result links, protected admin, APIs and legacy tests are excluded from indexing; invalid result IDs/versions and unknown paths return genuine 404. Existing `.html` and trailing-slash public aliases redirect permanently while preserving query parameters. No JavaScript is needed to read the initial purpose, steps, FAQ or game links.
+调度美术的来源、尺寸和体积约定见 [素材说明](assets/dispatch/README.md)；公开图片由 `dispatch-assets.mjs` 中的白名单控制。
 
-Search Console account verification and indexing are not yet confirmed. No verification value or support email is invented. Contact currently explains how early testers can send feedback through the person who shared the site; a direct public support channel remains a launch input. OG images and downloadable result images belong to the following delivery stage.
+## 独立 Sites / Worker 构建
+
+仓库还保留原有 Sites 项目；它与 Pages 静态部署独立。使用现有 `.openai/hosting.json`，无需新建替代项目。
+
+```bash
+npm run build
+npm run preview
+```
+
+构建输出 `dist/server/index.js` 与 `dist/.openai/hosting.json`；预览地址为 `http://127.0.0.1:8765`，本地 SQLite 文件位于 `/private/tmp`，不会随代码部署。打包时包含 `drizzle/` 迁移，由平台提供 `DB` 绑定并执行迁移；已经部署的迁移文件保持不变，后续变更新增迁移。仅开发用的数据库工具需要按 `pnpm-lock.yaml` 安装依赖。
+
+此版本的统计只记录汇总页面访问和点击，不读取答案、候选文本或路线；汇总数据没有自动过期机制，平台可能另有访问日志。重复点击也会计数，因此不代表独立访客数。
+
+`/admin`、旧 `/stats` 和 `/api/stats` 同时要求平台身份头及服务端 `ADMIN_EMAIL` 精确匹配。密钥由平台配置，不写入源码。公开游戏不要求登录。
+
+## 页面与搜索
+
+构建为公开路由生成首屏 HTML、独立标题、描述、canonical、四语 hreflang 和 sitemap。中文 canonical 省略 `lang=zh`；其他语言保留语言参数。受保护页面、API、结果链接和旧测试页不列入索引。搜索平台收录尚未确认。
+
+欢迎通过 [GitHub Issues](https://github.com/Perry-Lynn/oddlab/issues) 反馈问题，附上玩法、复现步骤、设备和浏览器即可。
