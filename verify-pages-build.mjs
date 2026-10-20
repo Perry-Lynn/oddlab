@@ -44,7 +44,7 @@ async function exists(rel) { try { await stat(join(out, rel)); return true; } ca
 for (const route of publicRoutes) {
  assert.ok(await exists(route === '/' ? 'index.html' : `${route.slice(1)}/index.html`), `${route} has a static index.html`);
 }
-for (const file of ['404.html', '.nojekyll', 'sitemap.xml', 'robots.txt', 'app.js', 'hosting.mjs', 'page-content.mjs', 'analytics.mjs', 'games-content.mjs', 'games-logic.mjs', 'games-ui.mjs', 'dispatch-ui.mjs', 'dispatch-assets.mjs', 'style.css', 'favicon.svg']) assert.ok(await exists(file), `missing ${file}`);
+for (const file of ['404.html', '.nojekyll', 'sitemap.xml', 'robots.txt', 'app.js', 'hosting.mjs', 'page-content.mjs', 'analytics.mjs', 'games-content.mjs', 'games-logic.mjs', 'games-ui.mjs', 'dispatch-ui.mjs', 'dispatch-assets.mjs', 'style.css', 'favicon.svg','brand-mark.svg']) assert.ok(await exists(file), `missing ${file}`);
 for (const lang of locales) assert.ok(await exists(`locales/${lang}.json`), `missing locale ${lang}`);
 for (const image of dispatchImageAssets) assert.ok(await exists(image.path), `missing image ${image.path}`);
 
@@ -72,7 +72,8 @@ for (const route of publicRoutes) {
  assert.ok(options[0].includes('selected'), `${name} selects Chinese by default`);
  assert.ok(!options.slice(1).some(option => option.includes('selected')), `${name} selects a single language`);
  assert.ok(!html.includes('✳'), `${name} drops the old eight-point star glyph`);
- assert.ok(html.includes('M8 42c-3-11 6-17 18-17'), `${name} carries the hand-drawn duck mark`);
+ assert.ok(html.includes('data-brand="oddlab-door"'), `${name} carries the selected door mark`);
+ assert.ok(html.includes(`src="${base}brand-mark.svg"`), `${name} resolves the door mark under the deployment base`);
  assert.equal((html.match(/<title>/g) || []).length, 1, `${name} has exactly one title`);
  assert.equal((html.match(/<h1[ >]/g) || []).length, 1, `${name} has exactly one h1`);
  assert.equal((html.match(/hreflang=/g) || []).length, 5, `${name} lists five hreflang alternates`);

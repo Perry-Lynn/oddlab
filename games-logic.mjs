@@ -121,14 +121,21 @@ export function taskCompletion(saved, id, allow = true) {
 // player points at it, the duck explains, and the fix is chosen from two cards.
 // Everything stays in page memory, so the state object is plain data.
 export function createDebugRoom() {
-  return { index: 0, found: null, fixId: null, checked: [], focus: null, wrongFix: null, hint: false, wrong: 0, log: [] };
+  return { index: 0, found: null, fixId: null, checked: [], focus: null, wrongFix: null, hint: false, hintsUsed: 0, wrong: 0, log: [] };
+}
+
+export function requestDebugHint(state) {
+  if (state.hint || state.found !== null) return state;
+  return { ...state, hint: true, hintsUsed: state.hintsUsed + 1 };
 }
 
 export function inspectDebugStep(state, level, stepIndex) {
   if (!level || state.found !== null || !Number.isInteger(stepIndex) || stepIndex < 0 || stepIndex >= level.steps.length) return state;
   if (stepIndex === level.bugStep) return { ...state, found: stepIndex };
   const first = !state.checked.includes(stepIndex);
-  return { ...state, focus: stepIndex, checked: first ? [...state.checked, stepIndex] : state.checked, wrong: first ? state.wrong + 1 : state.wrong };
+  const next = { ...state, focus: stepIndex, checked: first ? [...state.checked, stepIndex] : state.checked, wrong: first ? state.wrong + 1 : state.wrong };
+  // Count an automatically revealed strong hint just like an explicit request.
+  return next.checked.length >= 2 ? requestDebugHint(next) : next;
 }
 
 // The duck's one-line note for a step. `clean` lists the innocent steps in order,

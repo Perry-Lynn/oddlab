@@ -1,4 +1,4 @@
-import { gameText, resourceEffect, debugCommit } from './games-content.mjs';
+import { gameText, resourceEffect, debugCommit, debugVerdict } from './games-content.mjs';
 import { adventureEndingId, adventureChoiceAvailable, debugStepHint } from './games-logic.mjs';
 import { WEEK_GOAL, streakView, weekView } from './logic.mjs';
 
@@ -112,11 +112,11 @@ export function renderDebugRoom({ lang, content, state, motion, art='' }) {
  const action=(name,label,value='',cls='button')=>`<button class="${cls}" data-action="experiment-action" data-experiment-action="${name}"${value!==''?` data-value="${esc(value)}"`:''}>${esc(label)}</button>`;
  const stage=c('stage').replace('{n}',String(Math.min(state.index+1,total)));
  const head=`<div class="bench-top"><span>${esc(c('stepLabel'))}</span><span>${esc(stage)}</span></div>`;
- const duck=(text,cls)=>`<div class="debug-duck"><span class="debug-duck-art" aria-hidden="true">${art}</span><p class="debug-bubble ${cls}">${text}</p></div>`;
+ const duck=(text,cls)=>`<div class="debug-duck"><span class="debug-duck-art" aria-hidden="true">${art}</span><p class="debug-bubble ${cls}" tabindex="-1">${text}</p></div>`;
  if(state.index>=total){
   const rows=content.map((level,i)=>{const fix=level.fixes.find(item=>item.correct);return `<li class="debug-log-row"><span class="debug-step-no">${String(i+1).padStart(2,'0')}</span><div><strong>${esc(level.title)}</strong><p><span class="debug-step-mark bug">${esc(c('bugMark'))}</span>${esc(level.steps[level.bugStep])}</p><p><span class="debug-step-mark fixed">${esc(c('fixMark'))}</span>${esc(fix.label)}</p></div></li>`;}).join('');
-  const verdict=state.wrong===0?c('verdictPerfect'):state.wrong<=2?c('verdictGood'):c('verdictSlow');
-  return `<section class="workbench debug-room is-done" data-no-translate>${head}${duck(`<small>${esc(c('duckSays'))}</small>${esc(verdict)}`,'good')}<section class="debug-log ${mo?.type==='done'?'mo-unfold':''}"><p class="result-kicker">${esc(c('logKicker'))}</p><h3>${esc(c('logHeading'))}</h3><ol>${rows}</ol></section><pre class="debug-commit">${esc(debugCommit(lang,state.wrong))}</pre><div class="actions">${action('debug-copy',c('copyCommit'),'','button dark')}${action('debug-invite',c('shareCommit'),'','button light')}${action('debug-restart',c('restart'),'','button push')}</div><p class="note">${esc(c('note'))}</p></section>`;
+  const verdict=debugVerdict(lang,state.wrong,state.hintsUsed);
+  return `<section class="workbench debug-room is-done" data-no-translate>${head}${duck(`<small>${esc(c('duckSays'))}</small>${esc(verdict)}`,'good')}<section class="debug-log ${mo?.type==='done'?'mo-unfold':''}"><p class="result-kicker">${esc(c('logKicker'))}</p><h3 tabindex="-1">${esc(c('logHeading'))}</h3><ol>${rows}</ol></section><pre class="debug-commit">${esc(debugCommit(lang,state.wrong,state.hintsUsed))}</pre><div class="actions">${action('debug-copy',c('copyCommit'),'','button dark')}${action('debug-invite',c('shareCommit'),'','button light')}${action('debug-restart',c('restart'),'','button push')}</div><p class="note">${esc(c('note'))}</p></section>`;
  }
  const level=content[state.index];
  const found=state.found!==null,fixed=state.fixId!==null;
@@ -124,18 +124,19 @@ export function renderDebugRoom({ lang, content, state, motion, art='' }) {
   const isBug=i===level.bugStep,checked=state.checked.includes(i);
   const cls=isBug&&found?(fixed?'fixed':'bug'):checked?'ok':found?'locked':'';
   const label=isBug&&found?(fixed?c('fixMark'):c('bugMark')):checked?c('okMark'):'';
-  const inner=`<span class="debug-step-no">${String(i+1).padStart(2,'0')}</span><span class="debug-step-text">${esc(text)}</span>${label?`<span class="debug-step-mark ${cls}">${esc(label)}</span>`:''}`;
+  const visibleText=isBug&&fixed?level.fixedStep:text;
+  const inner=`<span class="debug-step-no">${String(i+1).padStart(2,'0')}</span><span class="debug-step-text">${esc(visibleText)}</span>${label?`<span class="debug-step-mark ${cls}">${esc(label)}</span>`:''}`;
   return found?`<li class="debug-step ${cls}">${inner}</li>`:`<li><button class="debug-step ${cls}" data-action="experiment-action" data-experiment-action="debug-inspect" data-value="${i}">${inner}</button></li>`;
  }).join('');
  let bubble='',bubbleClass='hint';
  if(fixed){bubble=`<small>${esc(c('outputLabel'))}</small>${esc(level.fixes.find(item=>item.correct).result)}`;bubbleClass='good';}
  else if(found&&state.wrongFix){const bad=level.fixes.find(item=>item.id===state.wrongFix);bubble=`${esc(bad.result)}<small>${esc(c('duckSays'))}${esc(bad.duck)}</small>`;bubbleClass='bug';}
  else if(found){bubble=`<small>${esc(c('duckSays'))}</small>${esc(level.bugNote)}`;bubbleClass='bug';}
- else if(state.hint||state.checked.length>=2){bubble=`<small>${esc(c('duckSays'))}</small>${esc(level.strongHint)}`;}
+ else if(state.hint){bubble=`<small>${esc(c('duckSays'))}</small>${esc(level.strongHint)}`;}
  else if(state.focus!==null&&debugStepHint(level,state.focus)){bubble=`<small>${esc(c('duckSays'))}</small>${esc(debugStepHint(level,state.focus))}`;bubbleClass='ok';}
  else{bubble=`<small>${esc(c('duckSays'))}</small>${esc(c('intro'))}`;}
- const fixes=found&&!fixed?`<p class="debug-fix-prompt">${esc(c('fixPrompt'))}</p><div class="debug-fixes${mo?.type==='found'?' mo-rise-seq':''}">${level.fixes.map(fix=>`<button class="debug-fix${state.wrongFix===fix.id?' is-wrong':''}" data-action="experiment-action" data-experiment-action="debug-fix" data-value="${esc(fix.id)}">${esc(fix.label)}</button>`).join('')}</div>${state.wrongFix?`<p class="debug-wrong">${esc(c('wrongFix'))}</p>`:''}`:'';
+ const fixes=found&&!fixed?`<p class="debug-fix-prompt" tabindex="-1">${esc(c('fixPrompt'))}</p><div class="debug-fixes${mo?.type==='found'?' mo-rise-seq':''}">${level.fixes.map(fix=>`<button class="debug-fix${state.wrongFix===fix.id?' is-wrong':''}" data-action="experiment-action" data-experiment-action="debug-fix" data-value="${esc(fix.id)}">${esc(fix.label)}</button>`).join('')}</div>${state.wrongFix?`<p class="debug-wrong">${esc(c('wrongFix'))}</p>`:''}`:'';
  const next=fixed?`<div class="actions">${action('debug-next',state.index+1>=total?c('seeLog'):c('nextLevel'),'','button dark push')}</div>`:'';
  const ask=!found&&!state.hint?`<div class="actions">${action('debug-hint',c('askDuck'),'','button light')}</div>`:'';
- return `<section class="workbench debug-room" data-no-translate>${head}${duck(bubble,bubbleClass)}<h2 class="debug-title">${esc(level.title)}</h2><p class="debug-premise">${esc(level.premise)}</p><ol class="debug-steps${mo?.type==='level'?' mo-rise-seq':''}">${steps}</ol>${fixes}${ask}${next}<p class="note">${esc(c('note'))}</p></section>`;
+ return `<section class="workbench debug-room" data-no-translate>${head}${duck(bubble,bubbleClass)}<h2 class="debug-title" tabindex="-1">${esc(level.title)}</h2><p class="debug-premise">${esc(level.premise)}</p><ol class="debug-steps${mo?.type==='level'?' mo-rise-seq':''}">${steps}</ol>${fixes}${ask}${next}<p class="note">${esc(c('note'))}</p></section>`;
 }

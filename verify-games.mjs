@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { calculatePersona, dailyTask, taskState, normalizeChoices } from './logic.mjs';
-import { previewPersonaAnswer, adoptPersonaPreview, createAdventure, chooseAdventure, adventureEndingId, undoLastAdventureChoice, createChoiceRound, drawChoicePair, resolveChoicePair, restoreChoiceRound, undoChoiceRound, acceptChoiceRound, taskCompletion, createDebugRoom, inspectDebugStep, chooseDebugFix, advanceDebugRoom, debugRoomDone, debugStepHint } from './games-logic.mjs';
+import { previewPersonaAnswer, adoptPersonaPreview, createAdventure, chooseAdventure, adventureEndingId, undoLastAdventureChoice, createChoiceRound, drawChoicePair, resolveChoicePair, restoreChoiceRound, undoChoiceRound, acceptChoiceRound, taskCompletion, createDebugRoom, requestDebugHint, inspectDebugStep, chooseDebugFix, advanceDebugRoom, debugRoomDone, debugStepHint } from './games-logic.mjs';
 import { adventureContent, taskAnglePair, debugRoomContent, debugCommit, gameText } from './games-content.mjs';
 import { renderChoice, renderChoiceHistory, renderTasks, renderDebugRoom } from './games-ui.mjs';
 
@@ -199,13 +199,26 @@ for(const lang of ['en','zh','ja','es']){
   assert.equal(level.fixes.filter(fix=>fix.correct).length,1,`${lang}/${level.id} has exactly one workable fix`);
   assert.ok(level.fixes.every(fix=>fix.label&&fix.result),`${lang}/${level.id} shows every fix and its outcome`);
   assert.ok(level.fixes.filter(fix=>!fix.correct).every(fix=>fix.duck),`${lang}/${level.id} answers a wrong fix`);
-  for(const text of [level.title,level.premise,level.bugNote,level.strongHint,level.output,level.commitLine,...level.steps,...level.clean])
+  assert.notEqual(level.fixedStep,level.steps[level.bugStep],`${lang}/${level.id} actually changes its broken step`);
+  const solved=chooseDebugFix(inspectDebugStep(createDebugRoom(),level,level.bugStep),level,level.fixes.find(fix=>fix.correct).id);
+  const solvedHtml=renderDebugRoom({lang,content:[level],state:solved,motion:null,art:''});
+  assert.ok(solvedHtml.includes(level.fixedStep),`${lang}/${level.id} displays the corrected instruction`);
+  assert.ok(!solvedHtml.includes(level.steps[level.bugStep]),`${lang}/${level.id} no longer labels its old instruction as fixed`);
+  for(const text of [level.title,level.premise,level.bugNote,level.strongHint,level.output,level.commitLine,level.fixedStep,...level.steps,...level.clean])
    assert.ok(typeof text==='string'&&text.trim().length>2,`${lang}/${level.id} has complete copy`);
  });
 }
 const firstLevel=debugLevels.zh[0];
 const emptyRoom=createDebugRoom();
-assert.deepEqual(emptyRoom,{index:0,found:null,fixId:null,checked:[],focus:null,wrongFix:null,hint:false,wrong:0,log:[]});
+assert.deepEqual(emptyRoom,{index:0,found:null,fixId:null,checked:[],focus:null,wrongFix:null,hint:false,hintsUsed:0,wrong:0,log:[]});
+const requested=requestDebugHint(emptyRoom);
+assert.equal(requested.hintsUsed,1);assert.equal(requested.wrong,0,'asking for help is not a wrong answer');
+assert.equal(requestDebugHint(requested),requested,'repeating a hint does not inflate its count');
+let automatic=inspectDebugStep(emptyRoom,firstLevel,0);
+automatic=inspectDebugStep(automatic,firstLevel,1);
+assert.equal(automatic.hint,true);assert.equal(automatic.hintsUsed,1,'a revealed automatic hint is counted');
+automatic=inspectDebugStep(automatic,firstLevel,2);
+assert.equal(automatic.hintsUsed,1,'further inspections reuse the same hint');
 const innocentStep=firstLevel.bugStep===0?1:0;
 let room=inspectDebugStep(emptyRoom,firstLevel,innocentStep);
 assert.deepEqual(room.checked,[innocentStep]);assert.equal(room.focus,innocentStep);assert.equal(room.found,null);assert.equal(room.wrong,1,'an innocent step counts as one mistake');
@@ -223,6 +236,12 @@ assert.equal(chooseDebugFix({...room,fixId:null},firstLevel,badFix.id).log.lengt
 const walked=debugLevels.zh.reduce((state,level)=>{const found=inspectDebugStep(state,level,level.bugStep);return advanceDebugRoom(chooseDebugFix(found,level,level.fixes.find(fix=>fix.correct).id));},createDebugRoom());
 assert.equal(walked.index,3);assert.equal(walked.wrong,0);assert.deepEqual(walked.log.map(entry=>entry.levelId),debugLevels.zh.map(level=>level.id));
 assert.equal(debugRoomDone(walked,debugLevels.zh),true);assert.equal(debugRoomDone(createDebugRoom(),debugLevels.zh),false);
+const assisted=debugLevels.zh.reduce((state,level)=>{
+ const helped=requestDebugHint(state);
+ return advanceDebugRoom(chooseDebugFix(inspectDebugStep(helped,level,level.bugStep),level,level.fixes.find(fix=>fix.correct).id));
+},createDebugRoom());
+assert.equal(assisted.hintsUsed,3,'hint usage survives all level changes');assert.equal(assisted.wrong,0);
+assert.equal(createDebugRoom().hintsUsed,0,'starting over clears hint usage');
 for(const lang of ['en','zh','ja','es']){
  const clean=debugCommit(lang,0),sloppy=debugCommit(lang,5);
  assert.notEqual(clean,sloppy,`${lang} commit subject reacts to the mistake count`);
@@ -230,7 +249,17 @@ for(const lang of ['en','zh','ja','es']){
  assert.equal(clean.split('\n').filter(line=>line.startsWith('- ')).length,3,`${lang} commit body lists three lines`);
  assert.ok(clean.startsWith(gameText(lang,'debug','commitPrefix')));
  assert.ok(sloppy.includes(gameText(lang,'debug','verdictSlow'))&&clean.includes(gameText(lang,'debug','verdictPerfect')));
+ const assistedCommit=debugCommit(lang,assisted.wrong,assisted.hintsUsed);
+ const assistedHtml=renderDebugRoom({lang,content:debugLevels[lang],state:assisted,motion:null,art:''});
+ assert.ok(assistedCommit.includes(gameText(lang,'debug','verdictHint'))&&assistedHtml.includes(gameText(lang,'debug','verdictHint')),`${lang} screen and commit both acknowledge help`);
+ assert.ok(!assistedCommit.includes(gameText(lang,'debug','verdictPerfect')),`${lang} never awards an unassisted verdict after hints`);
+ const timer=debugLevels[lang][1];
+ assert.ok(timer.steps[1].includes('2.8')&&timer.steps[1].includes('3.2'),`${lang} makes the skipped reading explicit in the question`);
 }
+// The published example must actually distinguish the broken and corrected rules.
+const timerReadings=[0,2.8,3.2,3.6];
+assert.equal(timerReadings.find(time=>time===3),undefined,'the stated readings miss exact equality');
+assert.equal(timerReadings.find(time=>time>=3),3.2,'the corrected timer alerts at its first sufficient reading and then stops');
 const debugHtml=renderDebugRoom({lang:'zh',content:debugLevels.zh,state:createDebugRoom(),motion:null,art:''});
 assert.ok(debugHtml.includes('data-experiment-action="debug-inspect"'));
 assert.ok(debugHtml.includes('data-experiment-action="debug-hint"'));

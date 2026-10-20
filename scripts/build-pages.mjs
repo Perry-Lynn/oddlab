@@ -70,7 +70,7 @@ for (const route of publicRoutes) {
 const notFound = withBase(withFlags(localizedShell(defaultLang))).replace(/<title>.*?<\/title>/, '<title>404 · OddLab</title>').replace(/(<meta name="description"[^>]*>)/, '$1<meta name="robots" content="noindex,follow">');
 await write('404.html', notFound);
 
-for (const file of ['app.js', 'logic.mjs', 'i18n.mjs', 'hosting.mjs', 'ui-catalog.mjs', 'page-content.mjs', 'analytics.mjs', 'games-content.mjs', 'games-logic.mjs', 'games-ui.mjs', 'dispatch-logic.mjs', 'dispatch-copy.mjs', 'dispatch-assets.mjs', 'dispatch-ui.mjs', 'style.css', 'favicon.svg']) {
+for (const file of ['app.js', 'logic.mjs', 'i18n.mjs', 'hosting.mjs', 'ui-catalog.mjs', 'page-content.mjs', 'analytics.mjs', 'games-content.mjs', 'games-logic.mjs', 'games-ui.mjs', 'dispatch-logic.mjs', 'dispatch-copy.mjs', 'dispatch-assets.mjs', 'dispatch-ui.mjs', 'style.css', 'favicon.svg','brand-mark.svg']) {
  await copyFile(file, join(out, file));
  written.push(file);
 }

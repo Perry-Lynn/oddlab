@@ -49,7 +49,8 @@ assert.ok(defaultOptions[0].includes('value="zh"'),'Chinese is the first option'
 assert.ok(defaultOptions[0].includes('selected'),'Chinese is selected by default');
 assert.ok(!defaultOptions.slice(1).some(option=>option.includes('selected')),'only one language is selected');
 assert.ok(!rootDefault.includes('✳'),'the shell drops the old eight-point star glyph');
-assert.ok(rootDefault.includes('M8 42c-3-11 6-17 18-17'),'the shell carries the hand-drawn duck mark');
+assert.ok(rootDefault.includes('data-brand="oddlab-door"'),'the shell carries the selected door mark');
+assert.ok(rootDefault.includes('src="/brand-mark.svg"'),'the header serves the door asset');
 const sitemap=await (await fetchPath('/sitemap.xml')).text();
 assert.equal((sitemap.match(/<loc>/g)||[]).length,44);
 for(const [,loc] of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)){const u=new URL(decode(loc));assert.ok(publicRoutes.includes(u.pathname));assert.ok(!u.searchParams.has('r'));}
