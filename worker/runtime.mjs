@@ -1,4 +1,4 @@
-const paths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/debug','/about','/privacy','/terms','/contact','/stats']);
+const paths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/debug','/tanks','/about','/privacy','/terms','/contact','/stats']);
 const languages=new Set(['en','zh','ja','es']);
 const actions=new Set(['view','navigate','language','answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action','experiment-action']);
 const resultIds=new Set(PUBLIC_RESULT_IDS);
@@ -68,7 +68,7 @@ export default {async fetch(request,env={}){
   }
   return new Response(body,{headers:{'content-type':image.type,'content-length':String(image.byteLength),'cache-control':image.cache,'x-content-type-options':'nosniff'}});
  }
- const lang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'zh';const publicPaths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/debug','/about','/privacy','/terms','/contact']);
+ const lang=languages.has(url.searchParams.get('lang'))?url.searchParams.get('lang'):'zh';const publicPaths=new Set(['/','/dispatch','/persona','/life','/choice','/task','/debug','/tanks','/about','/privacy','/terms','/contact']);
  const alias=path==='/index.html'?'/':path.replace(/\.html$/,'');if(publicPaths.has(alias)&&path!==alias||publicPaths.has(path)&&url.pathname!==path){const target=new URL(request.url);target.pathname=publicPaths.has(alias)?alias:path;return new Response(null,{status:308,headers:{location:target.pathname+target.search}});}
  let asset=ASSETS[path+'?lang='+lang]||ASSETS[path];let status=200;
  const result=url.searchParams.get('r');const resultPage=['/persona','/life','/task'].includes(path)&&url.searchParams.has('r');

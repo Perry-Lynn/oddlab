@@ -8,7 +8,7 @@
     "verify:pages": "node tests/verify-pages-build.mjs",
     "preview": "node scripts/preview.mjs",
     "preview:pages": "node scripts/preview-pages.mjs",
-    "test": "node scripts/prepare.mjs && node tests/verify.mjs && node tests/verify-server.mjs && node tests/verify-pages.mjs && node tests/verify-dispatch.mjs && node tests/verify-market.mjs && node tests/verify-games.mjs",
+    "test": "node scripts/prepare.mjs && node tests/verify.mjs && node tests/verify-server.mjs && node tests/verify-pages.mjs && node tests/verify-dispatch.mjs && node tests/verify-market.mjs && node tests/verify-games.mjs && node tests/verify-tanks.mjs",
     "db:generate": "drizzle-kit generate"
   },
   "devDependencies": {

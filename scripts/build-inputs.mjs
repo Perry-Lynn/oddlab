@@ -13,7 +13,10 @@ const modules = [
   "dispatch-logic.mjs",
   "dispatch-copy.mjs",
   "dispatch-assets.mjs",
-  "dispatch-ui.mjs"
+  "dispatch-ui.mjs",
+  "tanks-logic.mjs",
+  "tanks-copy.mjs",
+  "tanks-ui.mjs"
 ];
 const staticFiles = ['style.css', 'favicon.svg', 'brand-mark.svg'];
 

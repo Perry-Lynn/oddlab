@@ -1,5 +1,5 @@
 import { asset, currentRoute } from './hosting.mjs';
-const routes=new Set(['/','/dispatch','/persona','/life','/choice','/task','/debug','/about','/privacy','/terms','/contact']);
+const routes=new Set(['/','/dispatch','/persona','/life','/choice','/task','/debug','/tanks','/about','/privacy','/terms','/contact']);
 const actions=new Set(['answer','previous','next','theme','draw-life','scene','clear-choices','draw-choice','swap','complete','copy','share','restart','feedback','clear-progress','reload','dispatch-action','experiment-action']);
 function publicPath(pathname){const route=currentRoute(pathname);return route==='index'?'/':'/'+route;}
 export function startAnalytics(getLanguage){

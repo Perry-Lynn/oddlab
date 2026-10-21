@@ -35,7 +35,7 @@ for(const lang of ['en','zh','ja','es']){
   if(['en','es'].includes(lang)){const visible=html.replace(/<option[\s\S]*?<\/option>/g,'').replace(/<[^>]*>/g,'');assert.ok(!/[\u4e00-\u9fff]/.test(visible),'no untranslated Chinese: '+path+' '+lang);}
   if(['/', '/dispatch','/persona','/life','/choice','/task'].includes(path)){assert.equal((html.match(/<details>/g)||[]).length,path==='/dispatch'?4:3);assert.equal((html.match(/<li>/g)||[]).length,3);for(const game of ['/dispatch','/persona','/life','/choice','/task'].filter(p=>p!==path))assert.ok(html.includes(`href="${canonicalURL(game,lang)}"`));}
  }
- assert.equal(titles.size,11);assert.equal(descriptions.size,11);
+ assert.equal(titles.size,publicRoutes.length);assert.equal(descriptions.size,publicRoutes.length);
  // A page delivered in any locale must still be able to switch its persistent shell.
  for(const source of ['关于研究所','关于 / 反馈','隐私说明','使用说明','联系与反馈'])for(const next of ['en','zh','ja','es'])assert.equal(translateText(translateText(source,lang),next),translateText(source,next));
 }
@@ -52,7 +52,7 @@ assert.ok(!rootDefault.includes('✳'),'the shell drops the old eight-point star
 assert.ok(rootDefault.includes('data-brand="oddlab-door"'),'the shell carries the selected door mark');
 assert.ok(rootDefault.includes('src="/brand-mark.svg"'),'the header serves the door asset');
 const sitemap=await (await fetchPath('/sitemap.xml')).text();
-assert.equal((sitemap.match(/<loc>/g)||[]).length,44);
+assert.equal((sitemap.match(/<loc>/g)||[]).length,publicRoutes.length*4);
 for(const [,loc] of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)){const u=new URL(decode(loc));assert.ok(publicRoutes.includes(u.pathname));assert.ok(!u.searchParams.has('r'));}
 for(const path of publicRoutes)for(const lang of ['en','zh','ja','es'])assert.ok(sitemap.includes(canonicalURL(path,lang)));
 assert.ok((await (await fetchPath('/robots.txt')).text()).includes('/sitemap.xml'));

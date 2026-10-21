@@ -13,6 +13,7 @@ A collection of browser games and small everyday experiments. Pick a quick rando
 | Experiment | What happens |
 | --- | --- |
 | Dragon Dispatch | Assign cargo and plan routes for two dragons with different abilities. Manage capacity, weather, stamina and deadlines, then bring both dragons home. Five levels, plan previews, undo and turn-by-turn execution. |
+| Mini Tank Battle | Original pixel base defense with three maps and three enemy types. Keyboard and touch controls, pause, restart and a local high score. |
 | Your Absurd Persona | Six playful questions, two question sets and 16 fictional personas. Change one answer to preview a different result. For entertainment only. |
 | Parallel Life Simulator | Explore five story worlds through three scenes each. Choices affect resources and endings; an ending gallery and 12 life archives are also available. |
 | Leave It to Chance | Draw an option or compare 2–16 candidates in successive pairs. Save decisions in a collection on your current browser. |
@@ -35,7 +36,7 @@ npm run preview:pages
 
 Open [http://127.0.0.1:8788/oddlab/](http://127.0.0.1:8788/oddlab/).
 
-`npm test` runs six checks covering content, pages, the Worker, dispatch rules and the other games. Worker tests use real in-memory SQLite through a D1-compatible adapter.
+`npm test` runs seven checks covering content, pages, the Worker, dispatch rules and the other games. Worker tests use real in-memory SQLite through a D1-compatible adapter.
 
 ## Deploy to GitHub Pages
 
@@ -61,7 +62,7 @@ Adjust the path and origin for another repository; the existing workflow derives
 
 ## Language, progress and privacy
 
-Public games require no account. Persona answers, life adventures and ongoing candidate comparisons are processed in page memory; custom candidates, answers and routes are not uploaded. Task records, parts of the ending gallery and saved decisions stay in the current browser, with no cross-device sync. Daily tasks rotate at midnight UTC+8.
+Public games require no account. Persona answers, life adventures and ongoing candidate comparisons are processed in page memory; custom candidates, answers and routes are not uploaded. Task records, parts of the ending gallery and saved decisions stay in the current browser, with no cross-device sync. Daily tasks rotate at midnight UTC+8. Tank high scores also stay in this browser; battlefield progress is neither saved nor uploaded.
 
 Shared links can restore supported public results. Adventure progress, comparison progress and custom candidates are not encoded in invitation links. Native sharing depends on the device and browser; when copying fails, text is selected for manual copying.
 
